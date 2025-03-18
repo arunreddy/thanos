@@ -8,3 +8,27 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Rasa-specific files
+.rasa/*
+models/*
+logs/*
+
+# Python-specific files
+__pycache__/
+*.pyc
+
+# Virtual Environment
+.venv/
+env/
+venv/
+
+# Environment variables
+.env
+
+# macOS specific
+.DS_Store
+
+# IDE files (optional)
+.vscode/
+.idea/
