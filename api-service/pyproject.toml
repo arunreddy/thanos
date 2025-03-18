@@ -10,4 +10,26 @@ dependencies = [
     "websockets>=12.0",
     "httpx>=0.26.0",
     "pydantic>=2.6.0",
+    "python-dotenv>=1.0.0",
+    "redis>=5.0.1",
+    "asyncpg>=0.29.0",
 ]
+
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.10.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/eddi_chatbot_api"]
