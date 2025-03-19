@@ -11,6 +11,7 @@ from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
 import logging
 import random
+from rasa_sdk.events import Restarted
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +109,7 @@ class ActionSubmitRequest(Action):
         )
         return []
 
+
 class ActionRestart(Action):
     def name(self) -> Text:
         return "action_restart"
@@ -116,5 +118,5 @@ class ActionRestart(Action):
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         dispatcher.utter_message("Let's start over with the database selection process.")
-        # Clear all slots to reset conversation state
-        return [SlotSet(slot, None) for slot in tracker.slots.keys()]
+        return [Restarted()]
+
