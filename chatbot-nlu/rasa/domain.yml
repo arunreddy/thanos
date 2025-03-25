@@ -1,0 +1,49 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - affirm
+  - deny
+  - mood_great
+  - mood_unhappy
+  - bot_challenge
+  - ask_capability
+  - ask_name
+  - ask_weather
+  - ask_time
+  - thank
+
+responses:
+  utter_greet:
+  - text: "Hello! How can I help you today?"
+  - text: "Hi there! What can I assist you with?"
+  
+  utter_goodbye:
+  - text: "Goodbye! Have a nice day."
+  - text: "Bye! Talk to you later."
+  
+  utter_iamabot:
+  - text: "I am a chatbot, powered by Rasa."
+  
+  utter_capability:
+  - text: "I can help answer questions, provide information, and assist with various tasks."
+  
+  utter_name:
+  - text: "I'm your AI assistant. You can call me Bot."
+  
+  utter_weather:
+  - text: "I'm sorry, I don't have access to real-time weather information."
+  
+  utter_time:
+  - text: "I don't have access to the current time. Please check your device."
+  
+  utter_thank:
+  - text: "You're welcome! Is there anything else I can help with?"
+  
+  utter_default:
+  - text: "I'm not sure I understand. Could you rephrase that?"
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
