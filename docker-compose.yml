@@ -2,14 +2,14 @@ services:
   redis:
     image: redis:latest
     ports:
-      - "6379:6379"
+      - "46379:6379"
     volumes:
       - redis-data:/data
   
   postgres:
     image: postgres:latest
     ports:
-      - "5432:5432"
+      - "45432:5432"
     volumes:
       - postgres-data:/data
     environment:
@@ -18,7 +18,40 @@ services:
       POSTGRES_DB: postgres
 
 
+  chatbot-web:
+    container_name: chatbot-web
+    build:
+      context: ./chatbot-web
+      dockerfile: Dockerfile
+      no_cache: true
+    ports:
+      - "43000:3000"
+    volumes:
+      - ./chatbot-web/src:/app/src:ro
+      - ./chatbot-web/public:/app/public:ro
+      - ./chatbot-web/package.json:/app/package.json:ro
+      - ./chatbot-web/package-lock.json:/app/package-lock.json:ro
+      - ./chatbot-web/next.config.js:/app/next.config.js:ro
+      - ./chatbot-web/tsconfig.json:/app/tsconfig.json:ro
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
       
+  chatbot-api:
+    container_name: chatbot-api
+    build:
+      context: ./chatbot-api
+      dockerfile: Dockerfile
+    ports:
+      - "48000:8000"
+
+  # chatbot-nlu:
+  #   build:
+  #     context: ./chatbot-nlu
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "45005:5005"
+
 
 volumes:
   redis-data:

@@ -1,0 +1,139 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - start_database_selection
+  - inform_app_type
+  - inform_features
+  - inform_relationship_needs
+  - inform_downtime_tolerance
+  - confirm_database_choice
+  - restart
+
+entities:
+  - app_type
+  - feature_type
+  - relationship_type
+  - downtime_tolerance
+  - confirmation
+
+slots:
+  app_type:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: app_type
+  
+  feature_type:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: feature_type
+  
+  relationship_type:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: relationship_type
+  
+  downtime_tolerance:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: downtime_tolerance
+  
+  recommended_database:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: custom
+  
+  estimated_cost:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: custom
+
+responses:
+  utter_greet:
+    - text: "Hello! How can I help you today?"
+  
+  utter_goodbye:
+    - text: "Goodbye! Have a nice day."
+  
+  utter_welcome_database_selection:
+    - text: "Welcome to the database selection assistant. I'll help you choose the right database for your needs."
+  
+  utter_ask_app_type:
+    - text: "What best describes your setup?"
+      buttons:
+        - title: "Structured data, vendor app"
+          payload: '/inform_app_type{{"app_type": "Structured data, vendor app"}}'
+        - title: "Structured data, home-grown app"
+          payload: '/inform_app_type{{"app_type": "Structured data, home-grown app"}}'
+        - title: "Unstructured data, vendor app"
+          payload: '/inform_app_type{{"app_type": "Unstructured data, vendor app"}}'
+        - title: "Unstructured data, home-grown app"
+          payload: '/inform_app_type{{"app_type": "Unstructured data, home-grown app"}}'
+  
+  utter_ask_features:
+    - text: "Do you need features like full-text search, embedding, or nested documents? And are you limited to Oracle?"
+      buttons:
+        - title: "Yes, Oracle-only"
+          payload: '/inform_features{{"feature_type": "Yes, Oracle-only"}}'
+        - title: "Yes, but flexible on database"
+          payload: '/inform_features{{"feature_type": "Yes, but flexible on database"}}'
+        - title: "No special features needed"
+          payload: '/inform_features{{"feature_type": "No special features needed"}}'
+  
+  utter_ask_relationship_needs:
+    - text: "Do you need single-key access, complex relationships, or a relational schema for your data?"
+      buttons:
+        - title: "Single-key access only"
+          payload: '/inform_relationship_needs{{"relationship_type": "Single-key access only"}}'
+        - title: "Complex relationships or relational schema"
+          payload: '/inform_relationship_needs{{"relationship_type": "Complex relationships or relational schema"}}'
+        - title: "None of these"
+          payload: '/inform_relationship_needs{{"relationship_type": "None of these"}}'
+  
+  utter_ask_downtime_tolerance:
+    - text: "Can your app handle about an hour of downtime?"
+      buttons:
+        - title: "Yes"
+          payload: '/inform_downtime_tolerance{{"downtime_tolerance": "Yes"}}'
+        - title: "No"
+          payload: '/inform_downtime_tolerance{{"downtime_tolerance": "No"}}'
+  
+  utter_confirm_database_choice:
+    - text: "Based on your responses, we recommend {recommended_database}. The estimated cost is {estimated_cost}. Shall we proceed with the request?"
+      buttons:
+        - title: "Yes, proceed"
+          payload: '/confirm_database_choice{{"confirmation": "Yes, proceed"}}'
+        - title: "No, change choices"
+          payload: '/confirm_database_choice{{"confirmation": "No, change choices"}}'
+  
+  utter_request_submitted:
+    - text: "Your database request has been submitted. A Jira ticket has been created and assigned to the appropriate approver. You will receive notifications about the status of your request."
+
+actions:
+  - utter_greet
+  - utter_goodbye
+  - utter_welcome_database_selection
+  - utter_ask_app_type
+  - utter_ask_features
+  - utter_ask_relationship_needs
+  - utter_ask_downtime_tolerance
+  - utter_confirm_database_choice
+  - utter_request_submitted
+  - action_recommend_database
+  - action_submit_request
+  - action_restart
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: false

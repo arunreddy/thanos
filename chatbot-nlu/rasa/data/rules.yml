@@ -1,0 +1,23 @@
+version: "3.1"
+
+rules:
+  - rule: Say goodbye anytime the user says goodbye
+    steps:
+      - intent: goodbye
+      - action: utter_goodbye
+
+  - rule: Say hello anytime the user says hello
+    steps:
+      - intent: greet
+      - action: utter_greet
+
+  - rule: Start database selection process
+    steps:
+      - intent: start_database_selection
+      - action: utter_welcome_database_selection
+      - action: utter_ask_app_type
+
+  - rule: Restart the conversation
+    steps:
+      - intent: restart
+      - action: action_restart

@@ -1,0 +1,87 @@
+version: "3.1"
+
+nlu:
+  - intent: greet
+    examples: |
+      - hey
+      - hello
+      - hi
+      - hello there
+      - good morning
+      - good evening
+      - hey there
+      - how are you
+      - what's up
+
+  - intent: goodbye
+    examples: |
+      - bye
+      - goodbye
+      - see you around
+      - see you later
+      - have a nice day
+
+  - intent: start_database_selection
+    examples: |
+      - I need to select a database
+      - Help me choose a database
+      - Database selection
+      - I want to request a new database
+      - Need database recommendation
+      - What database should I use
+      - Database request
+
+  - intent: inform_app_type
+    examples: |
+      - [Structured data, vendor app](app_type)
+      - [Structured data, home-grown app](app_type)
+      - [Unstructured data, vendor app](app_type)
+      - [Unstructured data, home-grown app](app_type)
+      - My app is [Structured data, vendor app](app_type)
+      - We have [Unstructured data, home-grown app](app_type)
+      - It's a [Structured data, home-grown app](app_type)
+
+  - intent: inform_features
+    examples: |
+      - [Yes, Oracle-only](feature_type)
+      - [Yes, but flexible on database](feature_type)
+      - [No special features needed](feature_type)
+      - I need [Yes, Oracle-only](feature_type)
+      - We require [Yes, but flexible on database](feature_type)
+      - [No special features needed](feature_type) for us
+
+  - intent: inform_relationship_needs
+    examples: |
+      - [Single-key access only](relationship_type)
+      - [Complex relationships or relational schema](relationship_type)
+      - [None of these](relationship_type)
+      - We need [Single-key access only](relationship_type)
+      - Our system requires [Complex relationships or relational schema](relationship_type)
+      - [None of these](relationship_type) apply to us
+
+  - intent: inform_downtime_tolerance
+    examples: |
+      - [Yes](downtime_tolerance)
+      - [No](downtime_tolerance)
+      - [Yes](downtime_tolerance), we can handle downtime
+      - [No](downtime_tolerance), we need high availability
+      - We can tolerate downtime, so [Yes](downtime_tolerance)
+      - We need high uptime, so [No](downtime_tolerance)
+
+  - intent: confirm_database_choice
+    examples: |
+      - [Yes, proceed](confirmation)
+      - [No, change choices](confirmation)
+      - [Yes, proceed](confirmation) with the recommendation
+      - [No, change choices](confirmation), I want to review
+      - Let's [Yes, proceed](confirmation)
+      - I'd like to [No, change choices](confirmation)
+
+  - intent: restart
+    examples: |
+      - restart
+      - start over
+      - begin again
+      - let's try again
+      - reset
+      - start from the beginning
