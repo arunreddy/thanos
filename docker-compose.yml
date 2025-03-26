@@ -45,14 +45,26 @@ services:
     ports:
       - "48000:8000"
 
-  # chatbot-nlu:
-  #   build:
-  #     context: ./chatbot-nlu
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "45005:5005"
+  chatbot-nlu:
+    container_name: chatbot-nlu
+    build:
+      context: ./chatbot-nlu
+      dockerfile: Dockerfile
+      no_cache: true
+    ports:
+      - "45005:5005"
+    volumes:
+      - chatbot-nlu-models:/app/models
 
+  action_server:
+    container_name: chatbot-action-server
+    image: rasa/rasa-sdk:latest
+    ports:
+      - "5055:5055"
+    volumes:
+      - ./actions:/app/actions
 
 volumes:
   redis-data:
   postgres-data:
+  chatbot-nlu-models:

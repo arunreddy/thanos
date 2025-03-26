@@ -1,6 +1,6 @@
 # This file contains the different endpoints your bot can use.
 action_endpoint:
-  url: http://localhost:5055/webhook
+  url: http://chatbot-action-server:5055/webhook
 
 #rest:
 
@@ -45,3 +45,13 @@ action_endpoint:
 #  password: password
 #  queue: queue
 url: "http://localhost:5055/webhook"
+
+tracker_store:
+  type: sql
+  dialect: "postgresql"
+  url: "postgres"
+  port: 5432
+  db: "rasa"
+  username: "postgres"
+  password: "postgres"
+  login_db: "postgres"
