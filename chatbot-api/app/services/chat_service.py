@@ -1,3 +1,4 @@
+# app/services/chat_service.py (update)
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -18,20 +19,11 @@ class ChatService:
             conversation_id = str(uuid.uuid4())
 
         # Send message to Rasa
+        print(f"Sending message to Rasa: {message}")
         rasa_response = await self.rasa_connector.send_message(message, user_id)
 
-        # Extract text from Rasa response
-        bot_responses = []
-        for msg in rasa_response:
-            if "text" in msg:
-                bot_responses.append(msg["text"])
-
-        # Fallback if Rasa doesn't respond
-        if not bot_responses:
-            bot_responses = ["I'm not sure how to respond to that."]
-
-        # Join multiple responses
-        bot_response_text = " ".join(bot_responses)
+        # Process Rasa response
+        processed_response = self._process_rasa_response(rasa_response)
 
         # Store message and response in history
         if conversation_id not in self.conversations:
@@ -39,11 +31,39 @@ class ChatService:
 
         timestamp = datetime.now().isoformat()
 
-        self.conversations[conversation_id].extend(
-            [{"role": "user", "content": message, "timestamp": timestamp, "user_id": user_id}, {"role": "assistant", "content": bot_response_text, "timestamp": timestamp}]
+        # Add user message to history
+        self.conversations[conversation_id].append({"role": "user", "content": message, "timestamp": timestamp, "user_id": user_id})
+
+        # Add assistant response to history
+        self.conversations[conversation_id].append(
+            {
+                "role": "assistant",
+                "content": processed_response.get("text", ""),
+                "buttons": processed_response.get("buttons", []),  # Store buttons in history
+                "timestamp": timestamp,
+            }
         )
 
-        return {"response": bot_response_text, "conversation_id": conversation_id}
+        return {"response": processed_response.get("text", ""), "buttons": processed_response.get("buttons", []), "conversation_id": conversation_id}
+
+    def _process_rasa_response(self, rasa_response: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Process raw Rasa response into structured format."""
+        # Collect all texts and buttons
+        texts = []
+        all_buttons = []
+
+        for msg in rasa_response:
+            if "text" in msg:
+                texts.append(msg["text"])
+
+            if "buttons" in msg:
+                all_buttons.extend(msg["buttons"])
+
+        # Fallback if Rasa doesn't respond
+        if not texts:
+            texts = ["I'm not sure how to respond to that."]
+
+        return {"text": " ".join(texts), "buttons": all_buttons}
 
     def get_conversation_history(self, conversation_id: str) -> List[dict]:
         if conversation_id not in self.conversations:

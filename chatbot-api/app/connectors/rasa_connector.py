@@ -4,7 +4,7 @@ import httpx
 
 
 class RasaConnector:
-    def __init__(self, rasa_url: str = "http://rasa:5005"):
+    def __init__(self, rasa_url: str = "http://localhost:45005"):  # Changed port to 45005
         self.rasa_url = rasa_url
         self.client = httpx.AsyncClient(timeout=30.0)
 
@@ -14,6 +14,7 @@ class RasaConnector:
         payload = {"sender": sender_id, "message": message}
 
         try:
+            print(f"Sending message to Rasa: {endpoint} {payload}")
             response = await self.client.post(endpoint, json=payload)
             response.raise_for_status()
             return response.json()

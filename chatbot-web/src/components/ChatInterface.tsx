@@ -1,4 +1,4 @@
-// frontend/src/components/ChatInterface.tsx
+// src/components/ChatInterface.tsx (updated)
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -6,16 +6,23 @@ import { sendMessage, getConversation } from '@/lib/api';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
 
+interface Button {
+  title: string;
+  payload: string;
+}
+
 interface Message {
   id?: number;
   role: 'user' | 'assistant';
   content: string;
   created_at?: string;
+  timestamp?: string;
+  buttons?: Button[];
 }
 
 interface ChatInterfaceProps {
-  conversationId: number | null;
-  onNewConversation?: (id: number) => void;
+  conversationId: string | null;
+  onNewConversation?: (id: string) => void;
 }
 
 export default function ChatInterface({ conversationId, onNewConversation }: ChatInterfaceProps) {
@@ -30,7 +37,7 @@ export default function ChatInterface({ conversationId, onNewConversation }: Cha
       const fetchConversation = async () => {
         try {
           setIsLoading(true);
-          const conversation = await getConversation(conversationId);
+          const conversation = await getConversation(Number(conversationId));
           setMessages(conversation.messages || []);
           setError(null);
         } catch (err) {
@@ -61,7 +68,7 @@ export default function ChatInterface({ conversationId, onNewConversation }: Cha
     if (!content.trim()) return;
 
     // Optimistically add user message to UI
-    const userMessage: Message = { role: 'user', content };
+    const userMessage: Message = { role: 'user', content, timestamp: new Date().toISOString() };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     
     // Clear any previous errors
@@ -71,7 +78,7 @@ export default function ChatInterface({ conversationId, onNewConversation }: Cha
     try {
       // Send message to API
       const response = await sendMessage({
-        conversation_id: conversationId,
+        conversation_id: conversationId ? Number(conversationId) : null,
         message: content
       });
 
@@ -80,7 +87,9 @@ export default function ChatInterface({ conversationId, onNewConversation }: Cha
         ...prevMessages,
         {
           role: response.message.role,
-          content: response.message.content
+          content: response.message.content,
+          buttons: response.message.buttons,
+          timestamp: new Date().toISOString()
         }
       ]);
       
@@ -94,6 +103,17 @@ export default function ChatInterface({ conversationId, onNewConversation }: Cha
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handle button clicks from any message
+  const handleButtonClick = async (payload: string) => {
+    // Extract the actual message from the payload if needed
+    // For Rasa, payloads look like "/intent{\"entity\": \"value\"}"
+    // We'll extract just the intent part for display in the UI
+    const displayMessage = payload.split('{')[0].replace('/', '');
+    
+    // Call the same message handler but with the payload
+    await handleSendMessage(payload);
   };
 
   return (
@@ -117,7 +137,9 @@ export default function ChatInterface({ conversationId, onNewConversation }: Cha
               key={index}
               role={message.role}
               content={message.content}
-              timestamp={message.created_at}
+              timestamp={message.timestamp || message.created_at}
+              buttons={message.buttons}
+              onButtonClick={handleButtonClick}
             />
           ))
         )}
