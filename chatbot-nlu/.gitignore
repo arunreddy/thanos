@@ -32,3 +32,4 @@ venv/
 # IDE files (optional)
 .vscode/
 .idea/
+.rasa/
