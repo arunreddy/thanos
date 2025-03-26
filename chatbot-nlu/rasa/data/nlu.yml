@@ -1,91 +1,87 @@
 version: "3.1"
 
 nlu:
-- intent: greet
-  examples: |
-    - hey
-    - hello
-    - hi
-    - hello there
-    - good morning
-    - good evening
-    - moin
-    - hey there
-    - let's go
-    - hey dude
-    - goodmorning
-    - goodevening
-    - good afternoon
+  - intent: greet
+    examples: |
+      - hey
+      - hello
+      - hi
+      - hello there
+      - good morning
+      - good evening
+      - hey there
+      - how are you
+      - what's up
 
-- intent: goodbye
-  examples: |
-    - cu
-    - good by
-    - cee you later
-    - good night
-    - bye
-    - goodbye
-    - have a nice day
-    - see you around
-    - bye bye
-    - see you later
+  - intent: goodbye
+    examples: |
+      - bye
+      - goodbye
+      - see you around
+      - see you later
+      - have a nice day
 
-- intent: affirm
-  examples: |
-    - yes
-    - y
-    - indeed
-    - of course
-    - that sounds good
-    - correct
+  - intent: start_database_selection
+    examples: |
+      - I need to select a database
+      - Help me choose a database
+      - Database selection
+      - I want to request a new database
+      - Need database recommendation
+      - What database should I use
+      - Database request
 
-- intent: deny
-  examples: |
-    - no
-    - n
-    - never
-    - I don't think so
-    - don't like that
-    - no way
-    - not really
+  - intent: inform_app_type
+    examples: |
+      - [Structured data, vendor app](app_type)
+      - [Structured data, home-grown app](app_type)
+      - [Unstructured data, vendor app](app_type)
+      - [Unstructured data, home-grown app](app_type)
+      - My app is [Structured data, vendor app](app_type)
+      - We have [Unstructured data, home-grown app](app_type)
+      - It's a [Structured data, home-grown app](app_type)
 
-- intent: mood_great
-  examples: |
-    - perfect
-    - great
-    - amazing
-    - feeling like a king
-    - wonderful
-    - I am feeling very good
-    - I am great
-    - I am amazing
-    - I am going to save the world
-    - super stoked
-    - extremely good
-    - so so perfect
-    - so good
-    - so perfect
+  - intent: inform_features
+    examples: |
+      - [Yes, Oracle-only](feature_type)
+      - [Yes, but flexible on database](feature_type)
+      - [No special features needed](feature_type)
+      - I need [Yes, Oracle-only](feature_type)
+      - We require [Yes, but flexible on database](feature_type)
+      - [No special features needed](feature_type) for us
 
-- intent: mood_unhappy
-  examples: |
-    - my day was horrible
-    - I am sad
-    - I don't feel very well
-    - I am disappointed
-    - super sad
-    - I'm so sad
-    - sad
-    - very sad
-    - unhappy
-    - not good
-    - not very good
-    - extremly sad
-    - so saad
-    - so sad
+  - intent: inform_relationship_needs
+    examples: |
+      - [Single-key access only](relationship_type)
+      - [Complex relationships or relational schema](relationship_type)
+      - [None of these](relationship_type)
+      - We need [Single-key access only](relationship_type)
+      - Our system requires [Complex relationships or relational schema](relationship_type)
+      - [None of these](relationship_type) apply to us
 
-- intent: bot_challenge
-  examples: |
-    - are you a bot?
-    - are you a human?
-    - am I talking to a bot?
-    - am I talking to a human?
+  - intent: inform_downtime_tolerance
+    examples: |
+      - [Yes](downtime_tolerance)
+      - [No](downtime_tolerance)
+      - [Yes](downtime_tolerance), we can handle downtime
+      - [No](downtime_tolerance), we need high availability
+      - We can tolerate downtime, so [Yes](downtime_tolerance)
+      - We need high uptime, so [No](downtime_tolerance)
+
+  - intent: confirm_database_choice
+    examples: |
+      - [Yes, proceed](confirmation)
+      - [No, change choices](confirmation)
+      - [Yes, proceed](confirmation) with the recommendation
+      - [No, change choices](confirmation), I want to review
+      - Let's [Yes, proceed](confirmation)
+      - I'd like to [No, change choices](confirmation)
+
+  - intent: restart
+    examples: |
+      - restart
+      - start over
+      - begin again
+      - let's try again
+      - reset
+      - start from the beginning

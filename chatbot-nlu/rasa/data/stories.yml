@@ -1,30 +1,57 @@
 version: "3.1"
 
 stories:
-
-- story: happy path
+- story: database selection flow
   steps:
-  - intent: greet
-  - action: utter_greet
-  - intent: mood_great
-  - action: utter_happy
+  - intent: start_database_selection
+  - action: utter_welcome_database_selection
+  - action: utter_ask_app_type
+  - intent: inform_app_type
+    entities:
+      - app_type: "Structured data, vendor app"
+  - action: utter_ask_features
+  - intent: inform_features
+    entities:
+      - feature_type: "Yes, Oracle-only"
+  - action: utter_ask_relationship_needs
+  - intent: inform_relationship_needs
+    entities:
+      - relationship_type: "Single-key access only"
+  - action: utter_ask_downtime_tolerance
+  - intent: inform_downtime_tolerance
+    entities:
+      - downtime_tolerance: "Yes"
+  - action: action_recommend_database
+  - action: utter_confirm_database_choice
+  - intent: confirm_database_choice
+    entities:
+      - confirmation: "Yes, proceed"
+  - action: action_submit_request
+  - action: utter_request_submitted
 
-- story: sad path 1
+- story: database selection flow with change
   steps:
-  - intent: greet
-  - action: utter_greet
-  - intent: mood_unhappy
-  - action: utter_cheer_up
-  - action: utter_did_that_help
-  - intent: affirm
-  - action: utter_happy
-
-- story: sad path 2
-  steps:
-  - intent: greet
-  - action: utter_greet
-  - intent: mood_unhappy
-  - action: utter_cheer_up
-  - action: utter_did_that_help
-  - intent: deny
-  - action: utter_goodbye
+  - intent: start_database_selection
+  - action: utter_welcome_database_selection
+  - action: utter_ask_app_type
+  - intent: inform_app_type
+    entities:
+      - app_type: "Structured data, vendor app"
+  - action: utter_ask_features
+  - intent: inform_features
+    entities:
+      - feature_type: "Yes, Oracle-only"
+  - action: utter_ask_relationship_needs
+  - intent: inform_relationship_needs
+    entities:
+      - relationship_type: "Single-key access only"
+  - action: utter_ask_downtime_tolerance
+  - intent: inform_downtime_tolerance
+    entities:
+      - downtime_tolerance: "Yes"
+  - action: action_recommend_database
+  - action: utter_confirm_database_choice
+  - intent: confirm_database_choice
+    entities:
+      - confirmation: "No, change choices"
+  - action: action_restart
