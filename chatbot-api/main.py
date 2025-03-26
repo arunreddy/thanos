@@ -16,7 +16,7 @@ app = FastAPI(title="Chatbot API", lifespan=lifespan)
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # NextJS frontend URL
+    allow_origins=["http://localhost:4000"],  # NextJS frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -18,24 +18,24 @@ services:
       POSTGRES_DB: postgres
 
 
-  chatbot-web:
-    container_name: chatbot-web
-    build:
-      context: ./chatbot-web
-      dockerfile: Dockerfile
-      no_cache: true
-    ports:
-      - "43000:3000"
-    volumes:
-      - ./chatbot-web/src:/app/src:ro
-      - ./chatbot-web/public:/app/public:ro
-      - ./chatbot-web/package.json:/app/package.json:ro
-      - ./chatbot-web/package-lock.json:/app/package-lock.json:ro
-      - ./chatbot-web/next.config.js:/app/next.config.js:ro
-      - ./chatbot-web/tsconfig.json:/app/tsconfig.json:ro
-    environment:
-      - NODE_ENV=development
-      - NEXT_TELEMETRY_DISABLED=1
+  # chatbot-web:
+  #   container_name: chatbot-web
+  #   build:
+  #     context: ./chatbot-web
+  #     dockerfile: Dockerfile
+  #     no_cache: true
+  #   ports:
+  #     - "43000:3000"
+  #   volumes:
+  #     - ./chatbot-web/src:/app/src:ro
+  #     - ./chatbot-web/public:/app/public:ro
+  #     - ./chatbot-web/package.json:/app/package.json:ro
+  #     - ./chatbot-web/package-lock.json:/app/package-lock.json:ro
+  #     - ./chatbot-web/next.config.js:/app/next.config.js:ro
+  #     - ./chatbot-web/tsconfig.json:/app/tsconfig.json:ro
+  #   environment:
+  #     - NODE_ENV=development
+  #     - NEXT_TELEMETRY_DISABLED=1
       
   # chatbot-api:
   #   container_name: chatbot-api
@@ -58,11 +58,12 @@ services:
 
   action_server:
     container_name: chatbot-action-server
-    image: rasa/rasa-sdk:latest
+    build:
+      context: ./chatbot-nlu
+      dockerfile: Dockerfile.actions
+      no_cache: true
     ports:
       - "5055:5055"
-    volumes:
-      - ./actions:/app/actions
 
 volumes:
   redis-data:

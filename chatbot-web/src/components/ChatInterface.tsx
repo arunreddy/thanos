@@ -67,6 +67,7 @@ export default function ChatInterface({ conversationId, onNewConversation }: Cha
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
 
+    console.log('Sending message:', content);
     // Optimistically add user message to UI
     const userMessage: Message = { role: 'user', content, timestamp: new Date().toISOString() };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
@@ -76,7 +77,7 @@ export default function ChatInterface({ conversationId, onNewConversation }: Cha
     setIsLoading(true);
 
     try {
-      // Send message to API
+      // Send message to API with conversation_id if available
       const response = await sendMessage({
         conversation_id: conversationId ? Number(conversationId) : null,
         message: content

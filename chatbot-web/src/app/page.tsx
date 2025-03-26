@@ -5,7 +5,7 @@ import ChatInterface from '@/components/ChatInterface';
 import ConversationsList from '@/components/ConversationsList';
 
 export default function Home() {
-  const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
   return (
     <div className="flex h-screen">
@@ -21,7 +21,7 @@ export default function Home() {
       </div>
 
       <div className="flex-1 flex flex-col">
-        <ChatInterface conversationId={activeConversationId} />
+        <ChatInterface conversationId={activeConversationId}  />
       </div>
     </div>
   );

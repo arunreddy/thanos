@@ -6,14 +6,14 @@ import { getConversations, deleteConversation } from '@/lib/api';
 import { format } from 'date-fns';
 
 interface Conversation {
-  id: number;
+  id: string;
   title: string;
   updated_at: string;
 }
 
 interface ConversationsListProps {
-  activeConversationId: number | null;
-  onSelectConversation: (id: number) => void;
+  activeConversationId: string | null;
+  onSelectConversation: (id: string) => void;
   onNewConversation: () => void;
 }
 
@@ -45,24 +45,21 @@ export default function ConversationsList({
     fetchConversations();
   }, []);
 
-  const handleDeleteConversation = async (id: number, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent selecting the conversation
+  const handleDeleteConversation = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     
     try {
-      await deleteConversation(id);
+      await deleteConversation(Number(id));
       
-      // Remove from state
       setConversations(prevConversations => 
         prevConversations.filter(conv => conv.id !== id)
       );
       
-      // If the active conversation was deleted, create a new one
       if (activeConversationId === id) {
         onNewConversation();
       }
     } catch (err) {
       console.error('Failed to delete conversation:', err);
-      // Could show a toast notification here
     }
   };
 

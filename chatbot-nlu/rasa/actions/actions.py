@@ -5,23 +5,22 @@
 # https://rasa.com/docs/rasa/custom-actions
 
 
-from typing import Any, Text, Dict, List
-from rasa_sdk import Action, Tracker
-from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.events import SlotSet
 import logging
 import random
-from rasa_sdk.events import Restarted
+from typing import Any, Dict, List, Text
+
+from rasa_sdk import Action, Tracker
+from rasa_sdk.events import Restarted, SlotSet
+from rasa_sdk.executor import CollectingDispatcher
 
 logger = logging.getLogger(__name__)
+
 
 class ActionRecommendDatabase(Action):
     def name(self) -> Text:
         return "action_recommend_database"
 
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         try:
             # Retrieve slot values
             app_type = tracker.get_slot("app_type")
@@ -29,8 +28,9 @@ class ActionRecommendDatabase(Action):
             relationship_type = tracker.get_slot("relationship_type")
             downtime_tolerance = tracker.get_slot("downtime_tolerance")
 
-            logger.info(f"Slots received: app_type={app_type}, feature_type={feature_type}, "
-                        f"relationship_type={relationship_type}, downtime_tolerance={downtime_tolerance}")
+            logger.info(f"Slots received: app_type={app_type}, feature_type={feature_type}, " f"relationship_type={relationship_type}, downtime_tolerance={downtime_tolerance}")
+
+            print(f"Slots received: app_type={app_type}, feature_type={feature_type}, " f"relationship_type={relationship_type}, downtime_tolerance={downtime_tolerance}")
 
             # Determine characteristics
             is_structured = "Structured" in app_type if app_type else False
@@ -62,39 +62,30 @@ class ActionRecommendDatabase(Action):
                 recommended_db = f"Single Instance with Snapshot ({recommended_db})"
 
             # Calculate estimated cost using a direct lookup
-            base_costs = {
-                "Oracle": 500,
-                "MySQL": 200,
-                "PostgreSQL": 250,
-                "MongoDB": 300,
-                "Neo4j": 400,
-                "SQL Server": 450
-            }
+            base_costs = {"Oracle": 500, "MySQL": 200, "PostgreSQL": 250, "MongoDB": 300, "Neo4j": 400, "SQL Server": 450}
 
             # Extract the base database name (text before any parenthesis)
             base_db = recommended_db.split("(")[0].strip()
             cost = base_costs.get(base_db, 0)
             if "Multi-AZ" in recommended_db:
                 cost *= 1.75
-                
 
             estimated_cost = f"${cost:.2f} per month"
             logger.info(f"Recommendation: {recommended_db}, Estimated cost: {estimated_cost}")
+            print(f"Recommendation: {recommended_db}, Estimated cost: {estimated_cost}")
 
-            return [SlotSet("recommended_database", recommended_db),
-                    SlotSet("estimated_cost", estimated_cost)]
+            return [SlotSet("recommended_database", recommended_db), SlotSet("estimated_cost", estimated_cost)]
         except Exception as e:
             logger.error(f"Error in action_recommend_database: {e}", exc_info=True)
             dispatcher.utter_message("Sorry, an error occurred while processing your request.")
             return []
 
+
 class ActionSubmitRequest(Action):
     def name(self) -> Text:
         return "action_submit_request"
 
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         # Retrieve slots
         app_type = tracker.get_slot("app_type")
         feature_type = tracker.get_slot("feature_type")
@@ -115,9 +106,6 @@ class ActionRestart(Action):
     def name(self) -> Text:
         return "action_restart"
 
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         dispatcher.utter_message("Let's start over with the database selection process.")
         return [Restarted()]
-
