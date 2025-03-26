@@ -19,9 +19,11 @@ services:
 
 
   chatbot-web:
+    container_name: chatbot-web
     build:
       context: ./chatbot-web
       dockerfile: Dockerfile
+      no_cache: true
     ports:
       - "43000:3000"
     volumes:
@@ -36,18 +38,19 @@ services:
       - NEXT_TELEMETRY_DISABLED=1
       
   chatbot-api:
+    container_name: chatbot-api
     build:
       context: ./chatbot-api
       dockerfile: Dockerfile
     ports:
       - "48000:8000"
 
-  chatbot-nlu:
-    build:
-      context: ./chatbot-nlu
-      dockerfile: Dockerfile
-    ports:
-      - "45005:5005"
+  # chatbot-nlu:
+  #   build:
+  #     context: ./chatbot-nlu
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "45005:5005"
 
 
 volumes:
