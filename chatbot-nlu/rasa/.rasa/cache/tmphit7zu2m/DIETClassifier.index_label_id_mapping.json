@@ -1,0 +1,13 @@
+{
+  "0": "confirm_database_choice",
+  "1": "goodbye",
+  "2": "greet",
+  "3": "help",
+  "4": "help_recommend_database",
+  "5": "inform_app_type",
+  "6": "inform_downtime_tolerance",
+  "7": "inform_features",
+  "8": "inform_relationship_needs",
+  "9": "restart",
+  "10": "start_database_selection"
+}

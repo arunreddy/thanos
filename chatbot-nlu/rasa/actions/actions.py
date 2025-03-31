@@ -121,3 +121,4 @@ class ActionRestart(Action):
         dispatcher.utter_message("Let's start over with the database selection process.")
         return [Restarted()]
 
+

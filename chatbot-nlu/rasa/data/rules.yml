@@ -21,3 +21,14 @@ rules:
     steps:
       - intent: restart
       - action: action_restart
+
+  - rule: Interrupt with help and resume flow
+    steps:
+      - intent: help
+      - action: utter_help
+
+  - rule: help recommend database flow
+    steps:
+      - intent: help_recommend_database
+      - action: utter_help_recommend_database
+
