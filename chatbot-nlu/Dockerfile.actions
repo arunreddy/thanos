@@ -32,13 +32,9 @@ COPY rasa/domain.yml .
 COPY rasa/credentials.yml .
 COPY rasa/endpoints.yml .
 
+COPY rasa/actions /app/actions
 
-# Create and copy data directory
-COPY rasa/data /app/data
 
 ENV PATH="/root/.local/bin:/app/.venv/bin:$PATH"
 
-COPY scripts/start-server.sh .
-RUN chmod +x start-server.sh
-
-CMD ["./start-server.sh"]
+CMD ["rasa", "run", "actions"]
