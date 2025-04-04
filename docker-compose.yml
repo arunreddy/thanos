@@ -37,13 +37,13 @@ services:
   #     - NODE_ENV=development
   #     - NEXT_TELEMETRY_DISABLED=1
       
-  # chatbot-api:
-  #   container_name: chatbot-api
-  #   build:
-  #     context: ./chatbot-api
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "48000:8000"
+  chatbot-api:
+    container_name: chatbot-api
+    build:
+      context: ./chatbot-api
+      dockerfile: Dockerfile
+    ports:
+      - "9000:8000"
 
   chatbot-nlu:
     container_name: chatbot-nlu

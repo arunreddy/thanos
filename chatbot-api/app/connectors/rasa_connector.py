@@ -4,7 +4,7 @@ import httpx
 
 
 class RasaConnector:
-    def __init__(self, rasa_url: str = "http://localhost:45005"):  # Changed port to 45005
+    def __init__(self, rasa_url: str = "http://chatbot-nlu:5005"):  # Changed port to 45005
         self.rasa_url = rasa_url
         self.client = httpx.AsyncClient(timeout=30.0)
 
