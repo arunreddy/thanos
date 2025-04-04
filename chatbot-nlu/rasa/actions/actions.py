@@ -109,3 +109,5 @@ class ActionRestart(Action):
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         dispatcher.utter_message("Let's start over with the database selection process.")
         return [Restarted()]
+
+
