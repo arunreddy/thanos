@@ -5,9 +5,9 @@
 // Mock for browser environment
 const mockWindow = {
   localStorage: {
-    getItem: (key: string) => null,
-    setItem: (key: string, value: string) => {},
-    removeItem: (key: string) => {},
+    getItem: (_key: string) => null,
+    setItem: (_key: string, _value: string) => {},
+    removeItem: (_key: string) => {},
     clear: () => {}
   } as Storage
 };
@@ -17,6 +17,9 @@ const mockWindow = {
  */
 export function getTokenForTest(): string | null {
   if (typeof window !== 'undefined') {
+    if ((window as any).token) {
+      return (window as any).token;
+    }
     return window.localStorage.getItem('access_token');
   }
   return mockWindow.localStorage.getItem('access_token');
@@ -48,7 +51,7 @@ export async function fetchWithAuthForTest(url: string, options: RequestInit = {
         detail: 'An unknown error occurred',
       }));
       
-      throw new Error(error.detail || 'An unknown error occurred');
+      throw new Error(error?.detail || 'An unknown error occurred');
     }
     
     return response.json();
