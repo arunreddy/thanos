@@ -9,9 +9,20 @@ intents:
   - inform_relationship_needs
   - inform_downtime_tolerance
   - confirm_database_choice
+  - confirm_export_definition 
   - restart
   - help
-  - help_recommend_database
+  - help_website
+  - start_schema_explorer
+  - retrieve_object_list
+  - export_definition
+  - provide_database_host
+  - select_database_type
+  - select_object_types
+  - confirm_schema_parameters
+  - confirm_object_list
+  - upload_template
+  - invalid_template
 
 entities:
   - app_type
@@ -19,6 +30,9 @@ entities:
   - relationship_type
   - downtime_tolerance
   - confirmation
+  - database_host_endpoint
+  - database_type
+  - object_types
 
 slots:
   app_type:
@@ -61,7 +75,115 @@ slots:
     mappings:
       - type: custom
 
+  database_host_endpoint:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_text
+        intent: provide_database_host
+
+  database_type:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: database_type
+
+  object_types:
+    type: list
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: object_types
+
+  template_valid:
+    type: bool
+    influence_conversation: false
+    mappings:
+      - type: custom
+
+  access_granted:
+    type: bool
+    influence_conversation: false
+    mappings:
+      - type: custom
+
 responses:
+  utter_welcome_schema_explorer:
+    - text: "Welcome to the Database Schema Explorer! Retrieve detailed database schema definitions, including tables, views, and indexes. For further assistance, contact the Database Operations Team at [DB Ops Email ID]. Type 'BACK' anytime to go to action type selection. Type 'EXIT' anytime to end the conversation."
+      buttons:
+        - title: "Start Schema Explorer"
+          payload: '/start_schema_explorer'
+
+  utter_action_type_selection:
+    - text: "What would you like to do? Options:"
+      buttons:
+        - title: "Retrieve database object list"
+          payload: '/retrieve_object_list'
+        - title: "Export definition of database objects"
+          payload: '/export_definition'
+
+  utter_object_list_intro:
+    - text: "Please provide the database host endpoint along with the port (e.g., dbname.rds.amazonaws.com:5432)."
+
+  utter_database_type_selection:
+    - text: "Please provide the type of the database. Options:"
+      buttons:
+        - title: "MongoDB"
+          payload: '/select_database_type{{"database_type": "MongoDB"}}'
+        - title: "Oracle"
+          payload: '/select_database_type{{"database_type": "Oracle"}}'
+        - title: "MySQL"
+          payload: '/select_database_type{{"database_type": "MySQL"}}'
+        - title: "SQL Server"
+          payload: '/select_database_type{{"database_type": "SQL Server"}}'
+        - title: "PostgreSQL"
+          payload: '/select_database_type{{"database_type": "PostgreSQL"}}'
+        - title: "DB2"
+          payload: '/select_database_type{{"database_type": "DB2"}}'
+
+  utter_object_type_selection:
+    - text: "What types of objects would you like to include in the list? Options:"
+      buttons:
+        - title: "Tables"
+          payload: '/select_object_types{{"object_types": "Tables"}}'
+        - title: "Views"
+          payload: '/select_object_types{{"object_types": "Views"}}'
+        - title: "Indexes"
+          payload: '/select_object_types{{"object_types": "Indexes"}}'
+        - title: "Constraints"
+          payload: '/select_object_types{{"object_types": "Constraints"}}'
+        - title: "Relationships"
+          payload: '/select_object_types{{"object_types": "Relationships"}}'
+
+  utter_confirm_schema_parameters:
+    - text: |
+        You have selected the following:
+        - Database Type: {database_type}
+        - Database: {database_host_endpoint}
+        - Object Types: {object_types}
+        
+        Please confirm to proceed.
+      buttons:
+        - title: "Confirm"
+          payload: '/confirm_object_list'
+        - title: "Change"
+          payload: '/restart'
+
+  utter_template_invalid:
+    - text: "Invalid template structure. Do you want to restart?"
+      buttons:
+        - title: "Yes, restart"
+          payload: '/restart'
+        - title: "No, exit"
+          payload: '/goodbye'
+
+  utter_upload_template:
+    - text: "Please upload the database object template file."
+        
+  utter_download_template:
+    - text: "Click the link to download the object list template."
+
   utter_greet:
     - text: "Hello! How can I help you today?"
   
@@ -74,7 +196,7 @@ responses:
         - title: "Start Database Selection"
           payload: '/start_database_selection'
 
-  utter_help_recommend_database:
+  utter_help_website:
     - text: |
         1. Oracle:
            - Recommended for structured data in vendor/home-grown applications with special Oracle-only features.  
@@ -103,7 +225,11 @@ responses:
         7. Single Instance with Snapshot:
            - Suitable for any data type (structured/unstructured) with no special features.  
            - Tolerates low uptime and is ideal for simple setups with snapshot backups.
-  
+
+      buttons:
+        - title: "Start Database Selection"
+          payload: '/start_database_selection'
+
   utter_welcome_database_selection:
     - text: "Welcome to the database selection assistant. I'll help you choose the right database for your needs."
   
@@ -159,8 +285,11 @@ responses:
     - text: "Your database request has been submitted. A Jira ticket has been created and assigned to the appropriate approver. You will receive notifications about the status of your request."
 
 actions:
+  # core greeting/farewell
   - utter_greet
   - utter_goodbye
+
+  # database‑selection flow
   - utter_welcome_database_selection
   - utter_ask_app_type
   - utter_ask_features
@@ -171,7 +300,25 @@ actions:
   - action_recommend_database
   - action_submit_request
   - action_restart
-  - action_resume_flow
+
+  # schema‑explorer flow
+  - utter_welcome_schema_explorer
+  - utter_action_type_selection
+  - utter_object_list_intro
+  - utter_database_type_selection
+  - utter_object_type_selection
+  - utter_confirm_schema_parameters
+  - utter_download_template
+  - action_process_object_list
+  - action_export_definition
+  - action_validate_template
+  - action_check_access
+  - utter_upload_template
+
+  # help menus
+  - utter_help
+  - utter_help_website
+
 
 session_config:
   session_expiration_time: 60
