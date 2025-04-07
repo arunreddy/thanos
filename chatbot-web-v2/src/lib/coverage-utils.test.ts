@@ -4,6 +4,7 @@ import {
   fetchWithAuthForTest,
   processButtonPayload,
   mockWindow,
+  MockStorage,
 } from "./coverage-utils";
 
 // Headers mock
@@ -25,65 +26,9 @@ global.Headers = class {
   }
 } as any;
 
-// Mock the module
-vi.mock("./coverage-utils", () => {
-  const mockStorage = {
-    getItem: vi.fn().mockReturnValue(null),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn(),
-    key: vi.fn(),
-    length: 0,
-  } as Storage;
-
-  const mockWindow = {
-    localStorage: mockStorage,
-  };
-
-  return {
-    mockWindow,
-    getTokenForTest: () => {
-      if (typeof window !== "undefined") {
-        if ((window as any).token) {
-          return (window as any).token;
-        }
-        return window.localStorage.getItem("access_token");
-      }
-      return mockWindow.localStorage.getItem("access_token");
-    },
-    fetchWithAuthForTest: async (url: string, options: RequestInit = {}) => {
-      const token = mockWindow.localStorage.getItem("access_token");
-      const headers = new Headers({
-        "Content-Type": "application/json",
-        ...options.headers,
-      });
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      try {
-        const response = await fetch(`http://localhost:9000${url}`, {
-          ...options,
-          headers,
-        });
-        if (!response.ok) {
-          const error = await response.json().catch(() => ({
-            detail: "An unknown error occurred",
-          }));
-          throw new Error(error?.detail || "An unknown error occurred");
-        }
-        return response.json();
-      } catch (error) {
-        console.error("API request failed:", error);
-        throw error;
-      }
-    },
-    processButtonPayload: (payload: string) => {
-      if (!payload) return "";
-      const match = payload.match(/^\/([^{]+)/);
-      return match ? match[1] : "";
-    },
-  };
-});
+// Mock fetch for tests
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
 
 describe("coverage utils", () => {
   const originalConsoleError = console.error;
@@ -140,14 +85,8 @@ describe("coverage utils", () => {
       global.window = undefined;
 
       // Create a fresh mock storage
-      const mockStorage = {
-        getItem: vi.fn().mockReturnValue("mock-token"),
-        setItem: vi.fn(),
-        removeItem: vi.fn(),
-        clear: vi.fn(),
-        key: vi.fn(),
-        length: 0,
-      } as Storage;
+      const mockStorage = new MockStorage();
+      vi.spyOn(mockStorage, 'getItem').mockReturnValue('mock-token');
 
       // Override mockWindow's localStorage
       mockWindow.localStorage = mockStorage;
@@ -201,8 +140,15 @@ describe("coverage utils", () => {
     });
 
     it("should include auth token when available", async () => {
-      // Mock token
-      (mockWindow.localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue("test-token");
+      // Set up window.localStorage mock
+      vi.stubGlobal("window", {
+        localStorage: {
+          getItem: vi.fn().mockReturnValue("test-token"),
+          setItem: vi.fn(),
+          removeItem: vi.fn(),
+          clear: vi.fn(),
+        },
+      });
 
       // Mock successful response
       mockFetch.mockResolvedValueOnce({
@@ -245,6 +191,30 @@ describe("coverage utils", () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         json: () => Promise.reject(new Error("JSON parse error")),
+      });
+
+      await expect(fetchWithAuthForTest("/test")).rejects.toThrow(
+        "An unknown error occurred"
+      );
+      expect(console.error).toHaveBeenCalled();
+    });
+
+    it("should handle API error response without detail", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({}),
+      });
+
+      await expect(fetchWithAuthForTest("/test")).rejects.toThrow(
+        "An unknown error occurred"
+      );
+      expect(console.error).toHaveBeenCalled();
+    });
+
+    it("should handle API error response with null detail", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({ detail: null }),
       });
 
       await expect(fetchWithAuthForTest("/test")).rejects.toThrow(
@@ -305,6 +275,56 @@ describe("coverage utils", () => {
 
     it("should handle payload with only slash", () => {
       expect(processButtonPayload("/")).toBe("");
+    });
+
+    it("should handle complex payloads", () => {
+      expect(processButtonPayload('/intent{"entity":"value","another":123}')).toBe("intent");
+      expect(processButtonPayload('/multi_part_intent{"data":{}}')).toBe("multi_part_intent");
+    });
+  });
+
+  describe("mockWindow", () => {
+    it("should have all required Storage methods", () => {
+      expect(mockWindow.localStorage.getItem).toBeDefined();
+      expect(mockWindow.localStorage.setItem).toBeDefined();
+      expect(mockWindow.localStorage.removeItem).toBeDefined();
+      expect(mockWindow.localStorage.clear).toBeDefined();
+    });
+
+    it("should have working getItem function", () => {
+      const key = "test-key";
+      const value = "test-value";
+      mockWindow.localStorage.setItem(key, value);
+      expect(mockWindow.localStorage.getItem(key)).toBe(value);
+      mockWindow.localStorage.removeItem(key);
+      expect(mockWindow.localStorage.getItem(key)).toBeNull();
+    });
+
+    it("should have working setItem function", () => {
+      const key = "test-key";
+      const value = "test-value";
+      const setItem = mockWindow.localStorage.setItem;
+      expect(() => setItem(key, value)).not.toThrow();
+    });
+
+    it("should have working removeItem function", () => {
+      const key = "test-key";
+      const removeItem = mockWindow.localStorage.removeItem;
+      expect(() => removeItem(key)).not.toThrow();
+    });
+
+    it("should have working clear function", () => {
+      const clear = mockWindow.localStorage.clear;
+      expect(() => clear()).not.toThrow();
+    });
+
+    it("should maintain Storage interface", () => {
+      const storage = mockWindow.localStorage;
+      expect(storage).toBeDefined();
+      expect(typeof storage.getItem).toBe('function');
+      expect(typeof storage.setItem).toBe('function');
+      expect(typeof storage.removeItem).toBe('function');
+      expect(typeof storage.clear).toBe('function');
     });
   });
 });

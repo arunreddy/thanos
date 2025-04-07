@@ -110,7 +110,6 @@ describe('API functions', () => {
   describe('error handling', () => {
     it('should handle network errors', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
-
       await expect(getConversations()).rejects.toThrow();
     });
 
@@ -119,8 +118,54 @@ describe('API functions', () => {
         ok: false,
         json: () => Promise.reject(new Error('Invalid JSON')),
       });
-
       await expect(getConversations()).rejects.toThrow('An unknown error occurred');
+    });
+
+    it('should handle error response without detail', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({}),
+      });
+      await expect(getConversations()).rejects.toThrow('An unknown error occurred');
+    });
+  });
+
+  describe('API_URL configuration', () => {
+    const originalEnv = process.env;
+
+    beforeEach(() => {
+      process.env = { ...originalEnv };
+      vi.resetModules();
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
+    });
+
+    it('should use default API_URL when env var is not set', async () => {
+      delete process.env.VITE_API_URL;
+      const { getConversations } = await import('./api');
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve([]),
+      });
+
+      await getConversations();
+      const [url] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:9000/api/chat/conversations');
+    });
+
+    it('should use VITE_API_URL when set', async () => {
+      process.env.VITE_API_URL = 'https://api.example.com';
+      const { getConversations } = await import('./api');
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve([]),
+      });
+
+      await getConversations();
+      const [url] = mockFetch.mock.calls[0];
+      expect(url).toBe('https://api.example.com/api/chat/conversations');
     });
   });
 });

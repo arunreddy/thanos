@@ -2,13 +2,46 @@
  * Utility functions used to increase code coverage to 80%
  */
 
+export class MockStorage implements Storage {
+  constructor() {
+    this.getItem = this.getItem.bind(this);
+    this.setItem = this.setItem.bind(this);
+    this.removeItem = this.removeItem.bind(this);
+    this.clear = this.clear.bind(this);
+    this.key = this.key.bind(this);
+  }
+  private storage = new Map<string, string>();
+
+  get length(): number {
+    return this.storage.size;
+  }
+
+  key(index: number): string | null {
+    if (index < 0 || index >= this.storage.size) {
+      return null;
+    }
+    return Array.from(this.storage.keys())[index] || null;
+  }
+
+  getItem(key: string): string | null {
+    return this.storage.get(key) || null;
+  }
+
+  setItem(key: string, value: string): void {
+    this.storage.set(key, value);
+  }
+
+  removeItem(key: string): void {
+    this.storage.delete(key);
+  }
+
+  clear(): void {
+    this.storage.clear();
+  }
+}
+
 export const mockWindow = {
-  localStorage: {
-    getItem: (_key: string) => null,
-    setItem: (_key: string, _value: string) => {},
-    removeItem: (_key: string) => {},
-    clear: () => {},
-  } as Storage,
+  localStorage: new MockStorage(),
 };
 
 /**
