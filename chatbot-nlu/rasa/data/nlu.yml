@@ -21,6 +21,25 @@ nlu:
       - see you later
       - have a nice day
 
+  - intent: help
+    examples: |
+      - help
+      - /help
+      - can you help me?
+      - what can you do?
+      - show me your features
+      - I need assistance
+
+  - intent: help_recommend_database
+    examples: |
+      - help recommend a database
+      - please recommend a database for me
+      - I need a summary of available databases
+      - can you show me the database recommendations?
+      - what databases do you support?
+      - show me a quick summary of your databases
+
+
   - intent: start_database_selection
     examples: |
       - I need to select a database

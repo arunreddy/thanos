@@ -10,6 +10,8 @@ intents:
   - inform_downtime_tolerance
   - confirm_database_choice
   - restart
+  - help
+  - help_recommend_database
 
 entities:
   - app_type
@@ -65,6 +67,42 @@ responses:
   
   utter_goodbye:
     - text: "Goodbye! Have a nice day."
+
+  utter_help:
+    - text: "I can help you select a database based on your application requirements. I will ask you about your app type, features, relationship needs, and downtime tolerance to recommend the best database option. You can also restart the process anytime by typing 'restart'."
+      buttons:
+        - title: "Start Database Selection"
+          payload: '/start_database_selection'
+
+  utter_help_recommend_database:
+    - text: |
+        1. Oracle:
+           - Recommended for structured data in vendor/home-grown applications with special Oracle-only features.  
+           - Best suited for single-key relationships and any downtime tolerance.
+
+        2. MySQL/PostgreSQL:
+           - Ideal for structured data with flexible database needs and single-key relationships.  
+           - Recommended when there are no special relationships or complex schema requirements.
+
+        3. PostgreSQL/SQL Server: 
+           - Suitable for structured data with flexible database needs and complex relationships or schema.  
+           - Recommended for relational databases that require high uptime.
+
+        4. MongoDB: 
+           - Best for unstructured data with flexible database needs and no special relationships or schema.  
+           - Recommended when there are no complex relationships or schema requirements.
+
+        5. Neo4j: 
+           - Recommended for unstructured data with flexible database needs and complex relationships.  
+           - Best suited for handling complex graph-based relationships in the data.
+
+        6. Multi-AZ Deployment (PostgreSQL/SQL Server/MongoDB):  
+           - Best suited for any data type (structured/unstructured) with no special features.  
+           - Requires high uptime tolerance and is recommended for highly available database setups.
+
+        7. Single Instance with Snapshot:
+           - Suitable for any data type (structured/unstructured) with no special features.  
+           - Tolerates low uptime and is ideal for simple setups with snapshot backups.
   
   utter_welcome_database_selection:
     - text: "Welcome to the database selection assistant. I'll help you choose the right database for your needs."
@@ -133,6 +171,7 @@ actions:
   - action_recommend_database
   - action_submit_request
   - action_restart
+  - action_resume_flow
 
 session_config:
   session_expiration_time: 60
