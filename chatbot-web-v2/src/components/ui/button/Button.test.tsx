@@ -22,17 +22,17 @@ describe("Button Component", () => {
     const button = screen.getByText("Default");
     expect(button).toHaveClass(
       "bg-primary",
-      "hover:bg-primary/80",
-      "text-white"
+      "text-foreground",
+      "hover:bg-primary/90"
     );
   });
 
   test.each([
-    ["muted", "bg-muted"],
-    ["primary", "bg-primary"],
-    ["secondary", "bg-secondary-600"],
-    ["outline", "border-2"],
-    ["ghost", "hover:bg-gray-100"]
+    ["muted", "bg-muted hover:bg-muted/80 text-muted-foreground"],
+    ["primary", "bg-primary text-foreground hover:bg-primary/90"],
+    ["secondary", "bg-secondary text-secondary-foreground hover:bg-secondary/80"],
+    ["outline", "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground"],
+    ["ghost", "hover:bg-accent hover:text-accent-foreground"]
   ])('applies correct classes for %s variant', (variant, expectedClass) => {
     render(<Button label="Test" variant={variant as any} />);
     const button = screen.getByText("Test");
@@ -57,19 +57,21 @@ describe("Button Component", () => {
     const button = screen.getByText("Base");
     
     expect(button).toHaveClass(
-      "px-4",
-      "h-8",
-      "flex",
+      "inline-flex",
       "items-center",
+      "cursor-pointer",
       "justify-center",
-      "rounded",
+      "rounded-md",
       "font-medium",
       "transition-colors",
-      "duration-200",
-      "focus:outline-none",
-      "focus:ring-2",
-      "focus:ring-offset-2",
-      "cursor-pointer"
+      "focus-visible:outline-none",
+      "focus-visible:ring-1",
+      "focus-visible:ring-ring",
+      "disabled:pointer-events-none",
+      "disabled:opacity-50",
+      "h-9",
+      "px-4",
+      "py-2"
     );
   });
 });

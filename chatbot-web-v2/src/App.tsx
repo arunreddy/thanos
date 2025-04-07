@@ -10,7 +10,7 @@ function App() {
       <SideNav
         activeChatId={activeChatId}
         onSelectChat={setActiveChatId}
-        onNewChat={() => {}}
+        onNewChat={() => setActiveChatId(null)}
       />
 
       <ChatContent chatId={activeChatId} setActiveChatId={setActiveChatId} />

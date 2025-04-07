@@ -5,45 +5,61 @@ export type ButtonVariant =
   | "primary"
   | "secondary"
   | "outline"
-  | "ghost";
+  | "ghost"
+  | "destructive";
 
-interface ButtonProps {
-  label: string;
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
-  onClick?: () => void;
+  size?: "default" | "sm" | "lg" | "icon";
+  label?: string;
   className?: string;
   icon?: React.ReactNode;
 }
 
-const Button: React.FC<ButtonProps> = ({
-  label,
-  onClick,
-  variant = "primary",
-  className = "",
-  icon,
-}) => {
-  const baseClasses =
-    "px-4 h-8 flex items-center justify-center rounded font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer";
-  const variantClasses = {
-    muted:
-      "bg-muted DEFAULT hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700",
-    primary: "bg-primary hover:bg-primary/80 text-white",
-    secondary:
-      "bg-secondary-600 hover:bg-secondary-700 text-white dark:bg-secondary-700 dark:hover:bg-secondary-800",
-    outline:
-      "border-2 border-border text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800",
-    ghost:
-      "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
-  };
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      children,
+      label,
+      variant = "primary",
+      size = "default",
+      className = "",
+      icon,
+      ...props
+    },
+    ref
+  ) => {
+    const baseClasses =
+      "inline-flex items-center cursor-pointer justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50";
 
-  const classes = `${baseClasses} ${variantClasses[variant]} ${className}`;
+    const sizeClasses = {
+      default: "h-9 px-4 py-2",
+      sm: "h-8 px-3 text-sm",
+      lg: "h-10 px-8",
+      icon: "h-9 w-9",
+    };
+    const variantClasses = {
+      muted: "bg-muted hover:bg-muted/80 text-muted-foreground",
+      primary: "bg-primary text-foreground hover:bg-primary/90",
+      secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+      outline:
+        "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
+      ghost: "hover:bg-accent hover:text-accent-foreground",
+      destructive:
+        "bg-destructive text-destructive-foreground hover:bg-destructive/80",
+    };
 
-  return (
-    <button className={classes} onClick={onClick}>
-      {icon && <span className="mr-2">{icon}</span>}
-      {label}
-    </button>
-  );
-};
+    const classes = `${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`;
+
+    return (
+      <button className={classes} ref={ref} {...props}>
+        {icon && (
+          <span className={children || label ? "mr-2" : ""}>{icon}</span>
+        )}
+        {children || label}
+      </button>
+    );
+  }
+);
 
 export default Button;

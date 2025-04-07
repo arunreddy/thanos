@@ -17,11 +17,21 @@ vi.mock("../../../lib/api", () => ({
 
 // Mock the Button component
 vi.mock("../../ui/button", () => ({
-  default: ({ label, onClick }: any) => (
-    <button onClick={onClick} data-testid="new-chat-button">
-      {label}
+  default: ({ label, onClick, children, "data-testid": testId }: any) => (
+    <button onClick={onClick} data-testid={testId || "new-chat-button"}>
+      {children || label}
     </button>
   ),
+}));
+
+// Mock the Dialog components
+vi.mock("../../ui/dialog", () => ({
+  Dialog: ({ children, open }: any) => open ? children : null,
+  DialogContent: ({ children }: any) => <div>{children}</div>,
+  DialogHeader: ({ children }: any) => <div>{children}</div>,
+  DialogTitle: ({ children }: any) => <div>{children}</div>,
+  DialogDescription: ({ children }: any) => <div>{children}</div>,
+  DialogFooter: ({ children }: any) => <div>{children}</div>,
 }));
 
 import { getConversations, deleteConversation } from "../../../lib/api";
@@ -52,16 +62,9 @@ describe("SideNav Component", () => {
     );
 
     // Verify loading state
-    expect(screen.getAllByRole("generic")).toContain(
-      screen.getByText("Conversations").parentElement?.parentElement
-    );
-    expect(screen.getByTestId("new-chat-button")).toBeInTheDocument();
+    expect(screen.getByText("Loading conversations...")).toBeInTheDocument();
+    expect(screen.getByTestId("loading-spinner")).toHaveClass("animate-spin");
     
-    // Check for loading animation
-    expect(screen.getAllByRole("generic").some(el => 
-      el.className.includes("animate-pulse")
-    )).toBe(true);
-
     // Resolve the promise to finish loading
     resolvePromise!([]);
     await act(async () => {
@@ -116,7 +119,7 @@ describe("SideNav Component", () => {
 
     // Check active chat styling
     const activeChat = screen.getByText("Chat 1").parentElement?.parentElement;
-    expect(activeChat).toHaveClass("bg-primary/20");
+    expect(activeChat).toHaveClass("bg-primary/15");
   });
 
   test("handles chat selection", async () => {
@@ -162,9 +165,16 @@ describe("SideNav Component", () => {
       await (getConversations as jest.Mock).mock.results[0].value;
     });
 
-    await waitFor(() => {
-      const deleteButton = screen.getByLabelText("Delete conversation");
+    // Click delete button and wait for dialog
+    const deleteButton = await screen.findByLabelText("Delete conversation");
+    await act(async () => {
       fireEvent.click(deleteButton);
+    });
+
+    // Find and click confirm button
+    const confirmButton = await screen.findByTestId("confirm-delete-button");
+    await act(async () => {
+      fireEvent.click(confirmButton);
     });
 
     expect(deleteConversation).toHaveBeenCalledWith("1");
@@ -177,7 +187,11 @@ describe("SideNav Component", () => {
 
   test("handles API error gracefully", async () => {
     const mockError = new Error("API Error");
-    (getConversations as any).mockRejectedValueOnce(mockError);
+    let rejectPromise: (error: Error) => void;
+    const promise = new Promise((_, reject) => {
+      rejectPromise = reject;
+    });
+    (getConversations as any).mockReturnValue(promise);
 
     // Suppress console.error for this test since we expect an error
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -191,24 +205,22 @@ describe("SideNav Component", () => {
     );
 
     // First verify loading state
-    expect(screen.getAllByRole("generic").some(el => 
-      el.className.includes("animate-pulse")
-    )).toBe(true);
+    await screen.findByText("Loading conversations...");
+    const loadingSpinner = screen.getByTestId("loading-spinner");
+    expect(loadingSpinner).toHaveClass("animate-spin");
+
+    // Reject the promise to trigger error state
+    await act(async () => {
+      rejectPromise!(mockError);
+    });
 
     try {
-      // Wait for loading state to finish and error to appear
-      await waitFor(
-        () => {
-          const loadingElements = screen.queryAllByRole("generic").filter(el => 
-            el.className.includes("animate-pulse")
-          );
-          expect(loadingElements.length).toBe(0);
-          expect(
-            screen.getByText("Failed to load conversations", { exact: true })
-          ).toBeInTheDocument();
-        },
-        { timeout: 2000 }
-      );
+      // Wait for error to appear
+      await waitFor(() => {
+        expect(
+          screen.getByText("Failed to load conversations", { exact: true })
+        ).toBeInTheDocument();
+      });
 
       // Verify the API was called and error was logged
       expect(getConversations).toHaveBeenCalled();
@@ -241,15 +253,24 @@ describe("SideNav Component", () => {
       await (getConversations as jest.Mock).mock.results[0].value;
     });
 
-    await waitFor(() => {
-      const deleteButton = screen.getByLabelText("Delete conversation");
+    // Click delete button and wait for dialog
+    const deleteButton = await screen.findByLabelText("Delete conversation");
+    await act(async () => {
       fireEvent.click(deleteButton);
     });
 
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Failed to delete chat:",
-      expect.any(Error)
-    );
+    // Find and click confirm button
+    const confirmButton = await screen.findByTestId("confirm-delete-button");
+    await act(async () => {
+      fireEvent.click(confirmButton);
+    });
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Failed to delete chat:",
+        expect.any(Error)
+      );
+    });
     consoleSpy.mockRestore();
   });
 });

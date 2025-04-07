@@ -22,7 +22,7 @@ describe("ChatMessage Component", () => {
 
     const message = screen.getByText("Hello world");
     expect(message).toBeInTheDocument();
-    expect(message.parentElement).toHaveClass("bg-blue-500", "text-white");
+    expect(message.parentElement).toHaveClass("bg-secondary", "text-secondary-foreground");
     expect(screen.getByText("2:30 PM")).toBeInTheDocument();
   });
 
@@ -37,7 +37,7 @@ describe("ChatMessage Component", () => {
 
     const message = screen.getByText("How can I help you?");
     expect(message).toBeInTheDocument();
-    expect(message.parentElement).toHaveClass("bg-white", "border-gray-200");
+    expect(message.parentElement).toHaveClass("bg-background", "border-border");
     expect(screen.getByText("2:30 PM")).toBeInTheDocument();
   });
 
@@ -94,9 +94,8 @@ describe("ChatMessage Component", () => {
       />
     );
 
-    const message = screen.getByText((content, element) => {
-      return element?.textContent === multilineContent;
-    });
-    expect(message).toHaveClass("whitespace-pre-wrap");
+    const messageContainer = screen.getByText((content) => content.includes("Line 1"));
+    expect(messageContainer.textContent?.trim()).toBe(multilineContent);
+    expect(messageContainer).toHaveClass("whitespace-pre-wrap");
   });
 });

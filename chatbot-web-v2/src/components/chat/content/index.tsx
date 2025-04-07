@@ -3,7 +3,6 @@ import { getConversation, sendMessage } from "../../../lib/api";
 import ChatMessage from "../ChatMessage";
 import ChatInput from "../ChatInput";
 import TopNav from "../topnav";
-import { Chat } from "../../../types";
 
 interface ChatContentProps {
   chatId: string | null;
@@ -117,7 +116,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
     // Extract the actual message from the payload if needed
     // For Rasa, payloads look like "/intent{\"entity\": \"value\"}"
     // We'll extract just the intent part for display in the UI
-    const displayMessage = payload.split("{")[0].replace("/", "");
+    // const displayMessage = payload.split("{")[0].replace("/", "");
 
     // Call the same message handler but with the payload
     await handleSendMessage(payload);
@@ -128,9 +127,9 @@ const ChatContent: React.FC<ChatContentProps> = ({
       <TopNav title={chatId ? `${chatId} Conversation` : "New Chat"} />
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+      <div className="flex-1 overflow-y-auto p-4 bg-background container mx-auto">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex items-center justify-center h-full text-muted-foreground">
             Start a new conversation
           </div>
         ) : (
@@ -162,7 +161,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
       </div>
 
       {/* Message input */}
-      <div className="border-t border-gray-200 p-4 bg-white">
+      <div className="border-t border-border p-4 bg-background">
         <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
       </div>
     </div>
