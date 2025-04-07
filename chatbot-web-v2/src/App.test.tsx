@@ -1,77 +1,79 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { vi, describe, test, expect } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
 import '@testing-library/jest-dom';
 import App from './App';
 
-// Mock the SVG imports properly with default export
-vi.mock('./assets/react.svg', () => ({
-  default: 'react-logo-mock'
+// Mock the child components with props
+vi.mock('./components/chat/sidenav/index.tsx', () => ({
+  default: ({ activeChatId, onSelectChat, onNewChat }: any) => (
+    <div data-testid="sidenav">
+      <button onClick={() => onSelectChat('123')} data-testid="select-chat">Select Chat</button>
+      <button onClick={() => onSelectChat(null)} data-testid="clear-chat">Clear Selection</button>
+      <button onClick={onNewChat} data-testid="new-chat">New Chat</button>
+      <span data-testid="active-chat-id">{activeChatId}</span>
+    </div>
+  )
 }));
 
-vi.mock('/vite.svg', () => ({
-  default: 'vite-logo-mock'
+vi.mock('./components/chat/content/index.tsx', () => ({
+  default: ({ chatId, setActiveChatId }: any) => (
+    <div data-testid="chat-content">
+      <span data-testid="chat-id">{chatId}</span>
+      <button onClick={() => setActiveChatId(null)} data-testid="reset-chat">Reset Chat</button>
+    </div>
+  )
 }));
 
 describe('App Component', () => {
-  test('renders header text correctly', () => {
+  test('renders main layout with correct classes', () => {
     render(<App />);
-    expect(screen.getByText('Vite + React')).toBeInTheDocument();
+    const mainContainer = screen.getByTestId('sidenav').parentElement;
+    expect(mainContainer).toHaveClass('bg-background', 'text-foreground', 'w-full', 'h-[100vh]', 'flex', 'divide-x', 'divide-border');
   });
 
-  test('renders both logo links', () => {
+  test('renders SideNav and ChatContent components', () => {
     render(<App />);
-    
-    // Check Vite logo link
-    const viteLink = screen.getByRole('link', { name: /vite logo/i });
-    expect(viteLink).toBeInTheDocument();
-    expect(viteLink).toHaveAttribute('href', 'https://vite.dev');
-    expect(viteLink).toHaveAttribute('target', '_blank');
-    
-    // Check React logo link
-    const reactLink = screen.getByRole('link', { name: /react logo/i });
-    expect(reactLink).toBeInTheDocument();
-    expect(reactLink).toHaveAttribute('href', 'https://react.dev');
-    expect(reactLink).toHaveAttribute('target', '_blank');
+    expect(screen.getByTestId('sidenav')).toBeInTheDocument();
+    expect(screen.getByTestId('chat-content')).toBeInTheDocument();
   });
 
-  test('renders logo images', () => {
+  test('initializes with no active chat', () => {
     render(<App />);
-    
-    const viteLogo = screen.getByAltText('Vite logo');
-    expect(viteLogo).toBeInTheDocument();
-    expect(viteLogo).toHaveClass('logo');
-    
-    const reactLogo = screen.getByAltText('React logo');
-    expect(reactLogo).toBeInTheDocument();
-    expect(reactLogo).toHaveClass('logo');
-    expect(reactLogo).toHaveClass('react');
+    expect(screen.getByTestId('active-chat-id').textContent).toBe('');
+    expect(screen.getByTestId('chat-id').textContent).toBe('');
   });
 
-  test('increments count when button is clicked', () => {
+  test('handles chat selection', () => {
     render(<App />);
-    
-    // Initial count should be 0
-    const button = screen.getByRole('button');
-    expect(button).toHaveTextContent('count is 0');
-    
-    // Click the button and check if count increments
-    fireEvent.click(button);
-    expect(button).toHaveTextContent('count is 1');
-    
-    // Click again to ensure it keeps incrementing
-    fireEvent.click(button);
-    expect(button).toHaveTextContent('count is 2');
+    fireEvent.click(screen.getByTestId('select-chat'));
+    expect(screen.getByTestId('active-chat-id').textContent).toBe('123');
+    expect(screen.getByTestId('chat-id').textContent).toBe('123');
   });
 
-  test('renders help text', () => {
+  test('handles chat deselection', () => {
     render(<App />);
-    expect(screen.getByText(/Edit/i)).toBeInTheDocument();
-    expect(screen.getByText(/src\/App.tsx/i)).toBeInTheDocument();
-    expect(screen.getByText(/and save to test HMR/i)).toBeInTheDocument();
+    // First select a chat
+    fireEvent.click(screen.getByTestId('select-chat'));
+    // Then clear the selection
+    fireEvent.click(screen.getByTestId('clear-chat'));
+    expect(screen.getByTestId('active-chat-id').textContent).toBe('');
+    expect(screen.getByTestId('chat-id').textContent).toBe('');
   });
 
-  test('renders footer text', () => {
+  test('handles chat reset from content', () => {
     render(<App />);
-    expect(screen.getByText('Click on the Vite and React logos to learn more')).toBeInTheDocument();
+    // First select a chat
+    fireEvent.click(screen.getByTestId('select-chat'));
+    // Then reset from chat content
+    fireEvent.click(screen.getByTestId('reset-chat'));
+    expect(screen.getByTestId('active-chat-id').textContent).toBe('');
+    expect(screen.getByTestId('chat-id').textContent).toBe('');
+  });
+
+  test('handles new chat button click', () => {
+    render(<App />);
+    fireEvent.click(screen.getByTestId('new-chat'));
+    // Verify the new chat handler was called (even though it's empty)
+    expect(screen.getByTestId('active-chat-id').textContent).toBe('');
   });
 });

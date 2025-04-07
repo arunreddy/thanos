@@ -1,13 +1,13 @@
 // frontend/src/lib/api.ts
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:9000";
 
 // Get token from localStorage
-const getToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("access_token");
-  }
-  return null;
-};
+// const getToken = () => {
+//   if (typeof window !== "undefined") {
+//     return localStorage.getItem("access_token");
+//   }
+//   return null;
+// };
 
 // Generic fetch function with authorization
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
@@ -54,11 +54,11 @@ export async function getConversations() {
   return fetchWithAuth("/api/chat/conversations");
 }
 
-export async function getConversation(id: number) {
+export async function getConversation(id: string) {
   return fetchWithAuth(`/api/chat/conversations/${id}`);
 }
 
-export async function deleteConversation(id: number) {
+export async function deleteConversation(id: string) {
   return fetchWithAuth(`/api/chat/conversations/${id}`, {
     method: "DELETE",
   });
