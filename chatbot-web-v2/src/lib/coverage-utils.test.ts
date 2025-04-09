@@ -326,5 +326,63 @@ describe("coverage utils", () => {
       expect(typeof storage.removeItem).toBe('function');
       expect(typeof storage.clear).toBe('function');
     });
+
+    it("should have working key method", () => {
+      const storage = mockWindow.localStorage;
+      storage.clear();
+      
+      // Test empty storage
+      expect(storage.key(0)).toBeNull();
+      expect(storage.key(-1)).toBeNull();
+      
+      // Add some items
+      storage.setItem("key1", "value1");
+      storage.setItem("key2", "value2");
+      
+      // Test valid indices
+      expect(storage.key(0)).toBe("key1");
+      expect(storage.key(1)).toBe("key2");
+      
+      // Test out of bounds
+      expect(storage.key(2)).toBeNull();
+      
+      // Test edge case where key exists but value is undefined
+      storage.setItem("key3", undefined as any);
+      expect(storage.key(2)).toBe("key3");
+      
+      // Test edge case with empty key
+      storage.clear();
+      storage.setItem("", "empty");
+      expect(storage.key(0)).toBe("");
+      
+      // Test edge case with undefined key
+      storage.clear();
+      const mockStorage = storage as any;
+      mockStorage.storage = new Map([[undefined, "test"]]);
+      expect(storage.key(0)).toBeNull();
+    });
+
+    it("should have working length property", () => {
+      const storage = mockWindow.localStorage;
+      storage.clear();
+      
+      // Test empty storage
+      expect(storage.length).toBe(0);
+      
+      // Add items
+      storage.setItem("key1", "value1");
+      expect(storage.length).toBe(1);
+      
+      storage.setItem("key2", "value2");
+      expect(storage.length).toBe(2);
+      
+      // Remove item
+      storage.removeItem("key1");
+      expect(storage.length).toBe(1);
+      
+      // Clear all
+      storage.clear();
+      expect(storage.length).toBe(0);
+    });
   });
 });
