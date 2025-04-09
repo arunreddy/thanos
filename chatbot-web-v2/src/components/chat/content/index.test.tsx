@@ -92,6 +92,16 @@ describe("ChatContent Component", () => {
     });
   });
 
+  test("handles empty messages array in response", async () => {
+    (getConversation as any).mockResolvedValueOnce({});
+
+    render(<ChatContent chatId="123" setActiveChatId={mockSetActiveChatId} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Start a new conversation")).toBeInTheDocument();
+    });
+  });
+
   test("handles send message for new conversation", async () => {
     const mockResponse = {
       conversation_id: "456",
@@ -116,6 +126,20 @@ describe("ChatContent Component", () => {
     });
 
     expect(mockSetActiveChatId).toHaveBeenCalledWith("456");
+  });
+
+  test("does not send empty or whitespace-only messages", async () => {
+    render(<ChatContent chatId="123" setActiveChatId={mockSetActiveChatId} />);
+
+    const input = screen.getByTestId("message-input");
+
+    // Empty message
+    fireEvent.keyDown(input, { key: "Enter", target: { value: "" } });
+    expect(sendMessage).not.toHaveBeenCalled();
+
+    // Whitespace-only message
+    fireEvent.keyDown(input, { key: "Enter", target: { value: "   " } });
+    expect(sendMessage).not.toHaveBeenCalled();
   });
 
   test("handles send message for existing conversation", async () => {

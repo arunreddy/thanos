@@ -20,7 +20,8 @@ export class MockStorage implements Storage {
     if (index < 0 || index >= this.storage.size) {
       return null;
     }
-    return Array.from(this.storage.keys())[index] || null;
+    const keys = Array.from(this.storage.keys());
+    return keys[index] === undefined ? null : keys[index];
   }
 
   getItem(key: string): string | null {
