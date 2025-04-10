@@ -13,6 +13,7 @@ wheels/
 .rasa/*
 models/*
 logs/*
+rasa/models/*
 
 # Python-specific files
 __pycache__/
