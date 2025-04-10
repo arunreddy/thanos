@@ -3,10 +3,13 @@ import { getConversation, sendMessage } from "../../../lib/api";
 import ChatMessage from "../ChatMessage";
 import ChatInput from "../ChatInput";
 import TopNav from "../topnav";
+import { AnimatePresence, motion } from "framer-motion";
+import { Bot } from "lucide-react";
 
 interface ChatContentProps {
   chatId: string | null;
-  setActiveChatId: (id: string) => void;
+  setActiveChatId: (id: string | null, isFirstMessage?: boolean) => void;
+  isNewChat: boolean;
 }
 
 interface Message {
@@ -18,109 +21,188 @@ interface Message {
   buttons?: any;
 }
 
+enum ChatState {
+  IDLE = "idle",
+  LOADING_CONVERSATION = "loading_conversation",
+  SENDING_MESSAGE = "sending_message",
+}
+
 const ChatContent: React.FC<ChatContentProps> = ({
   chatId,
   setActiveChatId,
+  isNewChat,
 }) => {
-  // const [chat, setChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [chatState, setChatState] = useState<ChatState>(ChatState.IDLE);
   const [error, setError] = useState<string | null>(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load existing conversation if conversationId is provided
+  const welcomeMessageContent =
+    'Welcome to the Database Management Assistant! 👋\n\nI can help you with the following services:\n\n1️⃣ Schema Explorer – Explore database schema details.\n2️⃣ Database Inference – Get insights and recommendations for your database.\n3️⃣ Query Performance Explorer – Optimize SQL query performance.\n4️⃣ Database Resource Management – Monitor and manage database resources.\n\nFor help type "/help" or "/help <service_name>"\nPlease type a service name to get started.';
+
+  // This effect handles loading conversations when chatId changes
   useEffect(() => {
+    setHasInteracted(false);
+
     if (chatId) {
+      setChatState(ChatState.LOADING_CONVERSATION);
+      setMessages([]);
+
       const fetchConversation = async () => {
         try {
-          setIsLoading(true);
           const response = await getConversation(chatId);
 
-          console.log(response);
+          const conversationMessages = response.messages || [];
+          const hasWelcomeMessage = conversationMessages.some(
+            (msg: Message) =>
+              msg.role === "assistant" &&
+              msg.content.includes(
+                "Welcome to the Database Management Assistant"
+              )
+          );
 
-          // setChat(response);
-          setMessages(response.messages || []);
-          setError(null);
+          if (!hasWelcomeMessage && conversationMessages.length > 0) {
+            const welcomeMessage: Message = {
+              id: Date.now() - 1000,
+              role: "assistant",
+              content: welcomeMessageContent,
+              timestamp: new Date(Date.now() - 1000).toISOString(),
+            };
+            setMessages([welcomeMessage, ...conversationMessages]);
+          } else {
+            setMessages(conversationMessages);
+          }
         } catch (err) {
           setError("Failed to load conversation");
           console.error(err);
         } finally {
-          setIsLoading(false);
+          setChatState(ChatState.IDLE);
         }
       };
 
       fetchConversation();
     } else {
-      // Clear messages for new conversation
-      setMessages([]);
+      setChatState(ChatState.IDLE);
+      const welcomeMessage: Message = {
+        id: Date.now(),
+        role: "assistant",
+        content: welcomeMessageContent,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages([welcomeMessage]);
     }
-  }, [chatId]);
+  }, [chatId, isNewChat]);
 
-  // Scroll to bottom whenever messages change
   useEffect(() => {
+    const scrollToBottom = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
     scrollToBottom();
   }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
 
-    console.log("Sending message:", content);
-    // Optimistically add user message to UI
+    setHasInteracted(true);
+
+    const messageId = Date.now();
+
     const userMessage: Message = {
+      id: messageId,
       role: "user",
       content,
       timestamp: new Date().toISOString(),
     };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    // Clear any previous errors
+    setChatState(ChatState.SENDING_MESSAGE);
     setError(null);
-    setIsLoading(true);
 
     try {
-      // Send message to API with conversation_id if available
       const response = await sendMessage({
         conversation_id: chatId ? Number(chatId) : null,
         message: content,
       });
 
-      // Add bot response to messages
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          role: response.message.role,
-          content: response.message.content,
-          buttons: response.message.buttons,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
+      const botMessage: Message = {
+        id: messageId + 1,
+        role: response.message.role,
+        content: response.message.content,
+        buttons: response.message.buttons,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
 
-      // Update chatId if this is a new conversation
       if (!chatId && response.conversation_id) {
-        setActiveChatId(response.conversation_id);
+        // Pass true as the second argument to indicate this is a first message update
+        // This prevents the App component from triggering a re-render
+        setActiveChatId(response.conversation_id, true);
       }
     } catch (err) {
       setError("Failed to send message. Please try again.");
       console.error(err);
     } finally {
-      setIsLoading(false);
+      setChatState(ChatState.IDLE);
     }
   };
 
-  // Handle button clicks from any message
   const handleButtonClick = async (payload: string) => {
-    // Extract the actual message from the payload if needed
-    // For Rasa, payloads look like "/intent{\"entity\": \"value\"}"
-    // We'll extract just the intent part for display in the UI
-    // const displayMessage = payload.split("{")[0].replace("/", "");
-
-    // Call the same message handler but with the payload
     await handleSendMessage(payload);
   };
+
+  const TypingIndicator = () => (
+    <motion.div
+      className="flex mb-4 items-start gap-2 justify-start"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      transition={{ duration: 0.3 }}
+    >
+      <motion.div
+        className="w-6 h-6 mt-2 text-muted-foreground flex items-center justify-center"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+      >
+        <Bot className="w-5 h-5" />
+      </motion.div>
+      <motion.div
+        className="max-w-[80%] rounded-lg px-4 py-3 bg-background border border-border rounded-bl-none"
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{
+          type: "spring",
+          stiffness: 500,
+          damping: 30,
+          mass: 1,
+        }}
+      >
+        <div className="flex space-x-2 items-center h-5">
+          {[0, 0.2, 0.4].map((delay, i) => (
+            <motion.div
+              key={i}
+              className="w-2 h-2 bg-primary rounded-full"
+              animate={{ y: [0, -5, 0] }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.6,
+                ease: "easeInOut",
+                delay,
+              }}
+            />
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+
+  const showLoadingScreen =
+    chatState === ChatState.LOADING_CONVERSATION &&
+    messages.length === 0 &&
+    !hasInteracted;
+
+  const showTypingIndicator = chatState === ChatState.SENDING_MESSAGE;
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -128,30 +210,49 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 bg-background container mx-auto">
-        {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            Start a new conversation
-          </div>
-        ) : (
-          messages.map((message, index) => (
-            <ChatMessage
-              key={index}
-              role={message.role}
-              content={message.content}
-              timestamp={message.timestamp || message.created_at}
-              buttons={message.buttons}
-              onButtonClick={handleButtonClick}
-            />
-          ))
-        )}
-
-        {isLoading && (
-          <div className="flex gap-1 justify-center my-4 text-muted-foreground">
-            Loading
-            <div className="animate-bounce">...</div>
+        {/* Loading screen - only shown when explicitly loading an existing conversation */}
+        {showLoadingScreen && (
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+            <div className="flex items-center space-x-2">
+              {[0, 300, 600].map((delay, i) => (
+                <div
+                  key={i}
+                  className="w-3 h-3 bg-primary rounded-full animate-pulse"
+                  style={{ animationDelay: `${delay}ms` }}
+                />
+              ))}
+            </div>
+            <div className="mt-2">Loading conversation...</div>
           </div>
         )}
 
+        {/* Message list */}
+        <div className="min-h-[50px]">
+          {" "}
+          {/* Minimum height to prevent layout shifts */}
+          <AnimatePresence initial={false} mode="popLayout">
+            {messages.map((message, index) => (
+              <ChatMessage
+                key={
+                  message.id ||
+                  `msg-${index}-${message.timestamp || Date.now()}`
+                }
+                role={message.role}
+                content={message.content}
+                timestamp={message.timestamp || message.created_at}
+                buttons={message.buttons}
+                onButtonClick={handleButtonClick}
+              />
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {/* Typing indicator */}
+        <AnimatePresence>
+          {showTypingIndicator && <TypingIndicator />}
+        </AnimatePresence>
+
+        {/* Error message */}
         {error && (
           <div className="text-red-500 text-center my-2 text-sm">{error}</div>
         )}
@@ -162,7 +263,10 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
       {/* Message input */}
       <div className="border-t border-border p-4 bg-background">
-        <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+        <ChatInput
+          onSendMessage={handleSendMessage}
+          isLoading={chatState !== ChatState.IDLE}
+        />
       </div>
     </div>
   );
