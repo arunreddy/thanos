@@ -11,6 +11,12 @@ function App() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isNewChat, setIsNewChat] = useState<boolean>(true);
 
+  // State to trigger conversation refresh in sidenav
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+  
+  // Track the newly created conversation ID for auto-selection
+  const [newlyCreatedChatId, setNewlyCreatedChatId] = useState<string | null>(null);
+
   // Flag to track if we're updating after first message
   const isFirstMessageUpdateRef = useRef<boolean>(false);
 
@@ -40,6 +46,11 @@ function App() {
     // This prevents the reload after first message
     if (!isFirstMessage) {
       setActiveChatId(id);
+    } else {
+      // This is the first message of a chat, so refresh conversations
+      // and store the newly created chat ID for auto-selection
+      setNewlyCreatedChatId(id);
+      setRefreshTrigger((prev) => prev + 1);
     }
   };
 
@@ -49,6 +60,8 @@ function App() {
         activeChatId={activeChatId}
         onSelectChat={handleSetActiveChatId}
         onNewChat={() => handleSetActiveChatId(null)}
+        refreshTrigger={refreshTrigger}
+        newlyCreatedChatId={newlyCreatedChatId}
       />
 
       <ChatContent

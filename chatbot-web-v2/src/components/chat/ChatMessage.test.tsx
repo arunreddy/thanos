@@ -74,7 +74,9 @@ describe("ChatMessage Component", () => {
       />
     );
 
-    fireEvent.click(screen.getByText("Option 1"));
+    // Use a function matcher to find the button with Option 1 text
+    const optionButton = screen.getByRole('button', { name: /Option 1/i });
+    fireEvent.click(optionButton);
     expect(mockOnButtonClick).toHaveBeenCalledWith("payload1");
   });
 
