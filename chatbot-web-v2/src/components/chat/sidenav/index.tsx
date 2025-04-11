@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Plus, Trash2 } from "lucide-react";
 
 import Button from "../../ui/button";
-import Skeleton from "../../ui/skeleton";
 import { deleteConversation, getConversations } from "../../../lib/api";
 import { Chat } from "../../../types";
 import { _checkIdExists } from "./test-helpers";
@@ -83,17 +82,19 @@ const SideNav: React.FC<ChatsListProps> = ({
   // Function to refresh conversations in the background
   const refreshChatsInBackground = async () => {
     if (isBackgroundLoading) return; // Prevent multiple simultaneous background refreshes
-    
+
     try {
       setIsBackgroundLoading(true);
       const data = await getConversations();
       setChats(data);
       setError(null);
-      
+
       // Auto-select the newly created conversation if provided
       if (newlyCreatedChatId && data.length > 0) {
         // Find the conversation in the refreshed list
-        const newChat = data.find((chat: Chat) => chat.id === newlyCreatedChatId);
+        const newChat = data.find(
+          (chat: Chat) => chat.id === newlyCreatedChatId
+        );
         if (newChat) {
           // Select it after a short delay to ensure the UI has updated
           setTimeout(() => {
@@ -113,7 +114,7 @@ const SideNav: React.FC<ChatsListProps> = ({
   useEffect(() => {
     fetchChats();
   }, []);
-  
+
   // Background refresh when refreshTrigger changes
   useEffect(() => {
     if (refreshTrigger !== undefined && refreshTrigger > 0) {
@@ -130,7 +131,7 @@ const SideNav: React.FC<ChatsListProps> = ({
     const id = chatToDelete;
     // This is line 91 that needs coverage
     if (!_checkIdExists(id)) return;
-    
+
     try {
       await deleteConversation(id!);
       setChats((prevChats) => prevChats.filter((chat) => chat.id !== id));
@@ -271,7 +272,11 @@ const SideNav: React.FC<ChatsListProps> = ({
                       </div>
                       <button
                         onClick={(e) => handleDeleteClick(chat.id, e)}
-                        className={`ml-2 p-1 rounded-md transition-colors cursor-pointer ${activeChatId === chat.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} hover:bg-destructive/10 hover:text-destructive`}
+                        className={`ml-2 p-1 rounded-md transition-colors cursor-pointer ${
+                          activeChatId === chat.id
+                            ? "opacity-100"
+                            : "opacity-0 group-hover:opacity-100"
+                        } hover:bg-destructive/10 hover:text-destructive`}
                         aria-label="Delete conversation"
                       >
                         <Trash2 className="w-4 h-4" />
