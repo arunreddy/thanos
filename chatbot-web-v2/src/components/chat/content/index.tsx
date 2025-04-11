@@ -39,7 +39,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const welcomeMessageContent =
-    'Welcome to the Database Management Assistant! 👋\n\nI can help you with the following services:\n\n1️⃣ Schema Explorer – Explore database schema details.\n2️⃣ Database Inference – Get insights and recommendations for your database.\n3️⃣ Query Performance Explorer – Optimize SQL query performance.\n4️⃣ Database Resource Management – Monitor and manage database resources.\n\nFor help type "/help" or "/help <service_name>"\nPlease type a service name to get started.';
+    'Welcome to the Database Management Assistant! 👋\n\nI can help you with the following services:\n\n1. Schema Explorer – Explore database schema details.\n2. Database Inference – Get insights and recommendations for your database.\n3. Query Performance Explorer – Optimize SQL query performance.\n4. Database Resource Management – Monitor and manage database resources.\n\nTo select a service, please type the service name or number.\nFor help, type "/help" or "/help <service_name>"';
 
   // This effect handles loading conversations when chatId changes
   useEffect(() => {
@@ -62,7 +62,8 @@ const ChatContent: React.FC<ChatContentProps> = ({
               )
           );
 
-          if (!hasWelcomeMessage && conversationMessages.length > 0) {
+          // Always add welcome message if it doesn't exist, even for empty conversations
+          if (!hasWelcomeMessage) {
             const welcomeMessage: Message = {
               id: Date.now() - 1000,
               role: "assistant",
@@ -106,12 +107,27 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
     setHasInteracted(true);
 
+    // Check if the content is a number that could match an option
+    const lastMessage = messages[messages.length - 1];
+    const isNumberOption = /^\d+$/.test(content.trim());
+    
+    let processedContent = content;
+    
+    // If the last message had buttons and user entered a number
+    if (lastMessage?.buttons?.length > 0 && isNumberOption) {
+      const optionIndex = parseInt(content.trim()) - 1;
+      if (optionIndex >= 0 && optionIndex < lastMessage.buttons.length) {
+        // Use the payload from the corresponding button
+        processedContent = lastMessage.buttons[optionIndex].payload;
+      }
+    }
+
     const messageId = Date.now();
 
     const userMessage: Message = {
       id: messageId,
       role: "user",
-      content,
+      content: processedContent, // Use the processed content but display what the user typed
       timestamp: new Date().toISOString(),
     };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
@@ -122,7 +138,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
     try {
       const response = await sendMessage({
         conversation_id: chatId ? Number(chatId) : null,
-        message: content,
+        message: processedContent, // Send the processed content to the API
       });
 
       const botMessage: Message = {
@@ -209,10 +225,10 @@ const ChatContent: React.FC<ChatContentProps> = ({
       <TopNav title={chatId ? `${chatId} Conversation` : "New Chat"} />
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 bg-background container mx-auto">
+      <div className="flex-1 overflow-y-auto p-4 bg-background container mx-auto relative">
         {/* Loading screen - only shown when explicitly loading an existing conversation */}
         {showLoadingScreen && (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
             <div className="flex items-center space-x-2">
               {[0, 300, 600].map((delay, i) => (
                 <div

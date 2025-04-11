@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Plus, Trash2, Loader2 } from "lucide-react";
+import { MessageSquare, Plus, Trash2 } from "lucide-react";
 
 import Button from "../../ui/button";
+import Skeleton from "../../ui/skeleton";
 import { deleteConversation, getConversations } from "../../../lib/api";
 import { Chat } from "../../../types";
 import { _checkIdExists } from "./test-helpers";
@@ -19,6 +20,8 @@ interface ChatsListProps {
   activeChatId: string | null;
   onSelectChat: (id: string) => void;
   onNewChat: () => void;
+  refreshTrigger?: number; // Optional prop to trigger refresh
+  newlyCreatedChatId?: string | null; // ID of newly created chat to select after refresh
 }
 
 // For testing purposes only
@@ -53,33 +56,70 @@ const SideNav: React.FC<ChatsListProps> = ({
   activeChatId,
   onSelectChat,
   onNewChat,
+  refreshTrigger,
+  newlyCreatedChatId,
 }) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isBackgroundLoading, setIsBackgroundLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
 
-  // Fetch conversations
-  useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getConversations();
+  // Function to fetch conversations initially
+  const fetchChats = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getConversations();
+      setChats(data);
+      setError(null);
+    } catch (err) {
+      setError("Failed to load conversations");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        console.log(data);
-
-        setChats(data);
-        setError(null);
-      } catch (err) {
-        setError("Failed to load conversations");
-        console.error(err);
-      } finally {
-        setIsLoading(false);
+  // Function to refresh conversations in the background
+  const refreshChatsInBackground = async () => {
+    if (isBackgroundLoading) return; // Prevent multiple simultaneous background refreshes
+    
+    try {
+      setIsBackgroundLoading(true);
+      const data = await getConversations();
+      setChats(data);
+      setError(null);
+      
+      // Auto-select the newly created conversation if provided
+      if (newlyCreatedChatId && data.length > 0) {
+        // Find the conversation in the refreshed list
+        const newChat = data.find((chat: Chat) => chat.id === newlyCreatedChatId);
+        if (newChat) {
+          // Select it after a short delay to ensure the UI has updated
+          setTimeout(() => {
+            onSelectChat(newlyCreatedChatId);
+          }, 100);
+        }
       }
-    };
+    } catch (err) {
+      // Silently handle errors during background refresh
+      console.error("Background refresh error:", err);
+    } finally {
+      setIsBackgroundLoading(false);
+    }
+  };
 
+  // Initial fetch on mount
+  useEffect(() => {
     fetchChats();
   }, []);
+  
+  // Background refresh when refreshTrigger changes
+  useEffect(() => {
+    if (refreshTrigger !== undefined && refreshTrigger > 0) {
+      refreshChatsInBackground();
+    }
+  }, [refreshTrigger]);
 
   const handleDeleteClick = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -130,12 +170,44 @@ const SideNav: React.FC<ChatsListProps> = ({
 
         <div className="overflow-y-auto flex-1 -mx-4 px-4">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-              <Loader2
-                data-testid="loading-spinner"
-                className="w-6 h-6 animate-spin"
-              />
-              <p className="text-sm mt-2">Loading conversations...</p>
+            <div className="space-y-1 mt-2">
+              {/* Loading skeleton */}
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className="group flex justify-between items-center py-3 px-4 rounded-lg bg-muted/30"
+                >
+                  <div className="truncate flex-1">
+                    <div className="animate-pulse rounded-md bg-muted/70 h-[18px] w-3/4" />
+                    <div className="animate-pulse rounded-md bg-muted/70 h-[14px] w-1/3 mt-0.5" />
+                  </div>
+                  <div className="ml-2 p-1 rounded-md opacity-0 w-6 h-6" />
+                </div>
+              ))}
+              <div className="flex justify-center items-center mt-4 text-sm text-muted-foreground">
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-muted-foreground"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  data-testid="loading-spinner"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <span data-testid="loading-text">Loading conversations...</span>
+              </div>
             </div>
           ) : error ? (
             <div className="flex items-center justify-center py-8 text-destructive gap-2">
@@ -175,7 +247,12 @@ const SideNav: React.FC<ChatsListProps> = ({
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      onClick={() => onSelectChat(chat.id)}
+                      onClick={() => {
+                        // Only trigger onSelectChat if this isn't already the active chat
+                        if (activeChatId !== chat.id) {
+                          onSelectChat(chat.id);
+                        }
+                      }}
                       className={`
                       group flex justify-between items-center py-3 px-4 cursor-pointer
                       rounded-lg transition-colors duration-200
@@ -192,24 +269,13 @@ const SideNav: React.FC<ChatsListProps> = ({
                           {/* {format(new Date(chat.updated_at), "MMM d, h:mm a")} */}
                         </div>
                       </div>
-                      <motion.button
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: activeChatId === chat.id ? 1 : 0 }}
-                        whileHover={{ scale: 1.1 }}
+                      <button
                         onClick={(e) => handleDeleteClick(chat.id, e)}
-                        className={`
-                        ml-2 p-1 rounded-md transition-colors cursor-pointer
-                        ${
-                          activeChatId === chat.id
-                            ? "opacity-100"
-                            : "opacity-0 group-hover:opacity-100"
-                        }
-                        hover:bg-destructive/10 hover:text-destructive
-                      `}
+                        className={`ml-2 p-1 rounded-md transition-colors cursor-pointer ${activeChatId === chat.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} hover:bg-destructive/10 hover:text-destructive`}
                         aria-label="Delete conversation"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </motion.button>
+                      </button>
                     </motion.div>
                   ))
                 )}
