@@ -111,9 +111,6 @@ slots:
 responses:
   utter_welcome_schema_explorer:
     - text: "Welcome to the Database Schema Explorer! Retrieve detailed database schema definitions, including tables, views, and indexes. For further assistance, contact the Database Operations Team at [DB Ops Email ID]. Type 'BACK' anytime to go to action type selection. Type 'EXIT' anytime to end the conversation."
-      buttons:
-        - title: "Start Schema Explorer"
-          payload: '/start_schema_explorer'
 
   utter_action_type_selection:
     - text: "What would you like to do? Options:"

@@ -27,10 +27,10 @@ rules:
       - intent: help
       - action: utter_help
 
-  - rule: help recommend database flow
+  - rule: help website flow
     steps:
-      - intent: help_recommend_database
-      - action: utter_help_recommend_database
+      - intent: help_website
+      - action: utter_help_website
 
   - rule: Retrieve object list
     steps:

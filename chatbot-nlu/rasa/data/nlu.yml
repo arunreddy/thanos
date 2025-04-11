@@ -30,14 +30,13 @@ nlu:
       - show me your features
       - I need assistance
 
-  - intent: help_recommend_database
+  - intent: help_website
     examples: |
-      - help recommend a database
-      - please recommend a database for me
-      - I need a summary of available databases
-      - can you show me the database recommendations?
-      - what databases do you support?
-      - show me a quick summary of your databases
+      - help website
+      - /help_website
+      - can you show me the website help?
+      - website help
+      - what help do you offer for the website?
 
   - intent: start_database_selection
     examples: |
@@ -104,7 +103,7 @@ nlu:
       - reset
       - start from the beginning
 
- - intent: retrieve_object_list
+  - intent: retrieve_object_list
     examples: |
       - retrieve database object list
       - show me the database object list
@@ -116,6 +115,10 @@ nlu:
       - export definition of database objects
       - export schema definition
       - give me the definitions
+      - export definition
+      - export schema definition
+      - give me the definitions
+      - I'd like to export the definition
 
   - intent: start_schema_explorer
     examples: |
@@ -131,6 +134,9 @@ nlu:
     examples: |
       - my host is dbname.rds.amazonaws.com:5432
       - here is the endpoint: dbname.rds.amazonaws.com:3306
+      - my host is dbname.rds.amazonaws.com:5432
+      - dbname.rds.amazonaws.com:5432
+      - here is the endpoint: dbname.rds.amazonaws.com:5432
 
   - intent: select_database_type
     examples: |
@@ -159,35 +165,6 @@ nlu:
       - I have uploaded the template
       - here is the file
       - template uploaded
-
-  - intent: invalid_template
-    examples: |
-      - invalid template structure
-      - this template doesn't work
-
-  - intent: confirm_object_list
-    examples: |
-      - yes, confirm
-      - that's correct
-      - proceed
-      - confirm
-      - go ahead
-
-  - intent: provide_database_host
-    examples: |
-      - my host is dbname.rds.amazonaws.com:5432
-      - dbname.rds.amazonaws.com:5432
-      - here is the endpoint: dbname.rds.amazonaws.com:5432
-
-  - intent: export_definition
-    examples: |
-      - export definition
-      - export schema definition
-      - give me the definitions
-      - I'd like to export the definition
-
-  - intent: upload_template
-    examples: |
       - here's my template
       - I have uploaded the template
       - template uploaded
@@ -196,7 +173,14 @@ nlu:
   - intent: invalid_template
     examples: |
       - invalid template structure
+      - this template doesn't work
       - that template doesn't work
       - the file is invalid
 
-
+  - intent: confirm_object_list
+    examples: |
+      - yes, confirm
+      - that's correct
+      - proceed
+      - confirm
+      - go ahead
