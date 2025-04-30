@@ -102,6 +102,12 @@ slots:
     mappings:
       - type: custom
 
+  template_data:
+    type: any
+    influence_conversation: false
+    mappings:
+      - type: custom
+
   access_granted:
     type: bool
     influence_conversation: false

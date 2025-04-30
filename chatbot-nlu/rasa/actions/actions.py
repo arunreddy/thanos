@@ -12,6 +12,7 @@ from rasa_sdk.events import SlotSet
 import logging
 import random
 import re
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +114,7 @@ class ActionRestart(Action):
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        dispatcher.utter_message("Let's start over with the database selection process.")
+        dispatcher.utter_message("Let's start over with the database selection process or schema explorer.")
         # Return plain dictionary for restart event
         return [{"event": "restart"}]
 
@@ -144,57 +145,75 @@ class ActionProcessObjectList(Action):
         dispatcher.utter_message(text=f"JSON Output:\n{json_output}")
         return []
 
-class ActionExportDefinition(Action):
-    def name(self) -> Text:
-        return "action_export_definition"
+# class ActionExportDefinition(Action):
+#     def name(self) -> Text:
+#         return "action_export_definition"
 
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        host = tracker.get_slot("database_host_endpoint")
-        # Generate JSON output (if needed) but not used in the final message
-        json_output = {
-            "database_host_endpoint": host,
-            "definitions": {
-                "tables": [
-                    {
-                        "name": "users",
-                        "columns": [
-                            {"name": "id", "type": "int", "nullable": False},
-                            {"name": "username", "type": "varchar(255)", "nullable": False},
-                            {"name": "email", "type": "varchar(255)", "nullable": False}
-                        ]
-                    }
-                ],
-                "views": [
-                    {
-                        "name": "active_users",
-                        "query": "SELECT id, username, email FROM users WHERE active = true"
-                    }
-                ],
-                "indexes": [
-                    {
-                        "name": "users_username_idx",
-                        "columns": ["username"],
-                        "type": "unique"
-                    }
-                ],
-                "constraints": [
-                    {
-                        "type": "PRIMARY KEY",
-                        "table": "users",
-                        "columns": ["id"]
-                    }
-                ]
-            }
-        }
+#     def run(self, dispatcher: CollectingDispatcher,
+#             tracker: Tracker,
+#             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+#         host = tracker.get_slot("database_host_endpoint")
+#         # Generate JSON output (if needed) but not used in the final message
+#         json_output = {
+#             "database_host_endpoint": host,
+#             "definitions": {
+#                 "tables": [
+#                     {
+#                         "name": "users",
+#                         "columns": [
+#                             {"name": "id", "type": "int", "nullable": False},
+#                             {"name": "username", "type": "varchar(255)", "nullable": False},
+#                             {"name": "email", "type": "varchar(255)", "nullable": False}
+#                         ]
+#                     }
+#                 ],
+#                 "views": [
+#                     {
+#                         "name": "active_users",
+#                         "query": "SELECT id, username, email FROM users WHERE active = true"
+#                     }
+#                 ],
+#                 "indexes": [
+#                     {
+#                         "name": "users_username_idx",
+#                         "columns": ["username"],
+#                         "type": "unique"
+#                     }
+#                 ],
+#                 "constraints": [
+#                     {
+#                         "type": "PRIMARY KEY",
+#                         "table": "users",
+#                         "columns": ["id"]
+#                     }
+#                 ]
+#             }
+#         }
         
-        # Updated utterance to match test expectation
-        dispatcher.utter_message(
-            text="Your database definition has been exported in JSON format. You can download it from your notification center."
-        )
-        return []
+#         # Updated utterance to match test expectation
+#         dispatcher.utter_message(
+#             text="Your database definition has been exported in JSON format. You can download it from your notification center."
+#         )
+#         return []
     
+# class ActionValidateTemplate(Action):
+#     def name(self) -> Text:
+#         return "action_validate_template"
+
+#     def run(self, dispatcher: CollectingDispatcher,
+#             tracker: Tracker,
+#             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+#         # Retrieve user's message safely (avoid errors if latest_message is missing)
+#         latest_message = getattr(tracker, "latest_message", {}) or {}
+#         user_input = latest_message.get("text", "")
+#         if "template" in user_input.lower():
+#             return [SlotSet("template_valid", True)]
+#         else:
+#             return [SlotSet("template_valid", False)]
+
+
+
+# Keep the existing ActionValidateTemplate class and add JSON parsing capability
 class ActionValidateTemplate(Action):
     def name(self) -> Text:
         return "action_validate_template"
@@ -202,10 +221,114 @@ class ActionValidateTemplate(Action):
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        # Retrieve user's message safely (avoid errors if latest_message is missing)
+        # Retrieve user's message safely
         latest_message = getattr(tracker, "latest_message", {}) or {}
         user_input = latest_message.get("text", "")
-        if "template" in user_input.lower():
-            return [SlotSet("template_valid", True)]
-        else:
+        
+        # Check if the message contains a JSON template
+        try:
+            # Find JSON content in the message
+            json_match = re.search(r'(\{.*\})', user_input, re.DOTALL)
+            if json_match:
+                json_content = json_match.group(1)
+                # Parse the JSON content
+                template_data = json.loads(json_content)
+                
+                # Store the template data in a slot
+                return [
+                    SlotSet("template_valid", True),
+                    SlotSet("template_data", template_data)
+                ]
+            else:
+                # If no JSON found but contains the word template
+                if "template" in user_input.lower():
+                    return [SlotSet("template_valid", True)]
+                else:
+                    return [SlotSet("template_valid", False)]
+        except json.JSONDecodeError:
+            # Invalid JSON format
+            dispatcher.utter_message("Invalid JSON format in template. Please check and try again.")
             return [SlotSet("template_valid", False)]
+        except Exception as e:
+            logger.error(f"Error validating template: {e}", exc_info=True)
+            return [SlotSet("template_valid", False)]
+
+# Modify the ActionExportDefinition class to use the template data
+class ActionExportDefinition(Action):
+    def name(self) -> Text:
+        return "action_export_definition"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        # Get the template data if it exists
+        template_data = tracker.get_slot("template_data")
+        host = tracker.get_slot("database_host_endpoint")
+        
+        if template_data:
+            # Use the provided template data to generate a customized definition
+            json_output = {
+                "database_host_endpoint": template_data.get("database_host_endpoint", host or "dbname.rds.amazonaws.com:5432"),
+                "definitions": {}
+            }
+            
+            # Process each object type from the template
+            objects = template_data.get("objects", {})
+            
+            # Process tables
+            if "tables" in objects:
+                json_output["definitions"]["tables"] = []
+                for table in objects.get("tables", []):
+                    table_def = {
+                        "name": table,
+                        "columns": [
+                            {"name": "id", "type": "int", "nullable": False},
+                            {"name": "name", "type": "varchar(255)", "nullable": False},
+                            {"name": "description", "type": "text", "nullable": True}
+                        ]
+                    }
+                    json_output["definitions"]["tables"].append(table_def)
+            
+            # Process views
+            if "views" in objects:
+                json_output["definitions"]["views"] = []
+                for view in objects.get("views", []):
+                    view_def = {
+                        "name": view,
+                        "query": f"SELECT * FROM {view.replace('_view', '')}"
+                    }
+                    json_output["definitions"]["views"].append(view_def)
+            
+            # Process indexes
+            if "indexes" in objects:
+                json_output["definitions"]["indexes"] = []
+                for index in objects.get("indexes", []):
+                    index_def = {
+                        "name": index,
+                        "columns": [index.split("_")[0]],
+                        "type": "btree"
+                    }
+                    json_output["definitions"]["indexes"].append(index_def)
+            
+            # Process constraints
+            if "constraints" in objects:
+                json_output["definitions"]["constraints"] = []
+                for constraint in objects.get("constraints", []):
+                    constraint_def = {
+                        "type": "FOREIGN KEY" if "_fk" in constraint else "PRIMARY KEY",
+                        "table": constraint.split("_")[0],
+                        "columns": [constraint.split("_")[0] + "_id"]
+                    }
+                    json_output["definitions"]["constraints"].append(constraint_def)
+            
+            # Display the generated definitions
+            dispatcher.utter_message(f"Your database definition has been exported in JSON format:")
+            dispatcher.utter_message(f"```json\n{json.dumps(json_output, indent=2)}\n```")
+            dispatcher.utter_message("You can download it from your notification center.")
+        else:
+            # Use the default response if no template data is provided
+            dispatcher.utter_message(
+                text="Your database definition has been exported in JSON format."
+            )
+        
+        return []

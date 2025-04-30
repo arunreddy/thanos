@@ -162,13 +162,10 @@ nlu:
 
   - intent: upload_template
     examples: |
-      - I have uploaded the template
-      - here is the file
-      - template uploaded
-      - here's my template
-      - I have uploaded the template
-      - template uploaded
-      - I'm sending you the file now
+      - I have uploaded the template: {"database_host_endpoint":"db.example.com:5432","objects":{"tables":["users"]}}
+      - {"database_host_endpoint":"db.example.com:5432","objects":{"tables":["users"]}}
+      - template upload: { "database_host_endpoint":"db.example.com:5432", "objects": { "tables": ["users"] } }
+      - here’s my template: { "database_host_endpoint":"…", "objects": { "…" } }
 
   - intent: invalid_template
     examples: |
