@@ -1,6 +1,7 @@
 services:
   redis:
     image: redis:latest
+    container_name: thanos-redis
     ports:
       - "46379:6379"
     volumes:
@@ -8,6 +9,7 @@ services:
   
   postgres:
     image: postgres:latest
+    container_name: thanos-postgres
     ports:
       - "45432:5432"
     volumes:
@@ -18,50 +20,54 @@ services:
       POSTGRES_DB: postgres
 
 
-  # chatbot-web:
-  #   container_name: chatbot-web
-  #   build:
-  #     context: ./chatbot-web
-  #     dockerfile: Dockerfile
-  #     no_cache: true
-  #   ports:
-  #     - "43000:3000"
-  #   volumes:
-  #     - ./chatbot-web/src:/app/src:ro
-  #     - ./chatbot-web/public:/app/public:ro
-  #     - ./chatbot-web/package.json:/app/package.json:ro
-  #     - ./chatbot-web/package-lock.json:/app/package-lock.json:ro
-  #     - ./chatbot-web/next.config.js:/app/next.config.js:ro
-  #     - ./chatbot-web/tsconfig.json:/app/tsconfig.json:ro
-  #   environment:
-  #     - NODE_ENV=development
-  #     - NEXT_TELEMETRY_DISABLED=1
+  chatbot-web:
+    container_name: thanos-chatbot-web
+    build:
+      context: ./chatbot-web
+      dockerfile: Dockerfile
+      args:
+        BUILD_MODE: development
+    ports:
+      - "43000:3000"
+    volumes:
+      - ./chatbot-web/src:/app/src:ro
+      - ./chatbot-web/public:/app/public:ro
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
       
   chatbot-api:
-    container_name: chatbot-api
+    container_name: thanos-chatbot-api
     build:
       context: ./chatbot-api
       dockerfile: Dockerfile
+    command: ["uv", "run", "fastapi", "dev", "--host", "0.0.0.0", "--port", "8000", "main.py"]
     ports:
       - "9000:8000"
+    volumes:
+      - ./chatbot-api/main.py:/app/main.py:ro
+      - ./chatbot-api/app:/app/app:ro
 
   chatbot-nlu:
-    container_name: chatbot-nlu
+    container_name: thanos-chatbot-nlu
     build:
       context: ./chatbot-nlu
       dockerfile: Dockerfile
-      no_cache: true
+    command: ["/bin/bash", "-c", "rasa train && rasa run --enable-api --cors '*' --endpoints endpoints.yml"]
     ports:
       - "45005:5005"
     volumes:
-      - chatbot-nlu-models:/app/models
+      - ./chatbot-nlu/rasa/config.yml:/app/rasa/config.yml:ro
+      - ./chatbot-nlu/rasa/domain.yml:/app/rasa/domain.yml:ro
+      - ./chatbot-nlu/rasa/endpoints.yml:/app/rasa/endpoints.yml:ro
+      - ./chatbot-nlu/rasa/actions:/app/rasa/actions:ro
+      - ./chatbot-nlu/rasa/data:/app/rasa/data:ro
 
   action_server:
-    container_name: chatbot-action-server
+    container_name: thanos-chatbot-action-server
     build:
       context: ./chatbot-nlu
       dockerfile: Dockerfile.actions
-      no_cache: true
     ports:
       - "5055:5055"
 

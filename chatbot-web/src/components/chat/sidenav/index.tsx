@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Plus, Trash2 } from "lucide-react";
+import {  MessageSquare, Plus, Trash2 } from "lucide-react";
+import {Link } from "react-router";
 
 import Button from "../../ui/button";
 import { deleteConversation, getConversations } from "../../../lib/api";
@@ -18,7 +19,6 @@ import {
 interface ChatsListProps {
   activeChatId: string | null;
   onSelectChat: (id: string) => void;
-  onNewChat: () => void;
   refreshTrigger?: number; // Optional prop to trigger refresh
   newlyCreatedChatId?: string | null; // ID of newly created chat to select after refresh
 }
@@ -54,7 +54,6 @@ export const _testTryCatch = async (shouldThrow: boolean) => {
 const SideNav: React.FC<ChatsListProps> = ({
   activeChatId,
   onSelectChat,
-  onNewChat,
   refreshTrigger,
   newlyCreatedChatId,
 }) => {
@@ -135,10 +134,6 @@ const SideNav: React.FC<ChatsListProps> = ({
     try {
       await deleteConversation(id!);
       setChats((prevChats) => prevChats.filter((chat) => chat.id !== id));
-
-      if (activeChatId === id) {
-        onNewChat();
-      }
     } catch (err) {
       console.error("Failed to delete chat:", err);
     }
@@ -154,22 +149,35 @@ const SideNav: React.FC<ChatsListProps> = ({
       >
         <div className="flex justify-between items-center w-full pb-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5" />
-            <h2 className="text-lg font-semibold">Conversations</h2>
+            <img src="/citizens-logo.png" alt="EDDI Assistant" className="w-6 h-6" />
+            <h2 className="text-lg font-semibold">EDDI Assistant</h2>
           </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onNewChat}
-            className="hover:bg-primary/10 hover:text-primary transition-colors"
-            aria-label="New chat"
+        </div>
+        <div className="flex flex-col gap-2">
+          <Link
+            to="/new"
+            className={`flex items-center justify-start gap-2 w-full px-4 py-2 text-sm font-medium rounded-md hover:bg-accent ${
+              window.location.pathname === "/new" ? "bg-accent" : ""
+            }`}
           >
             <Plus className="w-5 h-5" />
-          </Button>
+            New Chat
+          </Link>
+          <Link
+            to="/chats"
+            className={`flex items-center justify-start gap-2 w-full px-4 py-2 text-sm font-medium rounded-md hover:bg-accent ${
+              window.location.pathname.startsWith("/chat") ? "bg-accent" : ""
+            }`}
+          >
+            <MessageSquare className="w-5 h-5" />
+            Conversations
+          </Link>
         </div>
 
         <div className="overflow-y-auto flex-1 -mx-4 px-4">
+          <p className="text-xs font-medium text-muted-foreground">
+            Recent chats
+          </p>
           {isLoading ? (
             <div className="space-y-1 mt-2">
               {/* Loading skeleton */}
@@ -230,15 +238,6 @@ const SideNav: React.FC<ChatsListProps> = ({
                   >
                     <MessageSquare className="w-8 h-8 stroke-[1.25]" />
                     <p className="text-sm">No conversations yet</p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onNewChat}
-                      className="mt-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Start a new chat
-                    </Button>
                   </motion.div>
                 ) : (
                   chats.map((chat) => (

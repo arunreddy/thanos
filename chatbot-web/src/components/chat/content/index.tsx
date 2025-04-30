@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Bot } from "lucide-react";
 
 interface ChatContentProps {
-  chatId: string | null;
+  chatId: string ;
   setActiveChatId: (id: string | null, isFirstMessage?: boolean) => void;
   isNewChat: boolean;
 }
@@ -38,9 +38,6 @@ const ChatContent: React.FC<ChatContentProps> = ({
   const [hasInteracted, setHasInteracted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const welcomeMessageContent =
-    'Welcome to the Database Management Assistant! 👋\n\nI can help you with the following services:\n\n1. Schema Explorer – Explore database schema details.\n2. Database Inference – Get insights and recommendations for your database.\n3. Query Performance Explorer – Optimize SQL query performance.\n4. Database Resource Management – Monitor and manage database resources.\n\nTo select a service, please type the service name or number.\nFor help, type "/help" or "/help <service_name>"';
-
   // This effect handles loading conversations when chatId changes
   useEffect(() => {
     setHasInteracted(false);
@@ -52,28 +49,8 @@ const ChatContent: React.FC<ChatContentProps> = ({
       const fetchConversation = async () => {
         try {
           const response = await getConversation(chatId);
-
           const conversationMessages = response.messages || [];
-          const hasWelcomeMessage = conversationMessages.some(
-            (msg: Message) =>
-              msg.role === "assistant" &&
-              msg.content.includes(
-                "Welcome to the Database Management Assistant"
-              )
-          );
-
-          // Always add welcome message if it doesn't exist, even for empty conversations
-          if (!hasWelcomeMessage) {
-            const welcomeMessage: Message = {
-              id: Date.now() - 1000,
-              role: "assistant",
-              content: welcomeMessageContent,
-              timestamp: new Date(Date.now() - 1000).toISOString(),
-            };
-            setMessages([welcomeMessage, ...conversationMessages]);
-          } else {
-            setMessages(conversationMessages);
-          }
+          setMessages(conversationMessages);
         } catch (err) {
           setError("Failed to load conversation");
           console.error(err);
@@ -85,13 +62,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
       fetchConversation();
     } else {
       setChatState(ChatState.IDLE);
-      const welcomeMessage: Message = {
-        id: Date.now(),
-        role: "assistant",
-        content: welcomeMessageContent,
-        timestamp: new Date().toISOString(),
-      };
-      setMessages([welcomeMessage]);
+      setMessages([]);
     }
   }, [chatId, isNewChat]);
 
@@ -137,7 +108,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
     try {
       const response = await sendMessage({
-        conversation_id: chatId ? Number(chatId) : null,
+        conversation_id: chatId,
         message: processedContent, // Send the processed content to the API
       });
 

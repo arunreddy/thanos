@@ -26,10 +26,16 @@ class ChatHistory(BaseModel):
     messages: List[Dict[str, Any]]
 
 
-@chat_router.post("/send", response_model=MessageResponse)
-async def send_message(request: MessageRequest):
+@chat_router.post("/new", response_model=MessageResponse)
+async def new_conversation(request: MessageRequest):
+    response = await chat_service.process_message(message=request.message, user_id=request.user_id, conversation_id=request.conversation_id)
+    return {"message": {"role": "assistant", "content": response["response"], "buttons": response.get("buttons", [])}, "conversation_id": response["conversation_id"]}
+
+
+@chat_router.post("/{conversation_id}", response_model=MessageResponse)
+async def send_message(request: MessageRequest, conversation_id: str):
     try:
-        response = await chat_service.process_message(message=request.message, user_id=request.user_id, conversation_id=request.conversation_id)
+        response = await chat_service.process_message(message=request.message, user_id=request.user_id, conversation_id=conversation_id)
 
         # Format the response to match what the frontend expects
         return {"message": {"role": "assistant", "content": response["response"], "buttons": response.get("buttons", [])}, "conversation_id": response["conversation_id"]}

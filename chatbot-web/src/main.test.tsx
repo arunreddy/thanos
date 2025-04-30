@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { ThemeProvider } from './components/layout/themeProvider';
 
@@ -8,6 +9,11 @@ import { ThemeProvider } from './components/layout/themeProvider';
 vi.mock('react-dom/client');
 vi.mock('./App');
 vi.mock('./components/layout/themeProvider');
+vi.mock('react-router-dom', () => ({
+  BrowserRouter: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="browser-router">{children}</div>
+  )
+}));
 
 describe('main', () => {
   let mockRender: ReturnType<typeof vi.fn>;
@@ -44,10 +50,15 @@ describe('main', () => {
         type: StrictMode,
         props: expect.objectContaining({
           children: expect.objectContaining({
-            type: ThemeProvider,
+            type: BrowserRouter,
             props: expect.objectContaining({
               children: expect.objectContaining({
-                type: App
+                type: ThemeProvider,
+                props: expect.objectContaining({
+                  children: expect.objectContaining({
+                    type: App
+                  })
+                })
               })
             })
           })

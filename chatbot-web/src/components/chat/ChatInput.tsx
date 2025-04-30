@@ -55,7 +55,7 @@ export default function ChatInput({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type your message or select an option by typing its name or number..."
+          placeholder="How can I help you today?"
           rows={1}
           disabled={isLoading}
           className="w-full resize-none border rounded-lg px-3 py-2 bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-75"

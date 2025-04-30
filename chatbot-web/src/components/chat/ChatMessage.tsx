@@ -113,16 +113,13 @@ export default function ChatMessage({
                 transition={{ delay: 0.2 + index * 0.1 }}
               >
                 <button
-                  className="text-left hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded px-1"
+                  className="text-left hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded px-1 cursor-pointer"
                   onClick={() => onButtonClick && onButtonClick(button.payload)}
                   role="button"
                   aria-label={button.title}
                 >
                   {index + 1}. {button.title}
                 </button>{" "}
-                <span className="text-xs text-muted-foreground/70">
-                  (type: "{button.payload}")
-                </span>
               </motion.div>
             ))}
           </motion.div>

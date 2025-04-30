@@ -1,3 +1,4 @@
+import { MessageRequest, MessageResponse, ChatHistory } from "@/types";
 // frontend/src/lib/api.ts
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:9000";
 
@@ -39,8 +40,20 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 }
 
 // Chat APIs
+
+export async function newConversation(data: {
+  message: string;
+}) {
+  const response = await fetchWithAuth("/api/chat/new", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+  return response as MessageResponse;
+}
+
 export async function sendMessage(data: {
-  conversation_id: number | null;
+  conversation_id: string;
   message: string;
 }) {
   console.log("Sending message:", data);

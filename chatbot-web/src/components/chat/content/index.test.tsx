@@ -184,7 +184,7 @@ describe("ChatContent Component", () => {
     const mockMessages = [
       {
         role: "assistant",
-        content: "Welcome to the Database Management Assistant! 👋",
+        content: "Welcome to EDDI Assistant! 👋",
         created_at: "2025-04-04T14:29:00Z",
       },
     ];
@@ -228,7 +228,7 @@ describe("ChatContent Component", () => {
     const mockMessages = [
       {
         role: "assistant",
-        content: "Welcome to the Database Management Assistant! 👋",
+        content: "Welcome to EDDI Assistant! 👋",
         created_at: "2025-04-04T14:29:00Z",
       },
     ];
@@ -302,7 +302,7 @@ describe("ChatContent Component", () => {
     const mockMessages = [
       {
         role: "assistant",
-        content: "Welcome to the Database Management Assistant! 👋",
+        content: "Welcome to EDDI Assistant! 👋",
         created_at: "2025-04-04T14:29:00Z",
       },
     ];
@@ -345,7 +345,7 @@ describe("ChatContent Component", () => {
     const mockMessages = [
       {
         role: "assistant",
-        content: "Welcome to the Database Management Assistant! 👋",
+        content: "Welcome to EDDI Assistant! 👋",
         created_at: "2025-04-04T14:29:00Z",
       },
     ];
