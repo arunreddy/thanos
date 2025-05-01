@@ -13,14 +13,10 @@ WORKDIR /app
 
 COPY uv.lock pyproject.toml ./
 
-RUN uv sync
+RUN uv sync --frozen
 
-COPY . .
-
-# CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-ENV PATH="/app/.venv/bin:$PATH"
+COPY main.py ./
+COPY app ./app
 
 EXPOSE 8000
-CMD ["uv", "run", "fastapi", "dev", "main.py"]
-
-
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

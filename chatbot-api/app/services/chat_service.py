@@ -20,7 +20,7 @@ class ChatService:
 
         # Send message to Rasa
         print(f"Sending message to Rasa: {message}")
-        rasa_response = await self.rasa_connector.send_message(message, user_id)
+        rasa_response = await self.rasa_connector.send_message(message, conversation_id)
 
         # Process Rasa response
         processed_response = self._process_rasa_response(rasa_response)

@@ -5,9 +5,9 @@ action_endpoint:
 rest:
 
 tracker_store:
-  type: sql
+  type: SQL
   dialect: "postgresql"
-  url: "postgres"
+  url: "thanos-postgres"
   port: 5432
   db: "rasa"
   username: "postgres"

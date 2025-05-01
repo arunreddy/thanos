@@ -28,7 +28,7 @@ services:
       args:
         BUILD_MODE: development
     ports:
-      - "43000:3000"
+      - "3000:3000"
     volumes:
       - ./chatbot-web/src:/app/src:ro
       - ./chatbot-web/public:/app/public:ro
@@ -41,7 +41,6 @@ services:
     build:
       context: ./chatbot-api
       dockerfile: Dockerfile
-    command: ["uv", "run", "fastapi", "dev", "--host", "0.0.0.0", "--port", "8000", "main.py"]
     ports:
       - "9000:8000"
     volumes:
@@ -53,15 +52,15 @@ services:
     build:
       context: ./chatbot-nlu
       dockerfile: Dockerfile
-    command: ["/bin/bash", "-c", "rasa train && rasa run --enable-api --cors '*' --endpoints endpoints.yml"]
     ports:
-      - "45005:5005"
+      - "5005:5005"
     volumes:
-      - ./chatbot-nlu/rasa/config.yml:/app/rasa/config.yml:ro
-      - ./chatbot-nlu/rasa/domain.yml:/app/rasa/domain.yml:ro
-      - ./chatbot-nlu/rasa/endpoints.yml:/app/rasa/endpoints.yml:ro
-      - ./chatbot-nlu/rasa/actions:/app/rasa/actions:ro
-      - ./chatbot-nlu/rasa/data:/app/rasa/data:ro
+      - ./chatbot-nlu/rasa/config.yml:/app/config.yml:ro
+      - ./chatbot-nlu/rasa/domain.yml:/app/domain.yml:ro
+      - ./chatbot-nlu/rasa/endpoints.yml:/app/endpoints.yml:ro
+      - ./chatbot-nlu/rasa/actions:/app/actions:ro
+      - ./chatbot-nlu/rasa/data:/app/data:ro
+      - ./chatbot-nlu/rasa/models:/app/models
 
   action_server:
     container_name: thanos-chatbot-action-server
