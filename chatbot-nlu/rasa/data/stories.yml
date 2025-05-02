@@ -23,33 +23,9 @@ stories:
       - downtime_tolerance: "Yes"
   - action: action_recommend_database
   - action: utter_confirm_database_choice
-  - intent: confirm_database_choice
-    entities:
-      - confirmation: "Yes, proceed"
-  - action: action_submit_request
-  - action: utter_request_submitted
-
-- story: schema explorer object list flow
-  steps:
-  - intent: start_schema_explorer
-  - action: utter_welcome_schema_explorer
-  - action: utter_action_type_selection
-  - intent: retrieve_object_list
-  - action: utter_object_list_intro
-  - intent: provide_database_host
-    # If the user types their endpoint, this intent should be triggered automatically.
-    entities:
-      - database_host_endpoint: "dbname.rds.amazonaws.com:5432"
-  - action: utter_database_type_selection
-  - intent: select_database_type
-    entities:
-      - database_type: "Oracle"
-  - action: utter_object_type_selection
-  - intent: select_object_types
-    entities:
-      - object_types: ["Tables"]
-  - action: utter_confirm_schema_parameters
-  - intent: confirm_object_list
-  - action: action_process_object_list
-  - action: utter_download_template
+  # - intent: confirm_database_choice
+  #   entities:
+  #     - confirmation: "Yes, proceed"
+  # - action: action_submit_request
+  # - action: utter_request_submitted
 

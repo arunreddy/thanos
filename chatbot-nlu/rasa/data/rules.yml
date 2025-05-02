@@ -27,65 +27,12 @@ rules:
       - intent: help
       - action: utter_help
 
-  - rule: help website flow
+  - rule: Help website flow
     steps:
       - intent: help_website
       - action: utter_help_website
 
-  - rule: Retrieve object list
+  - rule: Submit database request on confirmation
     steps:
-      - intent: retrieve_object_list
-      - action: utter_object_list_intro
-
-  - rule: Start schema explorer
-    steps:
-      - intent: start_schema_explorer
-      - action: utter_welcome_schema_explorer
-      - action: utter_action_type_selection
-
-  - rule: Ask DB type after host endpoint
-    steps:
-      - intent: provide_database_host
-      - action: utter_database_type_selection
-
-  - rule: Ask object types after DB type
-    steps:
-      - intent: select_database_type
-      - action: utter_object_type_selection
-
-  - rule: Confirm schema parameters after object type selection
-    steps:
-      - intent: select_object_types
-      - action: utter_confirm_schema_parameters
-
-  - rule: Process object list after confirmation
-    steps:
-      - intent: confirm_object_list
-      - action: action_process_object_list
-      - action: utter_download_template
-
-  - rule: Process export definition after confirmation
-    steps:
-      - intent: confirm_export_definition
-      - action: action_export_definition
-
-  - rule: Start export definition
-    steps:
-      - intent: export_definition
-      - action: utter_upload_template
-
-  - rule: Validate and process export definition (valid)
-    steps:
-      - intent: upload_template
-      - action: action_validate_template
-      - slot_was_set:
-          - template_valid: true
-      - action: action_export_definition
-      - action: utter_download_template
-
-  - rule: Validate export definition (invalid)
-    condition:
-      - slot_was_set:
-          - template_valid: false
-    steps:
-      - action: utter_template_invalid
+      - intent: confirm_database_choice
+      - action: action_submit_request
