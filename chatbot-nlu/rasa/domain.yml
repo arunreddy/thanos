@@ -12,6 +12,7 @@ intents:
   - restart
   - help
   - help_website
+  - create_database
 
 entities:
   - app_type
@@ -19,8 +20,52 @@ entities:
   - relationship_type
   - downtime_tolerance
   - confirmation
+  - database_name
+  - database_version
+  - sysid
+
+forms:
+  create_database_form:
+    required_slots:
+      - database_name
+      - database_version
+      - sysid
 
 slots:
+  database_name:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: database_name
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: database_name
+      - type: from_text
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: database_name
+
+  database_version:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: database_version
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: database_version
+      - type: from_text
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: database_version
+
+  sysid:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: sysid
+
   app_type:
     type: text
     influence_conversation: true
@@ -162,6 +207,42 @@ responses:
   utter_request_submitted:
     - text: "Your database request for {recommended_database} has been submitted. Jira ticket {ticket_id} has been created and assigned to the appropriate approver. You will receive notifications about the status of your request."
 
+  utter_ask_database_name:
+    - text: "Which database would you like to create?"
+      buttons:
+        - title: "MongoDB"
+          payload: "MongoDB"
+        - title: "Oracle"
+          payload: "Oracle"
+        - title: "MySQL"
+          payload: "MySQL"
+        - title: "SQL Server"
+          payload: "SQL Server"
+        - title: "PostgreSQL"
+          payload: "PostgreSQL"
+        - title: "DB2"
+          payload: "DB2"
+
+  utter_ask_database_version:
+    - text: "Which version do you need?"
+      buttons:
+        - title: "PostgreSQL13"
+          payload: "PostgreSQL13"
+        - title: "PostgreSQL14"
+          payload: "PostgreSQL14"
+        - title: "PostgreSQL15"
+          payload: "PostgreSQL15"
+        - title: "PostgreSQL16"
+          payload: "PostgreSQL16"
+
+  utter_ask_sysid:
+    - text: "Please provide the SysID for your database."
+
+  # this is optional if you want a custom final message via utter rather than in your action
+  utter_submit_database:
+    - text: "Thanks! Creating {database_name} ({database_version}) with SysID {sysid} now…"
+
+
 actions:
   # core greeting/farewell
   - utter_greet
@@ -183,6 +264,7 @@ actions:
   - utter_help
   - utter_help_website
 
+  - action_submit_database
 
 session_config:
   session_expiration_time: 60

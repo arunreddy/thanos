@@ -36,3 +36,19 @@ rules:
     steps:
       - intent: confirm_database_choice
       - action: action_submit_request
+
+  - rule: Activate create database form
+    steps:
+      - intent: create_database
+      - action: create_database_form
+      - active_loop: create_database_form
+
+  - rule: Submit create database form
+    condition:
+      - active_loop: create_database_form
+      - slot_was_set:
+          - sysid
+    steps:
+      - action: create_database_form
+      - active_loop: null
+      - action: action_submit_database

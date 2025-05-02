@@ -116,3 +116,27 @@ class ActionRestart(Action):
         dispatcher.utter_message("Let's start over with the database selection process.")
         # Return plain dictionary for restart event
         return [{"event": "restart"}]
+
+class ActionSubmitDatabase(Action):
+    def name(self) -> Text:
+        return "action_submit_database"
+
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: dict
+    ) -> List[dict]:
+        db_name     = tracker.get_slot("database_name")
+        db_version  = tracker.get_slot("database_version")
+        sysid       = tracker.get_slot("sysid")
+
+        # call your provisioning API / create ticket / etc.
+        dispatcher.utter_message(
+            text=(
+                f"Your request to create *{db_name}* "
+                f"version *{db_version}* with SysID *{sysid}* has been submitted!"
+            )
+        )
+
+        return []

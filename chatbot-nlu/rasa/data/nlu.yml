@@ -102,3 +102,11 @@ nlu:
       - let's try again
       - reset
       - start from the beginning
+
+  - intent: create_database
+    examples: |
+      - create a database
+      - provision a new database
+      - I want to create a database
+      - set up a database
+      - add a database
