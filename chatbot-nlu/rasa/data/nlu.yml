@@ -110,3 +110,11 @@ nlu:
       - I want to create a database
       - set up a database
       - add a database
+
+  - intent: delete_database
+    examples: |
+      - delete a database
+      - remove a database
+      - drop a database
+      - I want to delete a database
+      - decommission database

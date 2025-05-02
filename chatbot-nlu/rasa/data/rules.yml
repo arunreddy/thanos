@@ -52,3 +52,19 @@ rules:
       - action: create_database_form
       - active_loop: null
       - action: action_submit_database
+
+  - rule: Activate delete database form
+    steps:
+      - intent: delete_database
+      - action: delete_database_form
+      - active_loop: delete_database_form
+
+  - rule: Submit delete database form
+    condition:
+      - active_loop: delete_database_form
+      - slot_was_set:
+          - sysid
+    steps:
+      - action: delete_database_form
+      - active_loop: null
+      - action: action_submit_delete_database
