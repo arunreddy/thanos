@@ -212,6 +212,8 @@ responses:
   utter_confirm_delete_database:
     - text: "Your request to delete {database_name} ({database_version}) with SysID {sysid} has been submitted!"
 
+  utter_oos:
+    - text: "we are working on the features"
 actions:
   - action_recommend_database
   - action_submit_request

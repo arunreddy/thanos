@@ -11,7 +11,7 @@ rules:
       - intent: greet
       - action: utter_greet
 
-# ─── catch fallback inside select form ───
+  # ─── catch fallback inside select form ───
   - rule: nlu fallback in select form
     condition:
       - active_loop: select_database_form
@@ -19,7 +19,7 @@ rules:
       - intent: nlu_fallback
       - action: action_listen
 
-# ─── catch fallback inside create form ───
+  # ─── catch fallback inside create form ───
   - rule: nlu fallback in create form
     condition:
       - active_loop: create_database_form
@@ -27,7 +27,7 @@ rules:
       - intent: nlu_fallback
       - action: action_listen
 
-# ─── catch fallback inside delete form ───
+  # ─── catch fallback inside delete form ───
   - rule: nlu fallback in delete form
     condition:
       - active_loop: delete_database_form
@@ -35,7 +35,15 @@ rules:
       - intent: nlu_fallback
       - action: action_listen
 
-# ─── then your guarded restart ───
+  # ─── global fallback (when no form is active) ───
+  - rule: global nlu fallback
+    condition:
+      - active_loop: null
+    steps:
+      - intent: nlu_fallback
+      - action: utter_oos
+
+  # ─── then your guarded restart ───
   - rule: Restart the conversation
     condition:
       - active_loop: null
@@ -75,6 +83,7 @@ rules:
       - action: action_recommend_database
       - action: action_submit_request
 
+  # ——— create-database form ———
   - rule: Activate create database form
     steps:
       - intent: create_database
@@ -91,6 +100,7 @@ rules:
       - active_loop: null
       - action: action_submit_database
 
+  # ——— delete-database form ———
   - rule: Activate delete database form
     steps:
       - intent: delete_database
