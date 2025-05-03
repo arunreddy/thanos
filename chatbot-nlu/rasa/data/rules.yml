@@ -11,30 +11,68 @@ rules:
       - intent: greet
       - action: utter_greet
 
-  - rule: Start database selection process
+# ─── catch fallback inside select form ───
+  - rule: nlu fallback in select form
+    condition:
+      - active_loop: select_database_form
     steps:
-      - intent: start_database_selection
-      - action: utter_welcome_database_selection
-      - action: utter_ask_app_type
+      - intent: nlu_fallback
+      - action: action_listen
 
+# ─── catch fallback inside create form ───
+  - rule: nlu fallback in create form
+    condition:
+      - active_loop: create_database_form
+    steps:
+      - intent: nlu_fallback
+      - action: action_listen
+
+# ─── catch fallback inside delete form ───
+  - rule: nlu fallback in delete form
+    condition:
+      - active_loop: delete_database_form
+    steps:
+      - intent: nlu_fallback
+      - action: action_listen
+
+# ─── then your guarded restart ───
   - rule: Restart the conversation
+    condition:
+      - active_loop: null
     steps:
       - intent: restart
       - action: action_restart
 
   - rule: Interrupt with help and resume flow
+    condition:
+      - active_loop: null
     steps:
       - intent: help
       - action: utter_help
 
   - rule: Help website flow
+    condition:
+      - active_loop: null
     steps:
       - intent: help_website
       - action: utter_help_website
 
-  - rule: Submit database request on confirmation
+  # ——— select-database form ———
+  - rule: Activate select database form
     steps:
-      - intent: confirm_database_choice
+      - intent: start_database_selection
+      - action: select_database_form
+      - active_loop: select_database_form
+
+  - rule: Submit select database form
+    condition:
+      - active_loop: select_database_form
+      - slot_was_set:
+          - downtime_tolerance
+    steps:
+      - action: select_database_form
+      - active_loop: null
+      - action: action_recommend_database
       - action: action_submit_request
 
   - rule: Activate create database form
