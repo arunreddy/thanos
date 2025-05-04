@@ -74,15 +74,23 @@ class ActionRecommendDatabase(Action):
             
             estimated_cost = f"${cost:.2f} per month"
             logger.info(f"Recommendation: {recommended_db}, Estimated cost: {estimated_cost}")
+            
+            # Send recommendation message with confirmation buttons
+            dispatcher.utter_message(
+                text=f"Based on your requirements, I recommend: {recommended_db} (Estimated cost: {estimated_cost}). Would you like to proceed with this recommendation?",
+                buttons=[
+                    {"title": "Yes, create ticket", "payload": "/confirm_database_selection"},
+                    {"title": "No, let's try again", "payload": "/restart"}
+                ]
+            )
 
-            # Return slot updates, use SlotSet for the recommended database as the base name
+            # Return slot updates
             return [SlotSet("recommended_database", base_db),
                     SlotSet("estimated_cost", estimated_cost)]
         except Exception as e:
             logger.error(f"Error in action_recommend_database: {e}", exc_info=True)
             dispatcher.utter_message("Sorry, an error occurred while processing your request.")
             return [] 
-        
         
 
 class ActionRecommendDatabaseCreateTicket(Action):
@@ -94,9 +102,10 @@ class ActionRecommendDatabaseCreateTicket(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         # Retrieve necessary slots
         recommended_database = tracker.get_slot("recommended_database")
+        estimated_cost = tracker.get_slot("estimated_cost")
         ticket_id = f"DB-{random.randint(1000, 9999)}"
         # Updated message to include the recommended database
         dispatcher.utter_message(
-            text=f"Your database request for {recommended_database} has been submitted. Jira ticket {ticket_id} has been created and assigned to the appropriate approver. You will receive notifications about the status of your request."
+            text=f"Your database request for {recommended_database} (Estimated cost: {estimated_cost}) has been submitted. Jira ticket {ticket_id} has been created and assigned to the appropriate approver. You will receive notifications about the status of your request."
         )
-        return [] 
+        return []

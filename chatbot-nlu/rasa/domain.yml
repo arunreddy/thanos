@@ -12,6 +12,9 @@ intents:
   - delete_database
   - out_of_scope
   - inform_database_version 
+  - confirm_database_selection
+  - affirm
+  - deny
 
 entities:
   - database_name
@@ -121,6 +124,24 @@ slots:
     influence_conversation: false
     mappings: []
 
+  confirmed:
+    type: bool
+    influence_conversation: true
+    mappings:
+      - type: from_intent
+        intent: affirm
+        value: true
+        conditions:
+          - active_loop: null
+            requested_slot: null
+      - type: from_intent
+        intent: deny
+        value: false
+        conditions:
+          - active_loop: null
+            requested_slot: null
+
+
 responses:
   utter_greet:
     - text: "Hello! How can I help you today?"
@@ -217,9 +238,25 @@ responses:
   utter_submit_database:
     - text: "Your request to create {database_name} ({database_version}) with SysID {sysid} has been submitted!"
 
+  utter_ask_confirm_database_creation:
+    - text: "You're about to create a database with these details:\n\n- Name: {database_name}\n- Version: {database_version}\n- SysID: {sysid}\n\nWould you like to proceed with this database creation?"
+      buttons:
+        - title: "Yes, create the database"
+          payload: "/affirm"
+        - title: "No, start over"
+          payload: "/deny"
+
   # — delete-database confirmation —
   utter_confirm_delete_database:
     - text: "Your request to delete {database_name} ({database_version}) with SysID {sysid} has been submitted!"
+
+  utter_database_creation_cancelled:
+    - text: "Database creation has been cancelled. What would you like to do next?"
+      buttons:
+        - title: "Try again"
+          payload: "/create_database"
+        - title: "Help"
+          payload: "/help"
 
   utter_oos:
     - text: "I'm sorry, I don't understand that request or it's outside the scope of what I can do. I'm primarily designed to help with database-related tasks like selecting, creating, or deleting databases. Could you try asking me about one of these topics instead?"
@@ -233,6 +270,13 @@ responses:
         - title: "Help"
           payload: "/help"
 
+  utter_database_selection_confirmation:
+    - text: "Would you like to proceed with this recommendation?"
+      buttons:
+        - title: "Yes, create ticket"
+          payload: "/confirm_database_selection"
+        - title: "No, let's try again"
+          payload: "/restart"
 
 actions:
   - action_recommend_database

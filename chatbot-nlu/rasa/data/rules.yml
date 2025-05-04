@@ -80,6 +80,13 @@ rules:
       - action: recommend_database_form
       - active_loop: recommend_database_form
 
+  - rule: Handle confirmation of database selection
+    condition:
+      - active_loop: null
+    steps:
+      - intent: confirm_database_selection
+      - action: action_recommend_database_create_ticket
+
   - rule: Submit select database form
     condition:
       - active_loop: recommend_database_form
@@ -89,7 +96,7 @@ rules:
       - action: recommend_database_form
       - active_loop: null
       - action: action_recommend_database
-      - action: action_recommend_database_create_ticket
+      - action: utter_database_selection_confirmation
 
 # ——— create‐database form ———
   - rule: Activate create database form
@@ -106,7 +113,32 @@ rules:
     steps:
       - action: create_database_form
       - active_loop: null
+      - action: utter_ask_confirm_database_creation
+      - action: action_listen
+
+  - rule: Handle affirm for database creation
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - database_name
+          - database_version
+          - sysid
+    steps:
+      - intent: affirm
       - action: action_submit_database
+
+  # Handle rejection (cancellation) for database creation
+  - rule: Handle deny for database creation
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - database_name
+          - database_version
+          - sysid
+    steps:
+      - intent: deny
+      - action: utter_database_creation_cancelled
+
 
 # ——— delete‐database form ———
   - rule: Activate delete database form
