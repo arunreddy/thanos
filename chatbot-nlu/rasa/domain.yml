@@ -10,6 +10,8 @@ intents:
   - start_database_selection
   - create_database
   - delete_database
+  - out_of_scope
+  - inform_database_version 
 
 entities:
   - database_name
@@ -84,6 +86,13 @@ slots:
   database_version:
     type: text
     mappings:
+      - type: from_entity    # ← let it pull from the inform_database_version intent
+        entity: database_version
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: database_version
+          - active_loop: delete_database_form
+            requested_slot: database_version
       - type: from_text
         conditions:
           - active_loop: create_database_form
@@ -194,13 +203,13 @@ responses:
     - text: "Which version do you need?"
       buttons:
         - title: "PostgreSQL13"
-          payload: "PostgreSQL13"
+          payload: '/inform_database_version{"database_version":"PostgreSQL13"}'
         - title: "PostgreSQL14"
-          payload: "PostgreSQL14"
+          payload: '/inform_database_version{"database_version":"PostgreSQL14"}'
         - title: "PostgreSQL15"
-          payload: "PostgreSQL15"
+          payload: '/inform_database_version{"database_version":"PostgreSQL15"}'
         - title: "PostgreSQL16"
-          payload: "PostgreSQL16"
+          payload: '/inform_database_version{"database_version":"PostgreSQL16"}'
 
   utter_ask_sysid:
     - text: "Please provide the SysID for your database."

@@ -17,36 +17,53 @@ nlu:
     examples: |
       - help
       - I need assistance
+      - what can you do?
 
   - intent: help_website
     examples: |
       - help website
       - website help
+      - show me website help
 
   - intent: restart
     examples: |
       - restart
       - start over
+      - let’s start again
 
   - intent: start_database_selection
     examples: |
       - recommend a database
       - help me choose a database
       - what database should I use?
+      - I need to pick a database
 
   - intent: create_database
     examples: |
       - create a database
       - provision a new database
+      - set up a DB for me
+      - spin up a database
+      - add a database
 
   - intent: delete_database
     examples: |
       - delete a database
       - remove a database
+      - drop a database
+      - decommission a database
 
-  - lookup: database_version
+  - intent: inform_database_version
     examples: |
       - PostgreSQL13
       - PostgreSQL14
       - PostgreSQL15
       - PostgreSQL16
+
+  - intent: out_of_scope
+    examples: |
+      - what's the weather?
+      - tell me a joke
+      - who won the game?
+      - foobar
+      - lorem ipsum
