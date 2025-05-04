@@ -14,7 +14,7 @@ rules:
   # ─── catch fallback inside select form ───
   - rule: nlu fallback in select form
     condition:
-      - active_loop: select_database_form
+      - active_loop: recommend_database_form
     steps:
       - intent: nlu_fallback
       - action: action_listen

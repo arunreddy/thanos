@@ -56,7 +56,7 @@ nlu:
       - start from the beginning
       - start again
 
-  - intent: start_database_selection
+  - intent: recommend_database
     examples: |
       - recommend a database
       - help me choose a database

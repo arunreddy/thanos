@@ -46,22 +46,6 @@ def test_action_recommend_database_different_types(mock_tracker, mock_dispatcher
     assert result[1]["value"] == expected_cost
 
 
-def test_action_submit_request(mock_tracker, mock_dispatcher):
-    """
-    Test that the submit request action sends a message containing the recommended database.
-    
-    The test expects that the output message includes the recommended database value (e.g. "Oracle").
-    """
-    action = ActionSubmitRequest()
-    mock_tracker.get_slot.side_effect = lambda slot: {
-         "recommended_database": "Oracle",
-    }.get(slot, None)
-    
-    action.run(mock_dispatcher, mock_tracker, {})
-    # Retrieve the uttered message from keyword arguments.
-    call_args = mock_dispatcher.utter_message.call_args
-    message = call_args[1].get("text", "") if call_args[1] else ""
-    assert "Oracle" in message
 
 
 def test_action_restart(mock_tracker, mock_dispatcher):

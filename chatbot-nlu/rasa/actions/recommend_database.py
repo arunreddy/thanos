@@ -4,6 +4,7 @@ from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
 import logging
 import re
+import random
 
 logger = logging.getLogger(__name__)
 
