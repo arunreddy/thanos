@@ -220,17 +220,18 @@ responses:
   utter_ask_database_name:
     - text: "Provide the name of the database."
 
+
   utter_ask_database_version:
-    - text: "Which version do you need?"
-      buttons:
-        - title: "PostgreSQL13"
-          payload: '/inform_database_version{"database_version":"PostgreSQL13"}'
-        - title: "PostgreSQL14"
-          payload: '/inform_database_version{"database_version":"PostgreSQL14"}'
-        - title: "PostgreSQL15"
-          payload: '/inform_database_version{"database_version":"PostgreSQL15"}'
-        - title: "PostgreSQL16"
-          payload: '/inform_database_version{"database_version":"PostgreSQL16"}'
+      - text: "Which version do you need?"
+        buttons:
+          - title: "PostgreSQL 13"
+            payload: '/inform_database_version{"database_version":"postgresql13"}'
+          - title: "PostgreSQL 14"
+            payload: '/inform_database_version{"database_version":"postgresql14"}'
+          - title: "PostgreSQL 15"
+            payload: '/inform_database_version{"database_version":"postgresql15"}'
+          - title: "PostgreSQL 16"
+            payload: '/inform_database_version{"database_version":"postgresql16"}'
 
   utter_ask_sysid:
     - text: "Please provide the SysID for your database."
@@ -284,7 +285,7 @@ actions:
   - action_submit_database
   - action_submit_delete_database
   - action_restart
-
+  - validate_create_database_form
 session_config:
   session_expiration_time: 60
   carry_over_slots_to_new_session: false
