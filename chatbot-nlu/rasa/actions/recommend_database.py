@@ -1,16 +1,8 @@
-# This files contains your custom actions which can be used to run
-# custom Python code.
-#
-# See this guide on how to implement these action:
-# https://rasa.com/docs/rasa/custom-actions
-
-
 from typing import Any, Text, Dict, List
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
 import logging
-import random
 import re
 
 logger = logging.getLogger(__name__)
@@ -65,7 +57,7 @@ class ActionRecommendDatabase(Action):
                 "Oracle": 500,
                 "MySQL": 200,
                 "PostgreSQL": 250,
-                "MongoDB": 200,  # Updated to match test expectation
+                "MongoDB": 200,
                 "Neo4j": 400,
                 "SQL Server": 450
             }
@@ -88,11 +80,13 @@ class ActionRecommendDatabase(Action):
         except Exception as e:
             logger.error(f"Error in action_recommend_database: {e}", exc_info=True)
             dispatcher.utter_message("Sorry, an error occurred while processing your request.")
-            return []
+            return [] 
+        
+        
 
-class ActionSubmitRequest(Action):
+class ActionRecommendDatabaseCreateTicket(Action):
     def name(self) -> Text:
-        return "action_submit_request"
+        return "action_recommend_database_create_ticket"
 
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
@@ -104,62 +98,4 @@ class ActionSubmitRequest(Action):
         dispatcher.utter_message(
             text=f"Your database request for {recommended_database} has been submitted. Jira ticket {ticket_id} has been created and assigned to the appropriate approver. You will receive notifications about the status of your request."
         )
-        return []
-
-class ActionRestart(Action):
-    def name(self) -> Text:
-        return "action_restart"
-
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        dispatcher.utter_message("Let's start over with the database selection process.")
-        # Return plain dictionary for restart event
-        return [{"event": "restart"}]
-
-class ActionSubmitDatabase(Action):
-    def name(self) -> Text:
-        return "action_submit_database"
-
-    def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: dict
-    ) -> List[dict]:
-        db_name     = tracker.get_slot("database_name")
-        db_version  = tracker.get_slot("database_version")
-        sysid       = tracker.get_slot("sysid")
-
-        # call your provisioning API / create ticket / etc.
-        dispatcher.utter_message(
-            text=(
-                f"Your request to create *{db_name}* "
-                f"version *{db_version}* with SysID *{sysid}* has been submitted!"
-            )
-        )
-
-        return []
-    
-class ActionSubmitDeleteDatabase(Action):
-    def name(self) -> Text:
-        return "action_submit_delete_database"
-
-    def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: dict
-    ) -> List[dict]:
-        db_name    = tracker.get_slot("database_name")
-        db_version = tracker.get_slot("database_version")
-        sysid      = tracker.get_slot("sysid")
-
-        # TODO: call your delete API / issue ticket, etc.
-        dispatcher.utter_message(
-            text=(
-                f"Your request to *delete* {db_name} "
-                f"version {db_version} with SysID {sysid} has been submitted!"
-            )
-        )
-        return []
+        return [] 

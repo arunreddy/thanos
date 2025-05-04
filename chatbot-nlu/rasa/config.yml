@@ -5,23 +5,39 @@ assistant_id: 20250325-175630-nimble-settee
 language: en
 
 pipeline:
+  # Tokenization
   - name: WhitespaceTokenizer
+
+  # Feature extraction
   - name: RegexFeaturizer
   - name: LexicalSyntacticFeaturizer
   - name: CountVectorsFeaturizer
-  - name: CountVectorsFeaturizer
-    analyzer: char_wb
+    analyzer: "word"
     min_ngram: 1
-    max_ngram: 4
+    max_ngram: 2
+  - name: CountVectorsFeaturizer
+    analyzer: "char_wb"
+    min_ngram: 1
+    max_ngram: 5
+
+  # Classification
   - name: DIETClassifier
-    epochs: 100
+    epochs: 150
+    constrain_similarities: true
+    embedding_dim: 128
     entity_recognition: true
+
+  # Entity extraction
   - name: RegexEntityExtractor
   - name: EntitySynonymMapper
+
+  # Response selection
   - name: ResponseSelector
     epochs: 100
+
+  # Fallback
   - name: FallbackClassifier
-    threshold: 0.3
+    threshold: 0.7
     ambiguity_threshold: 0.1
 
 policies:

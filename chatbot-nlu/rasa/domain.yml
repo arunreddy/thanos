@@ -7,7 +7,7 @@ intents:
   - help
   - help_website
   - restart
-  - start_database_selection
+  - recommend_database
   - create_database
   - delete_database
   - out_of_scope
@@ -19,7 +19,7 @@ entities:
   - sysid
 
 forms:
-  select_database_form:
+  recommend_database_form:
     required_slots:
       - app_type
       - feature_type
@@ -45,7 +45,7 @@ slots:
     mappings:
       - type: from_text
         conditions:
-          - active_loop: select_database_form
+          - active_loop: recommend_database_form
             requested_slot: app_type
 
   feature_type:
@@ -53,7 +53,7 @@ slots:
     mappings:
       - type: from_text
         conditions:
-          - active_loop: select_database_form
+          - active_loop: recommend_database_form
             requested_slot: feature_type
 
   relationship_type:
@@ -61,7 +61,7 @@ slots:
     mappings:
       - type: from_text
         conditions:
-          - active_loop: select_database_form
+          - active_loop: recommend_database_form
             requested_slot: relationship_type
 
   downtime_tolerance:
@@ -69,7 +69,7 @@ slots:
     mappings:
       - type: from_text
         conditions:
-          - active_loop: select_database_form
+          - active_loop: recommend_database_form
             requested_slot: downtime_tolerance
 
   # — create/delete-database form slots —
@@ -131,13 +131,13 @@ responses:
   utter_help:
     - text: |
         I can help you:
-        • Select a database  
+        • Recommend a database  
         • Create a new database  
         • Delete an existing database  
         What would you like to do?
       buttons:
-        - title: "Select Database"
-          payload: "/start_database_selection"
+        - title: "Recommend a Database"
+          payload: "/recommend_database"
         - title: "Create Database"
           payload: "/create_database"
         - title: "Delete Database"
@@ -222,10 +222,21 @@ responses:
     - text: "Your request to delete {database_name} ({database_version}) with SysID {sysid} has been submitted!"
 
   utter_oos:
-    - text: "we are working on the features"
+    - text: "I'm sorry, I don't understand that request or it's outside the scope of what I can do. I'm primarily designed to help with database-related tasks like selecting, creating, or deleting databases. Could you try asking me about one of these topics instead?"
+      buttons:
+        - title: "Select Database"
+          payload: "/start_database_selection"
+        - title: "Create Database"
+          payload: "/create_database"
+        - title: "Delete Database"
+          payload: "/delete_database"
+        - title: "Help"
+          payload: "/help"
+
+
 actions:
   - action_recommend_database
-  - action_submit_request
+  - action_recommend_database_create_ticket
   - action_submit_database
   - action_submit_delete_database
   - action_restart

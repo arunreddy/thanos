@@ -73,23 +73,23 @@ rules:
       - intent: help_website
       - action: utter_help_website
 
-# ——— select‐database form ———
-  - rule: Activate select database form
+# ——— recommend database form ———
+  - rule: Activate recommend database form
     steps:
-      - intent: start_database_selection
-      - action: select_database_form
-      - active_loop: select_database_form
+      - intent: recommend_database
+      - action: recommend_database_form
+      - active_loop: recommend_database_form
 
   - rule: Submit select database form
     condition:
-      - active_loop: select_database_form
+      - active_loop: recommend_database_form
       - slot_was_set:
           - downtime_tolerance
     steps:
-      - action: select_database_form
+      - action: recommend_database_form
       - active_loop: null
       - action: action_recommend_database
-      - action: action_submit_request
+      - action: action_recommend_database_create_ticket
 
 # ——— create‐database form ———
   - rule: Activate create database form

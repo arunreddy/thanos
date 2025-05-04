@@ -7,29 +7,54 @@ nlu:
       - hey
       - hello
       - hi
-
+      - good morning
+      - good evening
+      - hey there
+      - hi there
+      - greetings
+      - hello there
+      - good afternoon
+      - howdy
+      - hello, is anyone there?
+      - hi, how are you?
+      - hello bot
+      - sup
+      - hiya
+      - hey bot
+    
   - intent: goodbye
     examples: |
       - bye
       - goodbye
+      - see you later
+      - good-bye
+      - good bye
+      - have a nice day
+      - nice to meet you
+      - nice to meet you too
 
   - intent: help
     examples: |
       - help
       - I need assistance
       - what can you do?
+      - what are you able to do?
+      - what can you do for me?
 
   - intent: help_website
     examples: |
       - help website
       - website help
       - show me website help
+      - how to use the website
 
   - intent: restart
     examples: |
       - restart
       - start over
       - let’s start again
+      - start from the beginning
+      - start again
 
   - intent: start_database_selection
     examples: |
@@ -37,6 +62,7 @@ nlu:
       - help me choose a database
       - what database should I use?
       - I need to pick a database
+      - I need to select a database
 
   - intent: create_database
     examples: |
@@ -45,6 +71,9 @@ nlu:
       - set up a DB for me
       - spin up a database
       - add a database
+      - create a tessel instance
+      - provision a development database
+      - create a development database
 
   - intent: delete_database
     examples: |
@@ -52,6 +81,10 @@ nlu:
       - remove a database
       - drop a database
       - decommission a database
+      - delete a tessel instance
+      - remove a tessel instance
+      - drop a tessel instance
+      - decommission a tessel instance
 
   - intent: inform_database_version
     examples: |
@@ -67,3 +100,18 @@ nlu:
       - who won the game?
       - foobar
       - lorem ipsum
+      - book me a flight
+      - what time is it
+      - who is the president
+      - where can I find pizza
+      - how tall is Mount Everest
+      - translate this to Spanish
+      - solve this math problem
+      - what's your favorite color
+      - do you like movies
+      - can you help me with my homework
+      - what's the meaning of life
+      - write me a poem
+      - tell me a story
+      - what's the stock price
+      - what are your hobbies
