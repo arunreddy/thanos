@@ -1,3 +1,4 @@
+# nlu.yml
 version: "3.1"
 
 nlu:
@@ -6,181 +7,63 @@ nlu:
       - hey
       - hello
       - hi
-      - hello there
-      - good morning
-      - good evening
-      - hey there
-      - how are you
-      - what's up
 
   - intent: goodbye
     examples: |
       - bye
       - goodbye
-      - see you around
-      - see you later
-      - have a nice day
 
   - intent: help
     examples: |
       - help
-      - /help
-      - can you help me?
-      - what can you do?
-      - show me your features
       - I need assistance
+      - what can you do?
 
   - intent: help_website
     examples: |
       - help website
-      - /help_website
-      - can you show me the website help?
       - website help
-      - what help do you offer for the website?
-
-  - intent: start_database_selection
-    examples: |
-      - I need to select a database
-      - Help me choose a database
-      - Database selection
-      - I want to request a new database
-      - Need database recommendation
-      - What database should I use
-      - Database request
-
-  - intent: inform_app_type
-    examples: |
-      - [Structured data, vendor app](app_type)
-      - [Structured data, home-grown app](app_type)
-      - [Unstructured data, vendor app](app_type)
-      - [Unstructured data, home-grown app](app_type)
-      - My app is [Structured data, vendor app](app_type)
-      - We have [Unstructured data, home-grown app](app_type)
-      - It's a [Structured data, home-grown app](app_type)
-
-  - intent: inform_features
-    examples: |
-      - [Yes, Oracle-only](feature_type)
-      - [Yes, but flexible on database](feature_type)
-      - [No special features needed](feature_type)
-      - I need [Yes, Oracle-only](feature_type)
-      - We require [Yes, but flexible on database](feature_type)
-      - [No special features needed](feature_type) for us
-
-  - intent: inform_relationship_needs
-    examples: |
-      - [Single-key access only](relationship_type)
-      - [Complex relationships or relational schema](relationship_type)
-      - [None of these](relationship_type)
-      - We need [Single-key access only](relationship_type)
-      - Our system requires [Complex relationships or relational schema](relationship_type)
-      - [None of these](relationship_type) apply to us
-
-  - intent: inform_downtime_tolerance
-    examples: |
-      - [Yes](downtime_tolerance)
-      - [No](downtime_tolerance)
-      - [Yes](downtime_tolerance), we can handle downtime
-      - [No](downtime_tolerance), we need high availability
-      - We can tolerate downtime, so [Yes](downtime_tolerance)
-      - We need high uptime, so [No](downtime_tolerance)
-
-  - intent: confirm_database_choice
-    examples: |
-      - [Yes, proceed](confirmation)
-      - [No, change choices](confirmation)
-      - [Yes, proceed](confirmation) with the recommendation
-      - [No, change choices](confirmation), I want to review
-      - Let's [Yes, proceed](confirmation)
-      - I'd like to [No, change choices](confirmation)
+      - show me website help
 
   - intent: restart
     examples: |
       - restart
       - start over
-      - begin again
-      - let's try again
-      - reset
-      - start from the beginning
+      - let’s start again
 
-  - intent: retrieve_object_list
+  - intent: start_database_selection
     examples: |
-      - retrieve database object list
-      - show me the database object list
-      - list all database objects
-      - I want the object list
+      - recommend a database
+      - help me choose a database
+      - what database should I use?
+      - I need to pick a database
 
-  - intent: export_definition
+  - intent: create_database
     examples: |
-      - export definition of database objects
-      - export schema definition
-      - give me the definitions
-      - export definition
-      - export schema definition
-      - give me the definitions
-      - I'd like to export the definition
+      - create a database
+      - provision a new database
+      - set up a DB for me
+      - spin up a database
+      - add a database
 
-  - intent: start_schema_explorer
+  - intent: delete_database
     examples: |
-      - start schema explorer
-      - open the schema explorer
-      - explore the database schema
-      - let’s explore the schema
-      - launch schema explorer
-      - schema explorer please
-      - show me the database schema explorer
+      - delete a database
+      - remove a database
+      - drop a database
+      - decommission a database
 
-  - intent: provide_database_host
+  - intent: inform_database_version
     examples: |
-      - my host is dbname.rds.amazonaws.com:5432
-      - here is the endpoint: dbname.rds.amazonaws.com:3306
-      - my host is dbname.rds.amazonaws.com:5432
-      - dbname.rds.amazonaws.com:5432
-      - here is the endpoint: dbname.rds.amazonaws.com:5432
+      - PostgreSQL13
+      - PostgreSQL14
+      - PostgreSQL15
+      - PostgreSQL16
 
-  - intent: select_database_type
+  - intent: out_of_scope
     examples: |
-      - it's MySQL
-      - I use PostgreSQL
-      - Oracle
-      - SQL Server
-      - MongoDB
-      - DB2
-
-  - intent: select_object_types
-    examples: |
-      - I want tables and indexes
-      - include tables, views, and constraints
-      - show me relationships and views
-
-  - intent: confirm_schema_parameters
-    examples: |
-      - yes, confirm
-      - that is correct
-      - proceed
-      - no, change them
-
-  - intent: upload_template
-    examples: |
-      - I have uploaded the template
-      - here is the file
-      - template uploaded
-      - here's my template
-      - I have uploaded the template
-      - template uploaded
-      - I'm sending you the file now
-
-  - intent: invalid_template
-    examples: |
-      - invalid template structure
-      - this template doesn't work
-      - that template doesn't work
-      - the file is invalid
-
-  - intent: confirm_object_list
-    examples: |
-      - yes, confirm
-      - that's correct
-      - proceed
-      - confirm
-      - go ahead
+      - what's the weather?
+      - tell me a joke
+      - who won the game?
+      - foobar
+      - lorem ipsum

@@ -1,321 +1,234 @@
+# domain.yml
 version: "3.1"
 
 intents:
   - greet
   - goodbye
-  - start_database_selection
-  - inform_app_type
-  - inform_features
-  - inform_relationship_needs
-  - inform_downtime_tolerance
-  - confirm_database_choice
-  - confirm_export_definition 
-  - restart
   - help
   - help_website
-  - start_schema_explorer
-  - retrieve_object_list
-  - export_definition
-  - provide_database_host
-  - select_database_type
-  - select_object_types
-  - confirm_schema_parameters
-  - confirm_object_list
-  - upload_template
-  - invalid_template
+  - restart
+  - start_database_selection
+  - create_database
+  - delete_database
+  - out_of_scope
+  - inform_database_version 
 
 entities:
-  - app_type
-  - feature_type
-  - relationship_type
-  - downtime_tolerance
-  - confirmation
-  - database_host_endpoint
-  - database_type
-  - object_types
+  - database_name
+  - database_version
+  - sysid
+
+forms:
+  select_database_form:
+    required_slots:
+      - app_type
+      - feature_type
+      - relationship_type
+      - downtime_tolerance
+
+  create_database_form:
+    required_slots:
+      - database_name
+      - database_version
+      - sysid
+
+  delete_database_form:
+    required_slots:
+      - database_name
+      - database_version
+      - sysid
 
 slots:
+  # — select-database form slots —
   app_type:
     type: text
-    influence_conversation: true
     mappings:
-      - type: from_entity
-        entity: app_type
-  
+      - type: from_text
+        conditions:
+          - active_loop: select_database_form
+            requested_slot: app_type
+
   feature_type:
     type: text
-    influence_conversation: true
     mappings:
-      - type: from_entity
-        entity: feature_type
-  
+      - type: from_text
+        conditions:
+          - active_loop: select_database_form
+            requested_slot: feature_type
+
   relationship_type:
     type: text
-    influence_conversation: true
     mappings:
-      - type: from_entity
-        entity: relationship_type
-  
+      - type: from_text
+        conditions:
+          - active_loop: select_database_form
+            requested_slot: relationship_type
+
   downtime_tolerance:
     type: text
-    influence_conversation: true
     mappings:
-      - type: from_entity
-        entity: downtime_tolerance
-  
+      - type: from_text
+        conditions:
+          - active_loop: select_database_form
+            requested_slot: downtime_tolerance
+
+  # — create/delete-database form slots —
+  database_name:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: database_name
+          - active_loop: delete_database_form
+            requested_slot: database_name
+
+  database_version:
+    type: text
+    mappings:
+      - type: from_entity    # ← let it pull from the inform_database_version intent
+        entity: database_version
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: database_version
+          - active_loop: delete_database_form
+            requested_slot: database_version
+      - type: from_text
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: database_version
+          - active_loop: delete_database_form
+            requested_slot: database_version
+
+  sysid:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: sysid
+          - active_loop: delete_database_form
+            requested_slot: sysid
+
+  # — output slots for recommendation flow —
   recommended_database:
     type: text
     influence_conversation: false
-    mappings:
-      - type: custom
-  
+    mappings: []
+
   estimated_cost:
     type: text
     influence_conversation: false
-    mappings:
-      - type: custom
-
-  database_host_endpoint:
-    type: text
-    influence_conversation: true
-    mappings:
-      - type: from_text
-        intent: provide_database_host
-
-  database_type:
-    type: text
-    influence_conversation: true
-    mappings:
-      - type: from_entity
-        entity: database_type
-
-  object_types:
-    type: list
-    influence_conversation: true
-    mappings:
-      - type: from_entity
-        entity: object_types
-
-  template_valid:
-    type: bool
-    influence_conversation: false
-    mappings:
-      - type: custom
-
-  access_granted:
-    type: bool
-    influence_conversation: false
-    mappings:
-      - type: custom
+    mappings: []
 
 responses:
-  utter_welcome_schema_explorer:
-    - text: "Welcome to the Database Schema Explorer! Retrieve detailed database schema definitions, including tables, views, and indexes. For further assistance, contact the Database Operations Team at [DB Ops Email ID]. Type 'BACK' anytime to go to action type selection. Type 'EXIT' anytime to end the conversation."
-
-  utter_action_type_selection:
-    - text: "What would you like to do? Options:"
-      buttons:
-        - title: "Retrieve database object list"
-          payload: '/retrieve_object_list'
-        - title: "Export definition of database objects"
-          payload: '/export_definition'
-
-  utter_object_list_intro:
-    - text: "Please provide the database host endpoint along with the port (e.g., dbname.rds.amazonaws.com:5432)."
-
-  utter_database_type_selection:
-    - text: "Please provide the type of the database. Options:"
-      buttons:
-        - title: "MongoDB"
-          payload: '/select_database_type{{"database_type": "MongoDB"}}'
-        - title: "Oracle"
-          payload: '/select_database_type{{"database_type": "Oracle"}}'
-        - title: "MySQL"
-          payload: '/select_database_type{{"database_type": "MySQL"}}'
-        - title: "SQL Server"
-          payload: '/select_database_type{{"database_type": "SQL Server"}}'
-        - title: "PostgreSQL"
-          payload: '/select_database_type{{"database_type": "PostgreSQL"}}'
-        - title: "DB2"
-          payload: '/select_database_type{{"database_type": "DB2"}}'
-
-  utter_object_type_selection:
-    - text: "What types of objects would you like to include in the list? Options:"
-      buttons:
-        - title: "Tables"
-          payload: '/select_object_types{{"object_types": "Tables"}}'
-        - title: "Views"
-          payload: '/select_object_types{{"object_types": "Views"}}'
-        - title: "Indexes"
-          payload: '/select_object_types{{"object_types": "Indexes"}}'
-        - title: "Constraints"
-          payload: '/select_object_types{{"object_types": "Constraints"}}'
-        - title: "Relationships"
-          payload: '/select_object_types{{"object_types": "Relationships"}}'
-
-  utter_confirm_schema_parameters:
-    - text: |
-        You have selected the following:
-        - Database Type: {database_type}
-        - Database: {database_host_endpoint}
-        - Object Types: {object_types}
-        
-        Please confirm to proceed.
-      buttons:
-        - title: "Confirm"
-          payload: '/confirm_object_list'
-        - title: "Change"
-          payload: '/restart'
-
-  utter_template_invalid:
-    - text: "Invalid template structure. Do you want to restart?"
-      buttons:
-        - title: "Yes, restart"
-          payload: '/restart'
-        - title: "No, exit"
-          payload: '/goodbye'
-
-  utter_upload_template:
-    - text: "Please upload the database object template file."
-        
-  utter_download_template:
-    - text: "Click the link to download the object list template."
-
   utter_greet:
     - text: "Hello! How can I help you today?"
-  
+
   utter_goodbye:
     - text: "Goodbye! Have a nice day."
 
   utter_help:
-    - text: "I can help you select a database based on your application requirements. I will ask you about your app type, features, relationship needs, and downtime tolerance to recommend the best database option. You can also restart the process anytime by typing 'restart'."
+    - text: |
+        I can help you:
+        • Select a database  
+        • Create a new database  
+        • Delete an existing database  
+        What would you like to do?
       buttons:
-        - title: "Start Database Selection"
-          payload: '/start_database_selection'
+        - title: "Select Database"
+          payload: "/start_database_selection"
+        - title: "Create Database"
+          payload: "/create_database"
+        - title: "Delete Database"
+          payload: "/delete_database"
 
   utter_help_website:
     - text: |
-        1. Oracle:
-           - Recommended for structured data in vendor/home-grown applications with special Oracle-only features.  
-           - Best suited for single-key relationships and any downtime tolerance.
+        Here’s what I can do:
+        1. Recommend a database.  
+        2. Provision (create) a new database.  
+        3. Decommission (delete) a database.
 
-        2. MySQL/PostgreSQL:
-           - Ideal for structured data with flexible database needs and single-key relationships.  
-           - Recommended when there are no special relationships or complex schema requirements.
-
-        3. PostgreSQL/SQL Server: 
-           - Suitable for structured data with flexible database needs and complex relationships or schema.  
-           - Recommended for relational databases that require high uptime.
-
-        4. MongoDB: 
-           - Best for unstructured data with flexible database needs and no special relationships or schema.  
-           - Recommended when there are no complex relationships or schema requirements.
-
-        5. Neo4j: 
-           - Recommended for unstructured data with flexible database needs and complex relationships.  
-           - Best suited for handling complex graph-based relationships in the data.
-
-        6. Multi-AZ Deployment (PostgreSQL/SQL Server/MongoDB):  
-           - Best suited for any data type (structured/unstructured) with no special features.  
-           - Requires high uptime tolerance and is recommended for highly available database setups.
-
-        7. Single Instance with Snapshot:
-           - Suitable for any data type (structured/unstructured) with no special features.  
-           - Tolerates low uptime and is ideal for simple setups with snapshot backups.
-
-      buttons:
-        - title: "Start Database Selection"
-          payload: '/start_database_selection'
-
-  utter_welcome_database_selection:
-    - text: "Welcome to the database selection assistant. I'll help you choose the right database for your needs."
-  
+  # — select-database form prompts —
   utter_ask_app_type:
     - text: "What best describes your setup?"
       buttons:
         - title: "Structured data, vendor app"
-          payload: '/inform_app_type{{"app_type": "Structured data, vendor app"}}'
+          payload: "Structured data, vendor app"
         - title: "Structured data, home-grown app"
-          payload: '/inform_app_type{{"app_type": "Structured data, home-grown app"}}'
+          payload: "Structured data, home-grown app"
         - title: "Unstructured data, vendor app"
-          payload: '/inform_app_type{{"app_type": "Unstructured data, vendor app"}}'
+          payload: "Unstructured data, vendor app"
         - title: "Unstructured data, home-grown app"
-          payload: '/inform_app_type{{"app_type": "Unstructured data, home-grown app"}}'
-  
-  utter_ask_features:
-    - text: "Do you need features like full-text search, embedding, or nested documents? And are you limited to Oracle?"
+          payload: "Unstructured data, home-grown app"
+
+  utter_ask_feature_type:
+    - text: "Any special features? (full-text search, embeddings, nested docs, etc.)"
       buttons:
         - title: "Yes, Oracle-only"
-          payload: '/inform_features{{"feature_type": "Yes, Oracle-only"}}'
-        - title: "Yes, but flexible on database"
-          payload: '/inform_features{{"feature_type": "Yes, but flexible on database"}}'
-        - title: "No special features needed"
-          payload: '/inform_features{{"feature_type": "No special features needed"}}'
-  
-  utter_ask_relationship_needs:
-    - text: "Do you need single-key access, complex relationships, or a relational schema for your data?"
+          payload: "Yes, Oracle-only"
+        - title: "Yes, but flexible"
+          payload: "Yes, but flexible on database"
+        - title: "No special features"
+          payload: "No special features needed"
+
+  utter_ask_relationship_type:
+    - text: "Do you need single-key access, complex relationships, or none?"
       buttons:
         - title: "Single-key access only"
-          payload: '/inform_relationship_needs{{"relationship_type": "Single-key access only"}}'
-        - title: "Complex relationships or relational schema"
-          payload: '/inform_relationship_needs{{"relationship_type": "Complex relationships or relational schema"}}'
-        - title: "None of these"
-          payload: '/inform_relationship_needs{{"relationship_type": "None of these"}}'
-  
+          payload: "Single-key access only"
+        - title: "Complex relationships/schema"
+          payload: "Complex relationships or relational schema"
+        - title: "None"
+          payload: "None of these"
+
   utter_ask_downtime_tolerance:
-    - text: "Can your app handle about an hour of downtime?"
+    - text: "Can your app tolerate about an hour of downtime?"
       buttons:
         - title: "Yes"
-          payload: '/inform_downtime_tolerance{{"downtime_tolerance": "Yes"}}'
+          payload: "Yes"
         - title: "No"
-          payload: '/inform_downtime_tolerance{{"downtime_tolerance": "No"}}'
-  
-  utter_confirm_database_choice:
-    - text: "Based on your responses, we recommend {recommended_database}. The estimated cost is {estimated_cost}. Shall we proceed with the request?"
-      buttons:
-        - title: "Yes, proceed"
-          payload: '/confirm_database_choice{{"confirmation": "Yes, proceed"}}'
-        - title: "No, change choices"
-          payload: '/confirm_database_choice{{"confirmation": "No, change choices"}}'
-  
+          payload: "No"
+
+  # — final submit for recommendation —
   utter_request_submitted:
-    - text: "Your database request has been submitted. A Jira ticket has been created and assigned to the appropriate approver. You will receive notifications about the status of your request."
+    - text: "Based on your responses, we recommend {recommended_database} (≈{estimated_cost}). A Jira ticket has been created."
 
+  # — create-database form prompts —
+  utter_ask_database_name:
+    - text: "Provide the name of the database."
+
+  utter_ask_database_version:
+    - text: "Which version do you need?"
+      buttons:
+        - title: "PostgreSQL13"
+          payload: '/inform_database_version{"database_version":"PostgreSQL13"}'
+        - title: "PostgreSQL14"
+          payload: '/inform_database_version{"database_version":"PostgreSQL14"}'
+        - title: "PostgreSQL15"
+          payload: '/inform_database_version{"database_version":"PostgreSQL15"}'
+        - title: "PostgreSQL16"
+          payload: '/inform_database_version{"database_version":"PostgreSQL16"}'
+
+  utter_ask_sysid:
+    - text: "Please provide the SysID for your database."
+
+  utter_submit_database:
+    - text: "Your request to create {database_name} ({database_version}) with SysID {sysid} has been submitted!"
+
+  # — delete-database confirmation —
+  utter_confirm_delete_database:
+    - text: "Your request to delete {database_name} ({database_version}) with SysID {sysid} has been submitted!"
+
+  utter_oos:
+    - text: "we are working on the features"
 actions:
-  # core greeting/farewell
-  - utter_greet
-  - utter_goodbye
-
-  # database‑selection flow
-  - utter_welcome_database_selection
-  - utter_ask_app_type
-  - utter_ask_features
-  - utter_ask_relationship_needs
-  - utter_ask_downtime_tolerance
-  - utter_confirm_database_choice
-  - utter_request_submitted
   - action_recommend_database
   - action_submit_request
+  - action_submit_database
+  - action_submit_delete_database
   - action_restart
-
-  # schema‑explorer flow
-  - utter_welcome_schema_explorer
-  - utter_action_type_selection
-  - utter_object_list_intro
-  - utter_database_type_selection
-  - utter_object_type_selection
-  - utter_confirm_schema_parameters
-  - utter_download_template
-  - action_process_object_list
-  - action_export_definition
-  - action_validate_template
-  - action_check_access
-  - utter_upload_template
-
-  # help menus
-  - utter_help
-  - utter_help_website
-
 
 session_config:
   session_expiration_time: 60

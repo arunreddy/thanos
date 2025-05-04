@@ -11,81 +11,116 @@ rules:
       - intent: greet
       - action: utter_greet
 
-  - rule: Start database selection process
+  # ─── catch fallback inside select form ───
+  - rule: nlu fallback in select form
+    condition:
+      - active_loop: select_database_form
     steps:
-      - intent: start_database_selection
-      - action: utter_welcome_database_selection
-      - action: utter_ask_app_type
+      - intent: nlu_fallback
+      - action: action_listen
 
+  # ─── catch fallback inside create form ───
+  - rule: nlu fallback in create form
+    condition:
+      - active_loop: create_database_form
+    steps:
+      - intent: nlu_fallback
+      - action: action_listen
+
+  # ─── catch fallback inside delete form ───
+  - rule: nlu fallback in delete form
+    condition:
+      - active_loop: delete_database_form
+    steps:
+      - intent: nlu_fallback
+      - action: action_listen
+
+  # ─── global nlu fallback when no form is active ───
+  - rule: global nlu fallback
+    condition:
+      - active_loop: null
+    steps:
+      - intent: nlu_fallback
+      - action: utter_oos
+
+  # ─── global out_of_scope fallback when no form is active ───
+  - rule: global out_of_scope fallback
+    condition:
+      - active_loop: null
+    steps:
+      - intent: out_of_scope
+      - action: utter_oos
+
+  # ─── guarded restart ───
   - rule: Restart the conversation
+    condition:
+      - active_loop: null
     steps:
       - intent: restart
       - action: action_restart
 
   - rule: Interrupt with help and resume flow
+    condition:
+      - active_loop: null
     steps:
       - intent: help
       - action: utter_help
 
-  - rule: help website flow
+  - rule: Help website flow
+    condition:
+      - active_loop: null
     steps:
       - intent: help_website
       - action: utter_help_website
 
-  - rule: Retrieve object list
+# ——— select‐database form ———
+  - rule: Activate select database form
     steps:
-      - intent: retrieve_object_list
-      - action: utter_object_list_intro
+      - intent: start_database_selection
+      - action: select_database_form
+      - active_loop: select_database_form
 
-  - rule: Start schema explorer
-    steps:
-      - intent: start_schema_explorer
-      - action: utter_welcome_schema_explorer
-      - action: utter_action_type_selection
-
-  - rule: Ask DB type after host endpoint
-    steps:
-      - intent: provide_database_host
-      - action: utter_database_type_selection
-
-  - rule: Ask object types after DB type
-    steps:
-      - intent: select_database_type
-      - action: utter_object_type_selection
-
-  - rule: Confirm schema parameters after object type selection
-    steps:
-      - intent: select_object_types
-      - action: utter_confirm_schema_parameters
-
-  - rule: Process object list after confirmation
-    steps:
-      - intent: confirm_object_list
-      - action: action_process_object_list
-      - action: utter_download_template
-
-  - rule: Process export definition after confirmation
-    steps:
-      - intent: confirm_export_definition
-      - action: action_export_definition
-
-  - rule: Start export definition
-    steps:
-      - intent: export_definition
-      - action: utter_upload_template
-
-  - rule: Validate and process export definition (valid)
-    steps:
-      - intent: upload_template
-      - action: action_validate_template
-      - slot_was_set:
-          - template_valid: true
-      - action: action_export_definition
-      - action: utter_download_template
-
-  - rule: Validate export definition (invalid)
+  - rule: Submit select database form
     condition:
+      - active_loop: select_database_form
       - slot_was_set:
-          - template_valid: false
+          - downtime_tolerance
     steps:
-      - action: utter_template_invalid
+      - action: select_database_form
+      - active_loop: null
+      - action: action_recommend_database
+      - action: action_submit_request
+
+# ——— create‐database form ———
+  - rule: Activate create database form
+    steps:
+      - intent: create_database
+      - action: create_database_form
+      - active_loop: create_database_form
+
+  - rule: Submit create database form
+    condition:
+      - active_loop: create_database_form
+      - slot_was_set:
+          - sysid           # ← not `requested_slot`
+    steps:
+      - action: create_database_form
+      - active_loop: null
+      - action: action_submit_database
+
+# ——— delete‐database form ———
+  - rule: Activate delete database form
+    steps:
+      - intent: delete_database
+      - action: delete_database_form
+      - active_loop: delete_database_form
+
+  - rule: Submit delete database form
+    condition:
+      - active_loop: delete_database_form
+      - slot_was_set:
+          - sysid
+    steps:
+      - action: delete_database_form
+      - active_loop: null
+      - action: action_submit_delete_database

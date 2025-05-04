@@ -11,9 +11,9 @@ wheels/
 
 # Rasa-specific files
 .rasa/*
-models/*
+# models/*
 logs/*
-rasa/models/*
+# rasa/models/*
 
 # Python-specific files
 __pycache__/

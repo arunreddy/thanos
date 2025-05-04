@@ -117,95 +117,49 @@ class ActionRestart(Action):
         # Return plain dictionary for restart event
         return [{"event": "restart"}]
 
-class ActionProcessObjectList(Action):
+class ActionSubmitDatabase(Action):
     def name(self) -> Text:
-        return "action_process_object_list"
+        return "action_submit_database"
 
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        # Retrieve slots
-        host = tracker.get_slot("database_host_endpoint")
-        db_type = tracker.get_slot("database_type")
-        objects = tracker.get_slot("object_types") or []
-        
-        # Process request, create JSON output
-        json_output = {
-            "comments": "Review the object lists and keep only the required objects",
-            "database_host_endpoint": host,
-            "objects": {
-                "tables": ["users", "orders", "products"] if "Tables" in objects else [],
-                "views": ["active_users", "inactive_users"] if "Views" in objects else [],
-                "indexes": ["users_username_idx", "orders_date_idx"] if "Indexes" in objects else [],
-                "constraints": ["users_pk", "orders_user_fk"] if "Constraints" in objects else []
-            }
-        }
-        
-        dispatcher.utter_message(text=f"JSON Output:\n{json_output}")
-        return []
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: dict
+    ) -> List[dict]:
+        db_name     = tracker.get_slot("database_name")
+        db_version  = tracker.get_slot("database_version")
+        sysid       = tracker.get_slot("sysid")
 
-class ActionExportDefinition(Action):
-    def name(self) -> Text:
-        return "action_export_definition"
-
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        host = tracker.get_slot("database_host_endpoint")
-        # Generate JSON output (if needed) but not used in the final message
-        json_output = {
-            "database_host_endpoint": host,
-            "definitions": {
-                "tables": [
-                    {
-                        "name": "users",
-                        "columns": [
-                            {"name": "id", "type": "int", "nullable": False},
-                            {"name": "username", "type": "varchar(255)", "nullable": False},
-                            {"name": "email", "type": "varchar(255)", "nullable": False}
-                        ]
-                    }
-                ],
-                "views": [
-                    {
-                        "name": "active_users",
-                        "query": "SELECT id, username, email FROM users WHERE active = true"
-                    }
-                ],
-                "indexes": [
-                    {
-                        "name": "users_username_idx",
-                        "columns": ["username"],
-                        "type": "unique"
-                    }
-                ],
-                "constraints": [
-                    {
-                        "type": "PRIMARY KEY",
-                        "table": "users",
-                        "columns": ["id"]
-                    }
-                ]
-            }
-        }
-        
-        # Updated utterance to match test expectation
+        # call your provisioning API / create ticket / etc.
         dispatcher.utter_message(
-            text="Your database definition has been exported in JSON format. You can download it from your notification center."
+            text=(
+                f"Your request to create *{db_name}* "
+                f"version *{db_version}* with SysID *{sysid}* has been submitted!"
+            )
         )
+
         return []
     
-class ActionValidateTemplate(Action):
+class ActionSubmitDeleteDatabase(Action):
     def name(self) -> Text:
-        return "action_validate_template"
+        return "action_submit_delete_database"
 
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        # Retrieve user's message safely (avoid errors if latest_message is missing)
-        latest_message = getattr(tracker, "latest_message", {}) or {}
-        user_input = latest_message.get("text", "")
-        if "template" in user_input.lower():
-            return [SlotSet("template_valid", True)]
-        else:
-            return [SlotSet("template_valid", False)]
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: dict
+    ) -> List[dict]:
+        db_name    = tracker.get_slot("database_name")
+        db_version = tracker.get_slot("database_version")
+        sysid      = tracker.get_slot("sysid")
+
+        # TODO: call your delete API / issue ticket, etc.
+        dispatcher.utter_message(
+            text=(
+                f"Your request to *delete* {db_name} "
+                f"version {db_version} with SysID {sysid} has been submitted!"
+            )
+        )
+        return []
