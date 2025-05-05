@@ -13,14 +13,14 @@ class ActionSubmitDeleteDatabase(Action):
         domain: dict
     ) -> List[dict]:
         db_name    = tracker.get_slot("database_name")
-        db_version = tracker.get_slot("database_version")
+        db_instance = tracker.get_slot("database_instance")
         sysid      = tracker.get_slot("sysid")
 
         # TODO: call your delete API / issue ticket, etc.
         dispatcher.utter_message(
             text=(
-                f"Your request to *delete* {db_name} "
-                f"version {db_version} with SysID {sysid} has been submitted!"
+                f"Your request to delete *{db_name}* "
+                f"instance *{db_instance}* with SYSID *{sysid}* has been submitted!"
             )
         )
         return [] 

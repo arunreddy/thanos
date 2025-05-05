@@ -139,8 +139,7 @@ rules:
       - intent: deny
       - action: utter_database_creation_cancelled
 
-
-# ——— delete‐database form ———
+  # ——— delete‐database form ———
   - rule: Activate delete database form
     steps:
       - intent: delete_database
@@ -151,8 +150,31 @@ rules:
     condition:
       - active_loop: delete_database_form
       - slot_was_set:
-          - sysid
+          - sysid           # fires once sysid is provided
     steps:
       - action: delete_database_form
       - active_loop: null
+      - action: utter_ask_confirm_database_deletion
+      - action: action_listen
+
+  - rule: Handle affirm for database deletion
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - database_name
+          - database_instance
+          - sysid
+    steps:
+      - intent: affirm
       - action: action_submit_delete_database
+
+  - rule: Handle deny for database deletion
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - database_name
+          - database_instance
+          - sysid
+    steps:
+      - intent: deny
+      - action: utter_database_creation_cancelled  # or create a new “cancelled delete” utter if you like

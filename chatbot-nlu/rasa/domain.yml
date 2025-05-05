@@ -18,6 +18,7 @@ intents:
 
 entities:
   - database_name
+  - database_instance
   - database_version
   - sysid
 
@@ -38,7 +39,7 @@ forms:
   delete_database_form:
     required_slots:
       - database_name
-      - database_version
+      - database_instance 
       - sysid
 
 slots:
@@ -89,19 +90,23 @@ slots:
   database_version:
     type: text
     mappings:
-      - type: from_entity    # ← let it pull from the inform_database_version intent
+      - type: from_entity    # pull from the inform_database_version intent
         entity: database_version
         conditions:
           - active_loop: create_database_form
-            requested_slot: database_version
-          - active_loop: delete_database_form
             requested_slot: database_version
       - type: from_text
         conditions:
           - active_loop: create_database_form
             requested_slot: database_version
+
+  database_instance:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
           - active_loop: delete_database_form
-            requested_slot: database_version
+            requested_slot: database_instance 
 
   sysid:
     type: text
@@ -218,7 +223,7 @@ responses:
 
   # — create-database form prompts —
   utter_ask_database_name:
-    - text: "Provide the name of the database."
+    - text: "Could you please provide the name of the database."
 
 
   utter_ask_database_version:
@@ -234,13 +239,13 @@ responses:
             payload: '/inform_database_version{"database_version":"postgresql16"}'
 
   utter_ask_sysid:
-    - text: "Please provide the SysID for your database."
+    - text: "Please provide the SYSID for your database."
 
   utter_submit_database:
-    - text: "Your request to create {database_name} ({database_version}) with SysID {sysid} has been submitted!"
+    - text: "Your request to create {database_name} ({database_version}) with SYSID {sysid} has been submitted!"
 
   utter_ask_confirm_database_creation:
-    - text: "You're about to create a database with these details:\n\n- Name: {database_name}\n- Version: {database_version}\n- SysID: {sysid}\n\nWould you like to proceed with this database creation?"
+    - text: "You're about to create a database with these details:\n\n- Name: {database_name}\n- Version: {database_version}\n- SYSID: {sysid}\n\nWould you like to proceed with this database creation?"
       buttons:
         - title: "Yes, create the database"
           payload: "/affirm"
@@ -249,7 +254,24 @@ responses:
 
   # — delete-database confirmation —
   utter_confirm_delete_database:
-    - text: "Your request to delete {database_name} ({database_version}) with SysID {sysid} has been submitted!"
+    - text: "Your request to delete {database_name} ({database_version}) with SYSID {sysid} has been submitted!"
+  
+  utter_ask_database_instance:
+    - text: "Please provide the database instance you want to delete."
+
+  utter_ask_confirm_database_deletion:
+    - text: |
+        You're about to delete a database with these details:
+        - Name: {database_name}
+        - Instance: {database_instance}
+        - SysID: {sysid}
+
+        Are you sure you want to proceed?
+      buttons:
+        - title: "Yes, delete it"
+          payload: "/affirm"
+        - title: "No, cancel"
+          payload: "/deny"
 
   utter_database_creation_cancelled:
     - text: "Database creation has been cancelled. What would you like to do next?"
