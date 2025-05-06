@@ -1,0 +1,67 @@
+Thursday, May 06 2025
+
+Bugs:
+1. [NLU]Repetition of the Yes/No during recommendation of the database
+2. [Actions] Delete database is not working
+
+
+Changes:
+1. [NLU] Create a database, add a initial message that says "The EDDI chatbot supports creating a PostgreSQL database only, if you would like to create a different type of database raise a ticket with the EDDI team". Next ask a question, "Would you like to create a PostgreSQL database?"
+2. [UI] Add a tab to the chatbot to quickly select various options available to the user
+
+New Features:
+1. Schema explorer:
+  Query: Explore a database schema
+
+  We only support PostgreSQL databases for now. Would you like to explore a PostgreSQL database schema?
+
+  If yes, ask for the connection string in the format "postgres://username:password@host:port/database_name"
+
+  If the connection string is invalid, ask the user to try again.
+
+  If the connection string is valid, Show the UI with different object types to explore.
+
+  User clicks on the object types and the schema explorer will let the user download the schema for the selected object type.
+
+  Tasks:
+  - Create an intent for the schema explorer
+  - Create a new action for validating the query string and also return the list of object types along with names if the query string is valid
+  - Create a new action to return the schema for the selected object type
+  - Create UI to show the list of object types and names
+  - Create a new form to post the selected object type to the action
+  - Return a link to download the schema file for the selected object type
+
+  Slots:
+  - connection_string
+  - object_type_list + object_type_name
+
+2. OKTA Integration:
+  Integrate Chatbot with OKTA for authentication
+
+3. Work on the ARB to get access to the Chatbot.
+
+4. Query analyzer:
+    Query: Analyze a query
+
+    We only support PostgreSQL databases for now. Would you like to analyze a PostgreSQL query?
+
+    If yes, ask for the connection string in the format "postgres://username:password@host:port/database_name"
+
+    Ask the user to enter the query they would like to analyze.
+    Validate the query string and return the explain plan for the query.
+
+    Tasks:
+    - Create an intent for the query analyzer
+    - Validate the database connection string
+    - Create a new action to return the explain plan for the query
+    - Create a new form to post the query to the action
+    - Return the explain plan for the query
+    - UI for displaying the explain plan
+    - Link to download the explain plan as JSON
+    - Link to download the graphical explain plan as PDF
+
+    Slots:
+    - connection_string
+    - query
+
+https://neon.tech/docs/import/import-sample-data
