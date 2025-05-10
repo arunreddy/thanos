@@ -13,6 +13,8 @@ intents:
   - out_of_scope
   - inform_database_version 
   - confirm_database_selection
+  - unsupported_db_type
+  - affirm_delete
   - affirm
   - deny
 
@@ -229,10 +231,6 @@ responses:
   utter_ask_database_version:
       - text: "Which version do you need?"
         buttons:
-          - title: "PostgreSQL 13"
-            payload: '/inform_database_version{"database_version":"postgresql13"}'
-          - title: "PostgreSQL 14"
-            payload: '/inform_database_version{"database_version":"postgresql14"}'
           - title: "PostgreSQL 15"
             payload: '/inform_database_version{"database_version":"postgresql15"}'
           - title: "PostgreSQL 16"
@@ -301,6 +299,44 @@ responses:
         - title: "No, let's try again"
           payload: "/restart"
 
+  utter_postgresql_support:
+    - text: |
+        Which database type would you like?  
+        We currently support only **PostgreSQL**.  
+        Other types will be available later.  
+        For any further questions, email dhahka.com.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+        - title: "MongoDB"
+          payload: "/unsupported_db_type"
+        - title: "Oracle"
+          payload: "/unsupported_db_type"
+  
+  utter_postgresql_support_delete:
+    - text: |
+        Which database type would you like?  
+        We currently support only **PostgreSQL**.  
+        Other types will be available later.  
+        For any further questions, email dhahka.com.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm_delete"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+        - title: "MongoDB"
+          payload: "/unsupported_db_type"
+        - title: "Oracle"
+          payload: "/unsupported_db_type"
+
+
+  utter_working_on_features:
+    - text: |
+        Sorry, we’re still working on those database types.  
+        They’ll be available soon!  
+          
 actions:
   - action_recommend_database
   - action_recommend_database_create_ticket
@@ -308,6 +344,7 @@ actions:
   - action_submit_delete_database
   - action_restart
   - validate_create_database_form
+
 session_config:
   session_expiration_time: 60
   carry_over_slots_to_new_session: false
