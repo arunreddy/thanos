@@ -201,7 +201,8 @@ rules:
       - intent: deny
       - action: utter_database_creation_cancelled
 
-  # # ——— delete‐database form ———
+# ——— delete‐database form ———
+
 # 1) when the user says “delete_database” first warn that only Postgres is supported
   - rule: postgres support notice for delete database
     steps:
@@ -252,4 +253,60 @@ rules:
       - intent: deny
       - action: utter_database_creation_cancelled  # or create your own “cancelled delete” utter
 
-  
+  # ——— explore‐schema flow ———
+
+# 1) Prompt for supported DB type
+  - rule: postgres support notice for exploring schema
+    steps:
+      - intent: explore_schema
+      - action: utter_postgresql_support_schema
+      - action: action_listen
+
+# 1a) catch unsupported clicks
+  - rule: unsupported database type selected during schema explore
+    steps:
+      - intent: unsupported_db_type
+      - action: utter_working_on_features
+      - action: action_listen
+
+# 2) once they click PostgreSQL
+  - rule: activate explore‐schema form after support affirmation
+    steps:
+      - intent: affirm_schema
+      - action: explore_schema_form
+      - active_loop: explore_schema_form
+
+# 3) when the user has provided connection_string & object_types
+  - rule: submit explore‐schema form
+    condition:
+      - active_loop: explore_schema_form
+      - slot_was_set:
+          - object_types
+    steps:
+      - action: explore_schema_form
+      - active_loop: null
+      - action: utter_ask_confirm_schema_explore
+      - action: action_listen
+
+# 4) on final “Yes”
+  - rule: handle affirm for schema exploration
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - connection_string
+          - object_types
+    steps:
+      - intent: affirm
+      - action: action_submit_schema_explore  # First generate the file
+      - action: action_download_schema        # Then provide download link
+
+# 5) on final “No”
+  - rule: handle deny for schema exploration
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - connection_string
+          - object_types
+    steps:
+      - intent: deny
+      - action: utter_cancel_schema_explore

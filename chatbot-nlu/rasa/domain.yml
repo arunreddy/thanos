@@ -17,6 +17,8 @@ intents:
   - affirm_delete
   - affirm
   - deny
+  - explore_schema
+  - affirm_schema
 
 entities:
   - database_name
@@ -43,6 +45,11 @@ forms:
       - database_name
       - database_instance 
       - sysid
+
+  explore_schema_form:
+    required_slots:
+      - connection_string
+      - object_types
 
 slots:
   # — select-database form slots —
@@ -148,6 +155,27 @@ slots:
           - active_loop: null
             requested_slot: null
 
+# schema-explorer
+  connection_string:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: explore_schema_form
+            requested_slot: connection_string
+
+  object_types:
+    type: list
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: explore_schema_form
+            requested_slot: object_types
+
+  schema_file_path:
+    type: text
+    influence_conversation: false
+    mappings: []
 
 responses:
   utter_greet:
@@ -331,12 +359,56 @@ responses:
         - title: "Oracle"
           payload: "/unsupported_db_type"
 
-
   utter_working_on_features:
     - text: |
         Sorry, we’re still working on those database types.  
         They’ll be available soon!  
-          
+
+#schema-explorer
+  utter_postgresql_support_schema:
+    - text: |
+        Which database type would you like to explore?  
+        We currently support only **PostgreSQL**.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm_schema"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+        - title: "MongoDB"
+          payload: "/unsupported_db_type"
+        - title: "Oracle"
+          payload: "/unsupported_db_type"
+
+  utter_ask_connection_string:
+    - text: "Please provide the connection string in the format `postgres://username:password@host:port/database_name`."
+
+  utter_invalid_connection_string:
+    - text: "That doesn’t look like a valid PostgreSQL connection string. Please try again in the correct format."
+
+  utter_ask_object_types:
+    - text: "Which object types would you like to explore? (e.g., tables, views, functions, sequences)"
+
+  utter_ask_confirm_schema_explore:
+    - text: |
+        You're about to explore schema for:
+        - Database type: PostgreSQL  
+        - Connection string: `{connection_string}`  
+        - Object types: `{object_types}`  
+
+        Would you like to proceed?
+      buttons:
+        - title: "Yes"
+          payload: "/affirm"
+        - title: "No"
+          payload: "/deny"
+
+  utter_schema_download:
+    - text: "Here’s your schema! [Download link]"
+
+  utter_cancel_schema_explore:
+    - text: "Schema exploration has been cancelled. Let me know if you need anything else."
+
+
 actions:
   - action_recommend_database
   - action_recommend_database_create_ticket
@@ -344,6 +416,9 @@ actions:
   - action_submit_delete_database
   - action_restart
   - validate_create_database_form
+  - validate_explore_schema_form     # your custom form validator
+  - action_download_schema  
+  - action_submit_schema_explore
 
 session_config:
   session_expiration_time: 60
