@@ -177,6 +177,16 @@ slots:
     influence_conversation: false
     mappings: []
 
+  definitions_file_path:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  database_host_endpoint:
+    type: text
+    influence_conversation: false
+    mappings: []
+
 responses:
   utter_greet:
     - text: "Hello! How can I help you today?"
@@ -408,6 +418,13 @@ responses:
   utter_cancel_schema_explore:
     - text: "Schema exploration has been cancelled. Let me know if you need anything else."
 
+  utter_ask_for_schema_selection:
+    - text: |
+        Now you can select specific objects you want detailed definitions.
+  
+        Just send me back a JSON object with only the objects you're interested in.
+      
+        I'll then generate detailed definitions for just those objects.
 
 actions:
   - action_recommend_database
@@ -416,9 +433,11 @@ actions:
   - action_submit_delete_database
   - action_restart
   - validate_create_database_form
-  - validate_explore_schema_form     # your custom form validator
+  - validate_explore_schema_form     
   - action_download_schema  
   - action_submit_schema_explore
+  - action_generate_schema_definitions
+  - utter_ask_for_schema_selection
 
 session_config:
   session_expiration_time: 60

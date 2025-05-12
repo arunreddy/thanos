@@ -139,12 +139,12 @@ nlu:
       - I want to explore a DB schema
       - schema explorer
 
-  # - intent: affirm_schema_explorer
-  #   examples: |
-  #     - yes
-  #     - sure
-  #     - absolutely
-  #     - sounds good
+  - intent: affirm_schema
+    examples: |
+      - yes
+      - sure
+      - absolutely
+      - sounds good
 
   # - intent: inform_object_type
   #   examples: |
@@ -152,3 +152,10 @@ nlu:
   #     - views
   #     - functions
   #     - indexes
+
+  - intent: provide_schema_selection
+    examples: |
+      - {"database_host_endpoint": "localhost:5432", "objects": {"tables": ["employees"]}}
+      - {"objects": {"tables": ["departments"], "functions": ["calculate_age"]}}
+      - Here is the json {"objects": {"tables": ["cars"]}}
+      - I want details for {"objects": {"functions": ["update_car_status"]}}

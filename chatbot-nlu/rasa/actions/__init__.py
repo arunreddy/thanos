@@ -8,6 +8,7 @@ from .schema_explorer import (
     ValidateExploreSchemaForm,
     ActionSubmitSchemaExplore,
     ActionDownloadSchema,
+    ActionGenerateSchemaDefinitions,
 )
 __all__ = [
     "ActionRecommendDatabase",
@@ -16,8 +17,9 @@ __all__ = [
     "ActionSubmitDatabase",
     "ValidateCreateDatabaseForm",
     "ActionSubmitDeleteDatabase",
-    'ValidateExploreSchemaForm',
-    'ActionSubmitSchemaExplore',
-    'ActionDownloadSchema',
+    "ValidateExploreSchemaForm",
+    "ActionSubmitSchemaExplore",
+    "ActionDownloadSchema",
+    "ActionGenerateSchemaDefinitions",
 ]
 
