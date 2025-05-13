@@ -40,7 +40,18 @@ class ValidateExploreSchemaForm(FormValidationAction):
         """
         Validate that the object types provided are among the supported list.
         """
-        supported = {"tables", "views", "functions", "sequences"}
+        supported = {"tables", "views", "functions", "sequences",
+                     "indexes", "constraints", "triggers", "materialized_views", "procedures", "schemas"}
+        # Normalize the input to lowercase
+        if isinstance(slot_value, str):
+            slot_value = slot_value.lower()
+        elif isinstance(slot_value, list):
+            slot_value = [item.lower() for item in slot_value if isinstance(item, str)]
+        # If slot_value is None or empty, return None
+        if not slot_value:
+            dispatcher.utter_message(text="Please provide valid object types.")
+            return {"object_types": None}
+        # Initialize selected list
         selected = []
     
         # Debug the input
