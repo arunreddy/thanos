@@ -78,10 +78,10 @@ class ActionRecommendDatabase(Action):
             # Send recommendation message with confirmation buttons
             dispatcher.utter_message(
                 text=f"Based on your requirements, I recommend: {recommended_db} (Estimated cost: {estimated_cost}). Would you like to proceed with this recommendation?",
-                buttons=[
-                    {"title": "Yes, create ticket", "payload": "/confirm_database_selection"},
-                    {"title": "No, let's try again", "payload": "/restart"}
-                ]
+                # buttons=[
+                #     {"title": "Yes, create ticket", "payload": "/confirm_database_selection"},
+                #     {"title": "No, let's try again", "payload": "/restart"}
+                # ]
             )
 
             # Return slot updates

@@ -98,25 +98,87 @@ rules:
       - action: action_recommend_database
       - action: utter_database_selection_confirmation
 
+# #schema explorer
+#   - rule: Activate schema explorer flow
+#     steps:
+#       - intent: explore_schema
+#       - action: utter_ask_explorer_support
+#       - action: action_listen
+
+#   - rule: User affirms schema explorer
+#     steps:
+#       - intent: affirm_schema_explorer
+#       - action: schema_explorer_form
+#       - active_loop: schema_explorer_form
+
+#   - rule: Submit connection string
+#     condition:
+#       - active_loop: schema_explorer_form
+#       - slot_was_set:
+#           - connection_string
+#     steps:
+#       - action: schema_explorer_form
+#       - active_loop: null
+#       - action: action_validate_connection_string
+
+#   - rule: Valid connection string → list object types
+#     condition:
+#       - active_loop: null
+#       - slot_was_set:
+#           - connection_valid    # you should set this in your custom action
+#     steps:
+#       - action: action_list_object_types
+#       - action: object_type_form
+#       - active_loop: object_type_form
+
+#   - rule: Submit object type form
+#     condition:
+#       - active_loop: object_type_form
+#       - slot_was_set:
+#           - object_type
+#     steps:
+#       - action: object_type_form
+#       - active_loop: null
+#       - action: action_get_schema
+
+
+
 # ——— create‐database form ———
-  - rule: Activate create database form
+  # 1) when the user says “create_database” first warn that only Postgres is supported
+  - rule: postgres support notice for create database
     steps:
       - intent: create_database
+      - action: utter_postgresql_support
+      - action: action_listen
+
+  # 1a) if they click any unsupported type…
+  - rule: unsupported database type selected
+    steps:
+      - intent: unsupported_db_type
+      - action: utter_working_on_features
+      - action: action_listen
+
+  # 2) once they affirm, activate the create-database form
+  - rule: activate create database form after support affirmation
+    steps:
+      - intent: affirm
       - action: create_database_form
       - active_loop: create_database_form
 
-  - rule: Submit create database form
+  # 3) when the form is filled (sysid set), ask for final confirmation
+  - rule: submit create database form
     condition:
       - active_loop: create_database_form
       - slot_was_set:
-          - sysid           # ← not `requested_slot`
+          - sysid
     steps:
       - action: create_database_form
       - active_loop: null
       - action: utter_ask_confirm_database_creation
       - action: action_listen
 
-  - rule: Handle affirm for database creation
+  # 4) if they then affirm with all slots present, actually provision
+  - rule: handle affirm for database creation
     condition:
       - active_loop: null
       - slot_was_set:
@@ -127,8 +189,8 @@ rules:
       - intent: affirm
       - action: action_submit_database
 
-  # Handle rejection (cancellation) for database creation
-  - rule: Handle deny for database creation
+  # 5) if they deny at that confirm screen, cancel creation
+  - rule: handle deny for database creation
     condition:
       - active_loop: null
       - slot_was_set:
@@ -139,15 +201,24 @@ rules:
       - intent: deny
       - action: utter_database_creation_cancelled
 
-
 # ——— delete‐database form ———
-  - rule: Activate delete database form
+
+# 1) when the user says “delete_database” first warn that only Postgres is supported
+  - rule: postgres support notice for delete database
     steps:
       - intent: delete_database
+      - action: utter_postgresql_support_delete
+      - action: action_listen
+
+# 1a) catch unsupported-DB clicks from that notice only
+  - rule: activate delete database form after support affirmation
+    steps:
+      - intent: affirm_delete
       - action: delete_database_form
       - active_loop: delete_database_form
 
-  - rule: Submit delete database form
+# 3) when the form is filled (sysid set), ask for final confirmation
+  - rule: submit delete database form
     condition:
       - active_loop: delete_database_form
       - slot_was_set:
@@ -155,4 +226,156 @@ rules:
     steps:
       - action: delete_database_form
       - active_loop: null
+      - action: utter_ask_confirm_database_deletion
+      - action: action_listen
+
+# 4) if they then affirm, actually delete
+  - rule: handle affirm for database deletion
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - database_name
+          - database_instance
+          - sysid
+    steps:
+      - intent: affirm
       - action: action_submit_delete_database
+
+# 5) if they deny, cancel deletion
+  - rule: handle deny for database deletion
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - database_name
+          - database_instance
+          - sysid
+    steps:
+      - intent: deny
+      - action: utter_database_creation_cancelled  # or create your own “cancelled delete” utter
+
+#   # ——— explore‐schema flow ———
+
+# # 1) Prompt for supported DB type
+#   - rule: postgres support notice for exploring schema
+#     steps:
+#       - intent: explore_schema
+#       - action: utter_postgresql_support_schema
+#       - action: action_listen
+
+# # 1a) catch unsupported clicks
+#   - rule: unsupported database type selected during schema explore
+#     steps:
+#       - intent: unsupported_db_type
+#       - action: utter_working_on_features
+#       - action: action_listen
+
+# # 2) once they click PostgreSQL
+#   - rule: activate explore‐schema form after support affirmation
+#     steps:
+#       - intent: affirm_schema
+#       - action: explore_schema_form
+#       - active_loop: explore_schema_form
+
+# # 3) when the user has provided connection_string & object_types
+#   - rule: submit explore‐schema form
+#     condition:
+#       - active_loop: explore_schema_form
+#       - slot_was_set:
+#           - object_types
+#     steps:
+#       - action: explore_schema_form
+#       - active_loop: null
+#       - action: utter_ask_confirm_schema_explore
+#       - action: action_listen
+
+# # 4) on final “Yes”
+#   - rule: handle affirm for schema exploration
+#     condition:
+#       - active_loop: null
+#       - slot_was_set:
+#           - connection_string
+#           - object_types
+#     steps:
+#       - intent: affirm
+#       - action: action_submit_schema_explore  # First generate the file
+#       - action: action_download_schema        # Then provide download link
+
+# # 5) on final “No”
+#   - rule: handle deny for schema exploration
+#     condition:
+#       - active_loop: null
+#       - slot_was_set:
+#           - connection_string
+#           - object_types
+#     steps:
+#       - intent: deny
+#       - action: utter_cancel_schema_explore
+
+# ——— explore‐schema flow ———
+
+# 1) Prompt for supported DB type
+  - rule: postgres support notice for exploring schema
+    steps:
+      - intent: explore_schema
+      - action: utter_postgresql_support_schema
+      - action: action_listen
+
+# 1a) catch unsupported clicks
+  - rule: unsupported database type selected during schema explore
+    steps:
+      - intent: unsupported_db_type
+      - action: utter_working_on_features
+      - action: action_listen
+
+# 2) once they click PostgreSQL
+  - rule: activate explore‐schema form after support affirmation
+    steps:
+      - intent: affirm_schema
+      - action: explore_schema_form
+      - active_loop: explore_schema_form
+
+# 3) when the user has provided connection_string & object_types
+  - rule: submit explore‐schema form
+    condition:
+      - active_loop: explore_schema_form
+      - slot_was_set:
+          - object_types
+    steps:
+      - action: explore_schema_form
+      - active_loop: null
+      - action: utter_ask_confirm_schema_explore
+      - action: action_listen
+
+# 4) on final "Yes"
+  - rule: handle affirm for schema exploration
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - connection_string
+          - object_types
+    steps:
+      - intent: affirm
+      - action: action_submit_schema_explore  # First generate the file
+      - action: action_download_schema        # Then provide download link
+      - action: utter_ask_for_schema_selection  # New step: prompt for object selection
+
+# 5) on final "No"
+  - rule: handle deny for schema exploration
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - connection_string
+          - object_types
+    steps:
+      - intent: deny
+      - action: utter_cancel_schema_explore
+
+# 6) Handle user providing schema selection for detailed definitions
+  - rule: generate schema definitions when user provides selection
+    condition:
+      - slot_was_set:
+          - connection_string
+          - schema_file_path  # Make sure we've already done schema exploration
+    steps:
+      - intent: provide_schema_selection
+      - action: action_generate_schema_definitions

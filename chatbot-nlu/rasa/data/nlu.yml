@@ -115,3 +115,47 @@ nlu:
       - tell me a story
       - what's the stock price
       - what are your hobbies
+
+  - intent: unsupported_db_type
+    examples: |
+      - MySQL
+      - mysql
+      - MongoDB
+      - mongodb
+      - Oracle
+      - oracle
+
+  - intent: affirm_delete
+    examples: |
+      - yes
+      - yep
+      - sure
+      - go ahead
+
+  - intent: explore_schema
+    examples: |
+      - explore a database schema
+      - show me the schema of my database
+      - I want to explore a DB schema
+      - schema explorer
+
+  - intent: affirm_schema
+    examples: |
+      - yes
+      - sure
+      - absolutely
+      - sounds good
+
+  # - intent: inform_object_type
+  #   examples: |
+  #     - tables
+  #     - views
+  #     - functions
+  #     - indexes
+
+  - intent: provide_schema_selection
+    examples: |
+      - {"database_host_endpoint": "localhost:5432", "objects": {"tables": ["employees"]}}
+      - {"objects": {"tables": ["departments"], "functions": ["calculate_age"]}}
+      - Here is the json {"objects": {"tables": ["cars"]}}
+      - I want details for {"objects": {"functions": ["update_car_status"]}}

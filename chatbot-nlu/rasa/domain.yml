@@ -13,11 +13,16 @@ intents:
   - out_of_scope
   - inform_database_version 
   - confirm_database_selection
+  - unsupported_db_type
+  - affirm_delete
   - affirm
   - deny
+  - explore_schema
+  - affirm_schema
 
 entities:
   - database_name
+  - database_instance
   - database_version
   - sysid
 
@@ -38,8 +43,13 @@ forms:
   delete_database_form:
     required_slots:
       - database_name
-      - database_version
+      - database_instance 
       - sysid
+
+  explore_schema_form:
+    required_slots:
+      - connection_string
+      - object_types
 
 slots:
   # — select-database form slots —
@@ -89,19 +99,23 @@ slots:
   database_version:
     type: text
     mappings:
-      - type: from_entity    # ← let it pull from the inform_database_version intent
+      - type: from_entity    # pull from the inform_database_version intent
         entity: database_version
         conditions:
           - active_loop: create_database_form
-            requested_slot: database_version
-          - active_loop: delete_database_form
             requested_slot: database_version
       - type: from_text
         conditions:
           - active_loop: create_database_form
             requested_slot: database_version
+
+  database_instance:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
           - active_loop: delete_database_form
-            requested_slot: database_version
+            requested_slot: database_instance 
 
   sysid:
     type: text
@@ -141,6 +155,37 @@ slots:
           - active_loop: null
             requested_slot: null
 
+# schema-explorer
+  connection_string:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: explore_schema_form
+            requested_slot: connection_string
+
+  object_types:
+    type: list
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: explore_schema_form
+            requested_slot: object_types
+
+  schema_file_path:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  definitions_file_path:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  database_host_endpoint:
+    type: text
+    influence_conversation: false
+    mappings: []
 
 responses:
   utter_greet:
@@ -218,29 +263,25 @@ responses:
 
   # — create-database form prompts —
   utter_ask_database_name:
-    - text: "Provide the name of the database."
+    - text: "Could you please provide the name of the database."
 
 
   utter_ask_database_version:
       - text: "Which version do you need?"
         buttons:
-          - title: "PostgreSQL 13"
-            payload: '/inform_database_version{"database_version":"postgresql13"}'
-          - title: "PostgreSQL 14"
-            payload: '/inform_database_version{"database_version":"postgresql14"}'
           - title: "PostgreSQL 15"
             payload: '/inform_database_version{"database_version":"postgresql15"}'
           - title: "PostgreSQL 16"
             payload: '/inform_database_version{"database_version":"postgresql16"}'
 
   utter_ask_sysid:
-    - text: "Please provide the SysID for your database."
+    - text: "Please provide the SYSID for your database."
 
   utter_submit_database:
-    - text: "Your request to create {database_name} ({database_version}) with SysID {sysid} has been submitted!"
+    - text: "Your request to create {database_name} ({database_version}) with SYSID {sysid} has been submitted!"
 
   utter_ask_confirm_database_creation:
-    - text: "You're about to create a database with these details:\n\n- Name: {database_name}\n- Version: {database_version}\n- SysID: {sysid}\n\nWould you like to proceed with this database creation?"
+    - text: "You're about to create a database with these details:\n\n- Name: {database_name}\n- Version: {database_version}\n- SYSID: {sysid}\n\nWould you like to proceed with this database creation?"
       buttons:
         - title: "Yes, create the database"
           payload: "/affirm"
@@ -249,7 +290,24 @@ responses:
 
   # — delete-database confirmation —
   utter_confirm_delete_database:
-    - text: "Your request to delete {database_name} ({database_version}) with SysID {sysid} has been submitted!"
+    - text: "Your request to delete {database_name} ({database_version}) with SYSID {sysid} has been submitted!"
+  
+  utter_ask_database_instance:
+    - text: "Please provide the database instance you want to delete."
+
+  utter_ask_confirm_database_deletion:
+    - text: |
+        You're about to delete a database with these details:
+        - Name: {database_name}
+        - Instance: {database_instance}
+        - SysID: {sysid}
+
+        Are you sure you want to proceed?
+      buttons:
+        - title: "Yes, delete it"
+          payload: "/affirm"
+        - title: "No, cancel"
+          payload: "/deny"
 
   utter_database_creation_cancelled:
     - text: "Database creation has been cancelled. What would you like to do next?"
@@ -279,6 +337,95 @@ responses:
         - title: "No, let's try again"
           payload: "/restart"
 
+  utter_postgresql_support:
+    - text: |
+        Which database type would you like?  
+        We currently support only **PostgreSQL**.  
+        Other types will be available later.  
+        For any further questions, email dhahka.com.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+        - title: "MongoDB"
+          payload: "/unsupported_db_type"
+        - title: "Oracle"
+          payload: "/unsupported_db_type"
+  
+  utter_postgresql_support_delete:
+    - text: |
+        Which database type would you like?  
+        We currently support only **PostgreSQL**.  
+        Other types will be available later.  
+        For any further questions, email dhahka.com.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm_delete"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+        - title: "MongoDB"
+          payload: "/unsupported_db_type"
+        - title: "Oracle"
+          payload: "/unsupported_db_type"
+
+  utter_working_on_features:
+    - text: |
+        Sorry, we’re still working on those database types.  
+        They’ll be available soon!  
+
+#schema-explorer
+  utter_postgresql_support_schema:
+    - text: |
+        Which database type would you like to explore?  
+        We currently support only **PostgreSQL**.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm_schema"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+        - title: "MongoDB"
+          payload: "/unsupported_db_type"
+        - title: "Oracle"
+          payload: "/unsupported_db_type"
+
+  utter_ask_connection_string:
+    - text: "Please provide the connection string in the format `postgres://username:password@host:port/database_name`."
+
+  utter_invalid_connection_string:
+    - text: "That doesn’t look like a valid PostgreSQL connection string. Please try again in the correct format."
+
+  utter_ask_object_types:
+    - text: "Which object types would you like to explore? (e.g., tables, views, functions, sequences)"
+
+  utter_ask_confirm_schema_explore:
+    - text: |
+        You're about to explore schema for:
+        - Database type: PostgreSQL  
+        - Connection string: `{connection_string}`  
+        - Object types: `{object_types}`  
+
+        Would you like to proceed?
+      buttons:
+        - title: "Yes"
+          payload: "/affirm"
+        - title: "No"
+          payload: "/deny"
+
+  utter_schema_download:
+    - text: "Here’s your schema! [Download link]"
+
+  utter_cancel_schema_explore:
+    - text: "Schema exploration has been cancelled. Let me know if you need anything else."
+
+  utter_ask_for_schema_selection:
+    - text: |
+        Now you can select specific objects you want detailed definitions.
+  
+        Just send me back a JSON object with only the objects you're interested in.
+      
+        I'll then generate detailed definitions for just those objects.
+
 actions:
   - action_recommend_database
   - action_recommend_database_create_ticket
@@ -286,6 +433,12 @@ actions:
   - action_submit_delete_database
   - action_restart
   - validate_create_database_form
+  - validate_explore_schema_form     
+  - action_download_schema  
+  - action_submit_schema_explore
+  - action_generate_schema_definitions
+  - utter_ask_for_schema_selection
+
 session_config:
   session_expiration_time: 60
   carry_over_slots_to_new_session: false
