@@ -19,6 +19,7 @@ intents:
   - deny
   - explore_schema
   - affirm_schema
+  - provide_schema_selection
 
 entities:
   - database_name
@@ -425,7 +426,7 @@ responses:
         Just send me back a JSON object with only the objects you're interested in.
       
         I'll then generate detailed definitions for just those objects.
-
+          
 actions:
   - action_recommend_database
   - action_recommend_database_create_ticket

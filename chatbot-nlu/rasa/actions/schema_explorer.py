@@ -209,14 +209,11 @@ class ActionSubmitSchemaExplore(Action):
             
             conn.close()
             
-            # Create JSON file with the new format
-            tmp_dir = tempfile.gettempdir()
-            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".json", dir=tmp_dir)
-            tmp.write(json.dumps(schema_data, indent=4).encode("utf-8"))
-            tmp.flush()
-            tmp.close()
+            # Convert schema data to JSON string
+            schema_json = json.dumps(schema_data, indent=4)
             
-            return [SlotSet("schema_file_path", tmp.name)]
+            # Store the JSON string in the slot instead of the file path
+            return [SlotSet("schema_file_path", schema_json)]
             
         except Exception as e:
             dispatcher.utter_message(text=f"Error fetching schema: {e}")
@@ -232,19 +229,34 @@ class ActionDownloadSchema(Action):
         tracker: Tracker, 
         domain: DomainDict
     ) -> List[Dict[Text, Any]]:
-        file_path = tracker.get_slot("schema_file_path")
-        if not file_path:
-            dispatcher.utter_message(text="Sorry, I don't have any schema file to download yet.")
+        schema_json = tracker.get_slot("schema_file_path")
+        if not schema_json:
+            dispatcher.utter_message(text="Sorry, I don't have any schema information yet.")
             return []
         
-        # Check if file exists
-        if not os.path.exists(file_path):
-            dispatcher.utter_message(text=f"Sorry, the schema file could not be found.")
-            return []
-        
-        # Just show the note and file path, without displaying the contents
+        # Display the JSON content directly
         note = "*Note: Review the object lists and keep only the required objects*"
-        dispatcher.utter_message(text=f"{note}\nThe schema JSON is saved at: {file_path}")
+        dispatcher.utter_message(text=f"{note}")
+        
+        # Display JSON content
+        try:
+            if isinstance(schema_json, str):
+                if schema_json.startswith("{") or schema_json.startswith("["):
+                    # It's a JSON string
+                    dispatcher.utter_message(text=f"```json\n{schema_json}\n```")
+                elif os.path.exists(schema_json):
+                    # It's a file path
+                    with open(schema_json, 'r') as f:
+                        content = f.read()
+                    dispatcher.utter_message(text=f"```json\n{content}\n```")
+                else:
+                    dispatcher.utter_message(text=f"Schema information: {schema_json}")
+        except Exception as e:
+            dispatcher.utter_message(text=f"Error reading schema: {e}")
+        
+        # Single prompt for next steps
+        # dispatcher.utter_message(text="Now you can select specific objects you want detailed definitions.")
+        # dispatcher.utter_message(text="Just send me back a JSON object with only the objects you're interested in.")
         
         return []
         
@@ -622,19 +634,15 @@ class ActionGenerateSchemaDefinitions(Action):
             # Close database connection
             conn.close()
             
-            # Save to file
-            import tempfile
-            import os
-            tmp_dir = tempfile.gettempdir()
-            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".json", dir=tmp_dir)
-            tmp.write(json.dumps(definitions, indent=4).encode("utf-8"))
-            tmp.flush()
-            tmp.close()
+            # Convert definitions to JSON string
+            definitions_json = json.dumps(definitions, indent=4)
             
-            # Provide link to full definitions
-            dispatcher.utter_message(text=f"The complete definitions are saved at: {tmp.name}")
+            # Display the JSON directly
+            dispatcher.utter_message(text="Here are the detailed definitions:")
+            dispatcher.utter_message(text=f"```json\n{definitions_json}\n```")
             
-            return [SlotSet("definitions_file_path", tmp.name)]
+            # Store the JSON string in the slot instead of the file path
+            return [SlotSet("definitions_file_path", definitions_json)]
             
         except json.JSONDecodeError as e:
             dispatcher.utter_message(text=f"Error parsing your JSON: {e}. Please check the format and try again.")
