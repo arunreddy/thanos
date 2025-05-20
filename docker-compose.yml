@@ -6,6 +6,8 @@ services:
       - "46379:6379"
     volumes:
       - redis-data:/data
+    networks:
+      - thanos-network
   
   postgres:
     image: postgres:latest
@@ -18,7 +20,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
-
+    networks:
+      - thanos-network
 
   chatbot-web:
     container_name: thanos-chatbot-web
@@ -35,17 +38,25 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
+    networks:
+      - thanos-network
       
   chatbot-api:
     container_name: thanos-chatbot-api
     build:
       context: ./chatbot-api
       dockerfile: Dockerfile
+    command: ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
-      - "9000:8000"
+      - "8000:8000"
     volumes:
       - ./chatbot-api/main.py:/app/main.py:ro
       - ./chatbot-api/app:/app/app:ro
+    environment:
+      - NODE_ENV=development
+      - PORT=8000
+    networks:
+      - thanos-network
 
   chatbot-nlu:
     container_name: thanos-chatbot-nlu
@@ -57,20 +68,31 @@ services:
     volumes:
       - ./chatbot-nlu/rasa/config.yml:/app/config.yml:ro
       - ./chatbot-nlu/rasa/domain.yml:/app/domain.yml:ro
-      - ./chatbot-nlu/rasa/endpoints.yml:/app/endpoints.yml:ro
+      - ./chatbot-nlu/rasa/endpoints.docker.yml:/app/endpoints.yml:ro
       - ./chatbot-nlu/rasa/actions:/app/actions:ro
       - ./chatbot-nlu/rasa/data:/app/data:ro
       - ./chatbot-nlu/rasa/models:/app/models
+    networks:
+      - thanos-network
 
   action_server:
     container_name: thanos-chatbot-action-server
     build:
       context: ./chatbot-nlu
       dockerfile: Dockerfile.actions
+    volumes:
+      - ./chatbot-nlu/rasa/actions:/app/actions:ro
     ports:
       - "5055:5055"
+    networks:
+      - thanos-network
 
 volumes:
   redis-data:
   postgres-data:
   chatbot-nlu-models:
+
+
+networks:
+  thanos-network:
+    driver: bridge
