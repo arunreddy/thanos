@@ -2,14 +2,15 @@
 
 from .recommend_database import ActionRecommendDatabase, ActionRecommendDatabaseCreateTicket
 from .restart import ActionRestart
+from .schema_explorer import (
+    ActionFetchAvailableObjects,
+    ActionFetchObjectDefinitions,
+    ActionSubmitSchemaExplore,
+    ValidateExploreSchemaForm,
+)
 from .submit_database import ActionSubmitDatabase, ValidateCreateDatabaseForm
 from .submit_delete_database import ActionSubmitDeleteDatabase
-from .schema_explorer import (
-    ValidateExploreSchemaForm,
-    ActionSubmitSchemaExplore,
-    ActionDownloadSchema,
-    ActionGenerateSchemaDefinitions,
-)
+
 __all__ = [
     "ActionRecommendDatabase",
     "ActionRecommendDatabaseCreateTicket",
@@ -19,7 +20,6 @@ __all__ = [
     "ActionSubmitDeleteDatabase",
     "ValidateExploreSchemaForm",
     "ActionSubmitSchemaExplore",
-    "ActionDownloadSchema",
-    "ActionGenerateSchemaDefinitions",
+    "ActionFetchAvailableObjects",
+    "ActionFetchObjectDefinitions",
 ]
-

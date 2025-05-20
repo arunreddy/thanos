@@ -2,6 +2,8 @@
 import { format } from "date-fns";
 import { User, Bot } from "lucide-react";
 import { motion } from "framer-motion";
+import { CustomForm } from "@/types";
+import React, { useState } from "react";
 
 interface Button {
   title: string;
@@ -13,6 +15,7 @@ interface ChatMessageProps {
   content: string;
   timestamp?: string;
   buttons?: Button[];
+  customForm?: CustomForm;
   onButtonClick?: (payload: string) => void;
 }
 
@@ -21,6 +24,7 @@ export default function ChatMessage({
   content,
   timestamp,
   buttons = [],
+  customForm,
   onButtonClick,
 }: ChatMessageProps) {
   const isUser = role === "user";
@@ -125,6 +129,21 @@ export default function ChatMessage({
           </motion.div>
         )}
 
+        {customForm && customForm.form_type === "multiselect" ? (
+          <MultiSelectForm customForm={customForm} onButtonClick={onButtonClick} />
+        ) : customForm ? (
+          <motion.div>
+            <div className="text-sm text-muted-foreground mb-1">
+              {customForm.text}
+            </div>
+            <div className="text-sm text-muted-foreground mb-1">
+              {customForm.objects && Object.keys(customForm.objects).map((key) => (
+                <div key={key}>{key}</div>
+              ))}
+            </div>
+          </motion.div>
+        ) : null}
+
         {timestamp && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -147,6 +166,71 @@ export default function ChatMessage({
           <User className="w-6 h-6 mt-2 text-muted-foreground" />
         </motion.div>
       )}
+    </motion.div>
+  );
+}
+
+function MultiSelectForm({ customForm, onButtonClick }: { customForm: CustomForm, onButtonClick?: (payload: string) => void }) {
+  const [selected, setSelected] = useState<{ [type: string]: Set<string> }>(() => {
+    const initial: { [type: string]: Set<string> } = {};
+    if (customForm.objects) {
+      Object.keys(customForm.objects).forEach(type => {
+        initial[type] = new Set();
+      });
+    }
+    return initial;
+  });
+
+  const handleChange = (type: string, value: string) => {
+    setSelected(prev => {
+      const newSet = new Set(prev[type]);
+      if (newSet.has(value)) {
+        newSet.delete(value);
+      } else {
+        newSet.add(value);
+      }
+      return { ...prev, [type]: newSet };
+    });
+  };
+
+  const handleSave = () => {
+    // Flatten selected into an object of arrays
+    const result: { [type: string]: string[] } = {};
+    Object.keys(selected).forEach(type => {
+      result[type] = Array.from(selected[type]);
+    });
+    if (onButtonClick) {
+      onButtonClick(JSON.stringify(result));
+    }
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <div className="text-sm text-muted-foreground mb-1">{customForm.text}</div>
+      {customForm.objects && Object.keys(customForm.objects).map(type => (
+        <div key={type} className="mb-2">
+          <div className="font-semibold mb-1">{type.charAt(0).toUpperCase() + type.slice(1)}</div>
+          <div className="flex flex-wrap gap-2">
+            {customForm.objects[type].map((item: string) => (
+              <label key={item} className="flex items-center gap-1 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selected[type]?.has(item) || false}
+                  onChange={() => handleChange(type, item)}
+                  className="accent-primary"
+                />
+                <span>{item}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      ))}
+      <button
+        className="mt-2 px-4 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+        onClick={handleSave}
+      >
+        Save
+      </button>
     </motion.div>
   );
 }

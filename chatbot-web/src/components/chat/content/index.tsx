@@ -5,6 +5,7 @@ import ChatInput from "../ChatInput";
 import TopNav from "../topnav";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bot } from "lucide-react";
+import { CustomForm } from "@/types";
 
 interface ChatContentProps {
   chatId: string ;
@@ -19,6 +20,7 @@ interface Message {
   created_at?: string;
   timestamp?: string;
   buttons?: any;
+  custom?: any;
 }
 
 enum ChatState {
@@ -74,6 +76,8 @@ const ChatContent: React.FC<ChatContentProps> = ({
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
+    console.log("-----> Send Messages", content);
+
     if (!content.trim()) return;
 
     setHasInteracted(true);
@@ -228,6 +232,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
                 content={message.content}
                 timestamp={message.timestamp || message.created_at}
                 buttons={message.buttons}
+                customForm={message.custom as CustomForm}
                 onButtonClick={handleButtonClick}
               />
             ))}

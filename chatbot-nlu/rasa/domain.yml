@@ -441,11 +441,7 @@ responses:
 
   utter_ask_for_schema_selection:
     - text: |
-        Now you can select specific objects you want detailed definitions.
-  
-        Just send me back a JSON object with only the objects you're interested in.
-      
-        I'll then generate detailed definitions for just those objects.
+        Select the objects for which you want detailed definitions
           
 actions:
   - action_recommend_database
@@ -455,9 +451,9 @@ actions:
   - action_restart
   - validate_create_database_form
   - validate_explore_schema_form     
-  - action_download_schema  
+  - action_fetch_available_objects  
   - action_submit_schema_explore
-  - action_generate_schema_definitions
+  - action_fetch_object_definitions
   - utter_ask_for_schema_selection
 
 session_config:

@@ -2,6 +2,7 @@ import json
 import os
 import re
 import tempfile
+import uuid
 from typing import Any, Dict, List, Text
 
 import psycopg2
@@ -100,6 +101,8 @@ class ActionSubmitSchemaExplore(Action):
     ) -> List[Dict[Text, Any]]:
         conn_str = tracker.get_slot("connection_string")
         object_types = tracker.get_slot("object_types") or []
+
+        print(f"ActionSubmitSchemaExplore#Object types: {object_types}")
 
         # Ensure object_types is a list
         if isinstance(object_types, str):
@@ -210,85 +213,37 @@ class ActionSubmitSchemaExplore(Action):
             return []
 
 
-# class ActionDownloadSchema(Action):
-#     def name(self) -> Text:
-#         return "action_download_schema"
-
-#     async def run(
-#         self,
-#         dispatcher: CollectingDispatcher,
-#         tracker: Tracker,
-#         domain: DomainDict
-#     ) -> List[Dict[Text, Any]]:
-#         schema_json = tracker.get_slot("schema_file_path")
-#         if not schema_json:
-#             dispatcher.utter_message(text="Sorry, I don't have any schema information yet.")
-#             return []
-
-#         # Display the JSON content directly
-#         note = "*Note: Review the object lists and keep only the required objects*"
-#         dispatcher.utter_message(text=f"{note}")
-
-#         # Display JSON content
-#         try:
-#             if isinstance(schema_json, str):
-#                 if schema_json.startswith("{") or schema_json.startswith("["):
-#                     # It's a JSON string
-#                     dispatcher.utter_message(text=f"```json\n{schema_json}\n```")
-#                 elif os.path.exists(schema_json):
-#                     # It's a file path
-#                     with open(schema_json, 'r') as f:
-#                         content = f.read()
-#                     dispatcher.utter_message(text=f"```json\n{content}\n```")
-#                 else:
-#                     dispatcher.utter_message(text=f"Schema information: {schema_json}")
-#         except Exception as e:
-#             dispatcher.utter_message(text=f"Error reading schema: {e}")
-
-#         # Single prompt for next steps
-#         # dispatcher.utter_message(text="Now you can select specific objects you want detailed definitions.")
-#         # dispatcher.utter_message(text="Just send me back a JSON object with only the objects you're interested in.")
-
-
-#         return []
-class ActionDownloadSchema(Action):
+class ActionFetchAvailableObjects(Action):
     def name(self) -> Text:
-        return "action_download_schema"
+        return "action_fetch_available_objects"
 
     async def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: DomainDict) -> List[Dict[Text, Any]]:
         # Get available objects from slot
         available_objects = tracker.get_slot("available_objects")
+
+        print(f"ActionFetchAvailableObjects#Available objects: {available_objects}")
 
         if not available_objects:
             dispatcher.utter_message(text="Sorry, I don't have any schema information yet.")
             return []
 
         # Display the JSON content directly
-        note = "*Note: Review the object lists and keep only the required objects*"
-        dispatcher.utter_message(text=f"{note}")
-
-        # Format complete JSON with available objects
+        form_message = {
+            "text": "Select the objects for which you want detailed definitions",
+            "form_type": "multiselect",
+            "objects": available_objects,
+        }
         try:
-            full_json = {
-                "comments": "Review the object lists and keep only the required objects",
-                "database_host_endpoint": tracker.get_slot("database_host_endpoint") or "localhost:5432",
-                "objects": available_objects,
-            }
-            json_str = json.dumps(full_json, indent=4)
-            dispatcher.utter_message(text=f"```json\n{json_str}\n```")
+            dispatcher.utter_message(custom=form_message)
         except Exception as e:
             dispatcher.utter_message(text=f"Error displaying schema: {e}")
-
-        # # Prompt for schema selection
-        # dispatcher.utter_message(text="Now you can select specific objects you want detailed definitions.")
-        # dispatcher.utter_message(text="Just send me back a JSON object with only the objects you're interested in.")
 
         return []
 
 
-class ActionGenerateSchemaDefinitions(Action):
+class ActionFetchObjectDefinitions(Action):
     def name(self) -> Text:
-        return "action_generate_schema_definitions"
+        return "action_fetch_object_definitions"
 
     async def run(
         self,
@@ -299,19 +254,23 @@ class ActionGenerateSchemaDefinitions(Action):
         # Get the user's message containing the JSON
         last_message = tracker.latest_message.get("text", "")
 
+        print(f"ActionFetchObjectDefinitions#Last message: {last_message}")
+
         try:
             # Try to extract and parse the JSON from the message
             import json
             import re
 
-            # Look for JSON pattern in the message
-            json_match = re.search(r"\{.*\}", last_message, re.DOTALL)
-            if not json_match:
-                dispatcher.utter_message(text="I couldn't find a valid JSON object in your message. Please provide your selection as JSON.")
-                return []
+            selected_objects = json.loads(last_message)
 
-            json_str = json_match.group(0)
-            schema_selection = json.loads(json_str)
+            # # Look for JSON pattern in the message
+            # json_match = re.search(r"\{.*\}", last_message, re.DOTALL)
+            # if not json_match:
+            #     dispatcher.utter_message(text="I couldn't find a valid JSON object in your message. Please provide your selection as JSON.")
+            #     return []
+
+            # json_str = json_match.group(0)
+            # schema_selection = json.loads(json_str)
 
             # Get connection string from slot
             conn_str = tracker.get_slot("connection_string")
@@ -320,7 +279,7 @@ class ActionGenerateSchemaDefinitions(Action):
                 return []
 
             # Extract selected objects
-            selected_objects = schema_selection.get("objects", {})
+            # selected_objects = schema_selection.get("objects", {})
             if not selected_objects:
                 dispatcher.utter_message(text="No objects were specified in your selection. Please include at least one object type.")
                 return []
@@ -329,7 +288,7 @@ class ActionGenerateSchemaDefinitions(Action):
             events = [SlotSet("filtered_objects", selected_objects)]
 
             # Get host endpoint
-            host_endpoint = schema_selection.get("database_host_endpoint", "")
+            host_endpoint = tracker.get_slot("database_host_endpoint")
             if not host_endpoint:
                 # Try to extract from connection string
                 match = re.search(r"@([^/]+)/", conn_str)
@@ -642,9 +601,13 @@ class ActionGenerateSchemaDefinitions(Action):
             events.append(SlotSet("object_definitions_url", tmp.name))
 
             # Display the JSON
-            dispatcher.utter_message(text="Here are the detailed definitions:")
-            dispatcher.utter_message(text=f"```json\n{definitions_json}\n```")
-            # dispatcher.utter_message(text=f"The definitions are also saved at: {tmp.name}")
+            form_message = {
+                "text": "Please download the definitions from the link below",
+                "form_type": "download",
+                "file_name": f"object_definitions_{uuid.uuid4()}.json",
+                "objects": definitions,
+            }
+            dispatcher.utter_message(custom=form_message)
 
             return events
 

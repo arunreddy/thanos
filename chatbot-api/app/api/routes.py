@@ -37,8 +37,12 @@ async def send_message(request: MessageRequest):
     try:
         response = await chat_service.process_message(message=request.message, user_id=request.user_id, conversation_id=request.conversation_id)
 
+        print("-----> RESPONSE", response)
         # Format the response to match what the frontend expects
-        return {"message": {"role": "assistant", "content": response["response"], "buttons": response.get("buttons", [])}, "conversation_id": response["conversation_id"]}
+        return {
+            "message": {"role": "assistant", "content": response["response"], "buttons": response.get("buttons", []), "custom": response.get("custom", {})},
+            "conversation_id": response["conversation_id"],
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

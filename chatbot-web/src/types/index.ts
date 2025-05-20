@@ -8,6 +8,7 @@ export interface Message {
   role: string;
   content: string;
   buttons?: any[];
+  custom?: any;
 }
 
 export interface MessageRequest {
@@ -24,4 +25,10 @@ export interface MessageResponse {
 export interface ChatHistory {
   conversation_id: string;
   messages: Message[];
+}
+
+export interface CustomForm {
+  text: string;
+  form_type: "multiselect";
+  objects: Record<string, any>;
 }
