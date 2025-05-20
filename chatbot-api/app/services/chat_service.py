@@ -1,5 +1,6 @@
 # app/services/chat_service.py (update)
 import json
+import os
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -74,9 +75,13 @@ class ChatService:
                 if custom_object.get("form_type", "") == "download":
                     file_name = custom_object.get("file_name")
                     content = json.dumps(custom_object.get("objects", {}))
+                    os.makedirs("/tmp/downloads", exist_ok=True)
                     download_file_path = f"/tmp/downloads/{file_name}"
                     with open(download_file_path, "w") as f:
                         f.write(content)
+
+                    text = "Download file"
+                    texts.append(text)
 
         # Fallback if Rasa doesn't respond
         if not texts:

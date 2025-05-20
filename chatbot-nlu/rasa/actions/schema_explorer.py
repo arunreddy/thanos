@@ -261,7 +261,7 @@ class ActionFetchObjectDefinitions(Action):
             import json
             import re
 
-            selected_objects = json.loads(last_message)
+            schema_selection = json.loads(last_message)
 
             # # Look for JSON pattern in the message
             # json_match = re.search(r"\{.*\}", last_message, re.DOTALL)
@@ -279,7 +279,7 @@ class ActionFetchObjectDefinitions(Action):
                 return []
 
             # Extract selected objects
-            # selected_objects = schema_selection.get("objects", {})
+            selected_objects = schema_selection.get("objects", {})
             if not selected_objects:
                 dispatcher.utter_message(text="No objects were specified in your selection. Please include at least one object type.")
                 return []

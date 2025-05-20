@@ -29,6 +29,7 @@ export interface ChatHistory {
 
 export interface CustomForm {
   text: string;
-  form_type: "multiselect";
+  form_type: "multiselect" | "download";
   objects: Record<string, any>;
+  file_name: string;
 }

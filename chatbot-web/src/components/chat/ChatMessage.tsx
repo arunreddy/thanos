@@ -4,7 +4,7 @@ import { User, Bot } from "lucide-react";
 import { motion } from "framer-motion";
 import { CustomForm } from "@/types";
 import React, { useState } from "react";
-
+import { API_URL } from "@/lib/api";
 interface Button {
   title: string;
   payload: string;
@@ -28,13 +28,14 @@ export default function ChatMessage({
   onButtonClick,
 }: ChatMessageProps) {
   const isUser = role === "user";
-
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 0.3 } },
     exit: { opacity: 0, transition: { duration: 0.2 } },
   };
+
+  console.log("-----> CUSTOM FORM", customForm);
 
   const messageVariants = {
     hidden: {
@@ -131,6 +132,20 @@ export default function ChatMessage({
 
         {customForm && customForm.form_type === "multiselect" ? (
           <MultiSelectForm customForm={customForm} onButtonClick={onButtonClick} />
+        ) : customForm && customForm.form_type === "download" ? (
+          <motion.div>
+            <div className="text-sm text-muted-foreground mb-1">
+              {customForm.text}
+            </div>
+            <a
+              href={`${API_URL}/download/${customForm.file_name}`}
+              download={customForm.file_name}
+              className="inline-block mt-2 px-4 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+              target="_blank"
+            >
+              Download {customForm.file_name}
+            </a>
+          </motion.div>
         ) : customForm ? (
           <motion.div>
             <div className="text-sm text-muted-foreground mb-1">
@@ -200,7 +215,9 @@ function MultiSelectForm({ customForm, onButtonClick }: { customForm: CustomForm
       result[type] = Array.from(selected[type]);
     });
     if (onButtonClick) {
-      onButtonClick(JSON.stringify(result));
+      const resultObjects = {"objects": result}
+      const command = JSON.stringify(resultObjects);
+      onButtonClick(command);
     }
   };
 

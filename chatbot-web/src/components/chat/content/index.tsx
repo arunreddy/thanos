@@ -76,7 +76,6 @@ const ChatContent: React.FC<ChatContentProps> = ({
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
-    console.log("-----> Send Messages", content);
 
     if (!content.trim()) return;
 
@@ -102,7 +101,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
     const userMessage: Message = {
       id: messageId,
       role: "user",
-      content: processedContent, // Use the processed content but display what the user typed
+      content: processedContent,
       timestamp: new Date().toISOString(),
     };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
@@ -122,6 +121,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
         content: response.message.content,
         buttons: response.message.buttons,
         timestamp: new Date().toISOString(),
+        custom: response.message.custom,
       };
       setMessages((prevMessages) => [...prevMessages, botMessage]);
 

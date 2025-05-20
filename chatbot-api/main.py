@@ -25,8 +25,9 @@ app.add_middleware(
 )
 
 
-@app.get("/download/:file_name")
+@app.get("/download/{file_name}")
 async def download_file(file_name: str):
+    print("-----> DOWNLOAD FILE", file_name)
     file_path = f"/tmp/downloads/{file_name}"
     # check if file exists, if not return 404 error.
     if not os.path.exists(file_path):

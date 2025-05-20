@@ -1,6 +1,6 @@
 import { MessageRequest, MessageResponse, ChatHistory } from "@/types";
 // frontend/src/lib/api.ts
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 // Get token from localStorage
 // const getToken = () => {
