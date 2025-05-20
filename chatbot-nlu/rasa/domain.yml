@@ -188,6 +188,26 @@ slots:
     influence_conversation: false
     mappings: []
 
+  available_objects:
+    type: any
+    influence_conversation: false
+    mappings: []
+  
+  filtered_objects:
+    type: any
+    influence_conversation: false
+    mappings: []
+  
+  object_definitions:
+    type: any
+    influence_conversation: false
+    mappings: []
+  
+  object_definitions_url:
+    type: text
+    influence_conversation: false
+    mappings: []
+
 responses:
   utter_greet:
     - text: "Hello! How can I help you today?"
