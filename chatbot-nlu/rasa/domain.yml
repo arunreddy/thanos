@@ -475,16 +475,6 @@ responses:
         Select the objects for which you want detailed definitions
           
 #query-analyzer
-  utter_ask_environment:
-    - text: "Please select the environment:"
-      buttons:
-        - title: "Dev (P1)"
-          payload: "Dev"
-        - title: "QA (P2)"
-          payload: "QA"
-        - title: "Prod (P3)"
-          payload: "Prod"
-
   utter_ask_sql_query:
     - text: "Please enter the SQL query you want to analyze."
 
