@@ -322,3 +322,60 @@ rules:
     steps:
       - intent: provide_schema_selection
       - action: action_fetch_object_definitions
+
+# ——— analyze‐query flow ———
+
+# 1) Initial prompt for database type support
+  - rule: postgres support notice for analyzing query
+    steps:
+      - intent: analyze_query
+      - action: utter_postgresql_support_query_analyzer
+      - action: action_listen
+
+# 2) When user confirms PostgreSQL, start the form
+  - rule: activate analyze query form after PostgreSQL selection
+    steps:
+      - intent: affirm_query_analyzer
+      - action: analyze_query_form
+      - active_loop: analyze_query_form
+
+# 3) Unsupported database type selected
+  - rule: unsupported database type selected for query analyzer
+    steps:
+      - intent: unsupported_db_type
+      - action: utter_working_on_features
+      - action: action_listen
+
+# 4) Submit analyze query form when all slots filled
+  - rule: submit analyze query form
+    condition:
+      - active_loop: analyze_query_form
+      - slot_was_set:
+          - sql_query
+    steps:
+      - action: analyze_query_form
+      - active_loop: null
+      - action: utter_ask_confirm_query_analysis
+      - action: action_listen
+
+# 5) Handle user confirmation to proceed with analysis
+  - rule: handle affirm for query analysis
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - connection_string  
+          - sql_query
+    steps:
+      - intent: affirm
+      - action: action_submit_query_analysis
+
+# 6) Handle user declining to proceed with analysis
+  - rule: handle deny for query analysis
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - connection_string 
+          - sql_query
+    steps:
+      - intent: deny
+      - action: utter_query_analysis_cancelled

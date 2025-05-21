@@ -10,6 +10,7 @@ from .schema_explorer import (
 )
 from .submit_database import ActionSubmitDatabase, ValidateCreateDatabaseForm
 from .submit_delete_database import ActionSubmitDeleteDatabase
+from .query_analyzer import ValidateAnalyzeQueryForm, ActionSubmitQueryAnalysis
 
 __all__ = [
     "ActionRecommendDatabase",
@@ -22,4 +23,6 @@ __all__ = [
     "ActionSubmitSchemaExplore",
     "ActionFetchAvailableObjects",
     "ActionFetchObjectDefinitions",
+    "ValidateAnalyzeQueryForm",
+    "ActionSubmitQueryAnalysis",
 ]
