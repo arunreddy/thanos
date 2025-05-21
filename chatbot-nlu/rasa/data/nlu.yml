@@ -159,3 +159,20 @@ nlu:
       - {"objects": {"tables": ["departments"], "functions": ["calculate_age"]}}
       - Here is the json {"objects": {"tables": ["cars"]}}
       - I want details for {"objects": {"functions": ["update_car_status"]}}
+
+  - intent: analyze_query
+    examples: |
+      - analyze a query
+      - check query performance
+      - review my SQL query
+      - analyze database query
+      - query analyzer
+
+  - intent: affirm_query_analyzer
+    examples: |
+      - PostgreSQL
+      - postgres
+      - postgresql
+      - i want to use postgresql
+      - choose postgresql
+      - postgres database
