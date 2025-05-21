@@ -21,21 +21,39 @@ intents:
   - affirm_schema
   - provide_schema_selection
   - analyze_query
-  - affirm_query_analyzer
+  - inform
 
 entities:
   - database_name
   - database_instance
   - database_version
   - sysid
+  - app_architect
+  - is_reviewed
+  - epic_link
+  - has_sysid
+  - data_nature
+  - data_structure
+  - app_type
+  - acid_compliance
+  - is_open_source
+  - ms_licensing
+  - vendor_recommended_db
 
 forms:
   recommend_database_form:
     required_slots:
+      - app_architect
+      - is_reviewed
+      - epic_link
+      - has_sysid
+      - data_nature
+      - data_structure
       - app_type
-      - feature_type
-      - relationship_type
-      - downtime_tolerance
+      - acid_compliance
+      - is_open_source
+      - ms_licensing
+      - vendor_recommended_db
 
   create_database_form:
     required_slots:
@@ -60,38 +78,87 @@ forms:
       - sql_query
 
 slots:
-  # — select-database form slots —
+  app_architect:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: app_architect
+
+  is_reviewed:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: is_reviewed
+
+  epic_link:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: epic_link
+
+  has_sysid:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: has_sysid
+
+  data_nature:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: data_nature
+
+  data_structure:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: data_structure
+
   app_type:
     type: text
     mappings:
-      - type: from_text
-        conditions:
-          - active_loop: recommend_database_form
-            requested_slot: app_type
+      - type: from_entity
+        entity: app_type
 
-  feature_type:
+  acid_compliance:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: acid_compliance
+
+  is_open_source:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: is_open_source
+
+  ms_licensing:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: ms_licensing
+
+  vendor_recommended_db:
     type: text
     mappings:
       - type: from_text
         conditions:
           - active_loop: recommend_database_form
-            requested_slot: feature_type
+            requested_slot: vendor_recommended_db
 
-  relationship_type:
+  ticket_id:
     type: text
-    mappings:
-      - type: from_text
-        conditions:
-          - active_loop: recommend_database_form
-            requested_slot: relationship_type
+    influence_conversation: false
+    mappings: []
 
-  downtime_tolerance:
+  recommended_database:
     type: text
-    mappings:
-      - type: from_text
-        conditions:
-          - active_loop: recommend_database_form
-            requested_slot: downtime_tolerance
+    influence_conversation: false
+    mappings: []
 
   # — create/delete-database form slots —
   database_name:
@@ -135,17 +202,6 @@ slots:
           - active_loop: delete_database_form
             requested_slot: sysid
 
-  # — output slots for recommendation flow —
-  recommended_database:
-    type: text
-    influence_conversation: false
-    mappings: []
-
-  estimated_cost:
-    type: text
-    influence_conversation: false
-    mappings: []
-
   confirmed:
     type: bool
     influence_conversation: true
@@ -172,7 +228,7 @@ slots:
         conditions:
           - active_loop: explore_schema_form
             requested_slot: connection_string
-      # Add this new mapping for analyze_query_form
+      # new mapping for analyze_query_form
       - type: from_text
         conditions:
           - active_loop: analyze_query_form
@@ -268,55 +324,82 @@ responses:
         2. Provision (create) a new database.  
         3. Decommission (delete) a database.
 
-  # — select-database form prompts —
-  utter_ask_app_type:
-    - text: "What best describes your setup?"
-      buttons:
-        - title: "Structured data, vendor app"
-          payload: "Structured data, vendor app"
-        - title: "Structured data, home-grown app"
-          payload: "Structured data, home-grown app"
-        - title: "Unstructured data, vendor app"
-          payload: "Unstructured data, vendor app"
-        - title: "Unstructured data, home-grown app"
-          payload: "Unstructured data, home-grown app"
+  utter_ask_app_architect:
+    - text: "Please provide the Application Architect or Experience Owner name."
 
-  utter_ask_feature_type:
-    - text: "Any special features? (full-text search, embeddings, nested docs, etc.)"
-      buttons:
-        - title: "Yes, Oracle-only"
-          payload: "Yes, Oracle-only"
-        - title: "Yes, but flexible"
-          payload: "Yes, but flexible on database"
-        - title: "No special features"
-          payload: "No special features needed"
-
-  utter_ask_relationship_type:
-    - text: "Do you need single-key access, complex relationships, or none?"
-      buttons:
-        - title: "Single-key access only"
-          payload: "Single-key access only"
-        - title: "Complex relationships/schema"
-          payload: "Complex relationships or relational schema"
-        - title: "None"
-          payload: "None of these"
-
-  utter_ask_downtime_tolerance:
-    - text: "Can your app tolerate about an hour of downtime?"
+  utter_ask_is_reviewed:
+    - text: "Is the solution reviewed with Architecture review board?"
       buttons:
         - title: "Yes"
-          payload: "Yes"
+          payload: '/inform{{"is_reviewed":"Yes"}}'
         - title: "No"
-          payload: "No"
+          payload: '/inform{{"is_reviewed":"No"}}'
 
-  # — final submit for recommendation —
-  utter_request_submitted:
-    - text: "Based on your responses, we recommend {recommended_database} (≈{estimated_cost}). A Jira ticket has been created."
+  utter_ask_has_sysid:
+    - text: "Do you have SYSID or Business mapping information for the Application?"
+      buttons:
+        - title: "Yes"
+          payload: '/inform{{"has_sysid":"Yes"}}'
+        - title: "No"
+          payload: '/inform{{"has_sysid":"No"}}'
+
+  utter_ask_data_nature:
+    - text: "Can you provide the nature of data you intend to store in your Database?"
+      buttons:
+        - title: "Transactional"
+          payload: '/inform{{"data_nature":"Transactional"}}'
+        - title: "Analytics"
+          payload: '/inform{{"data_nature":"Analytics"}}'
+
+  utter_ask_data_structure:
+    - text: "How do you define your Data?"
+      buttons:
+        - title: "Structured"
+          payload: '/inform{{"data_structure":"Structured"}}'
+        - title: "Unstructured"
+          payload: '/inform{{"data_structure":"Unstructured"}}'
+
+  utter_ask_app_type:
+    - text: "Is it a Vendor Application (COTS) or CFG developed?"
+      buttons:
+        - title: "Vendor Application"
+          payload: '/inform{{"app_type":"Vendor Application"}}'
+        - title: "CFG Developed"
+          payload: '/inform{{"app_type":"CFG Developed"}}'
+
+  utter_ask_acid_compliance:
+    - text: "Does your application need to meet strict ACID SQL Compliance or has complex queries (Multi-Join)?"
+      buttons:
+        - title: "Yes"
+          payload: '/inform{{"acid_compliance":"Yes"}}'
+        - title: "No"
+          payload: '/inform{{"acid_compliance":"No"}}'
+
+  utter_ask_is_open_source:
+    - text: "Is your Application Open source application?"
+      buttons:
+        - title: "Yes"
+          payload: '/inform{{"is_open_source":"Yes"}}'
+        - title: "No"
+          payload: '/inform{{"is_open_source":"No"}}'
+
+  utter_ask_ms_licensing:
+    - text: "Does your Application have any Microsoft licensing / Windows Infrastructure dependency?"
+      buttons:
+        - title: "Yes"
+          payload: '/inform{{"ms_licensing":"Yes"}}'
+        - title: "No"
+          payload: '/inform{{"ms_licensing":"No"}}'
+  
+  utter_ask_epic_link:
+    - text: "Please provide the Epic/Initiative link."
+
+  utter_ask_vendor_recommended_db:
+    - text: "Does Vendor recommend any Database types? If yes, please specify."
 
   # — create-database form prompts —
   utter_ask_database_name:
     - text: "Could you please provide the name of the database."
-
 
   utter_ask_database_version:
       - text: "Which version do you need?"

@@ -176,3 +176,26 @@ nlu:
       - i want to use postgresql
       - choose postgresql
       - postgres database
+
+  - intent: inform
+    examples: |
+      - [Yes](is_reviewed)
+      - [No](is_reviewed)
+      - [Yes](has_sysid)
+      - [No](has_sysid)
+      - [Transactional](data_nature)
+      - [Analytics](data_nature)
+      - [Structured](data_structure)
+      - [Unstructured](data_structure)
+      - [Vendor Application](app_type)
+      - [CFG Developed](app_type)
+      - [Yes](acid_compliance)
+      - [No](acid_compliance)
+      - [Yes](is_open_source)
+      - [No](is_open_source)
+      - [Yes](ms_licensing)
+      - [No](ms_licensing)
+      - PostgreSQL
+      - Oracle
+      - MySQL
+      - MongoDB

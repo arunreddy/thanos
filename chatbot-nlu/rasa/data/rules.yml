@@ -74,6 +74,31 @@ rules:
       - action: utter_help_website
 
 # ——— recommend database form ———
+  # - rule: Activate recommend database form
+  #   steps:
+  #     - intent: recommend_database
+  #     - action: recommend_database_form
+  #     - active_loop: recommend_database_form
+
+  # - rule: Handle confirmation of database selection
+  #   condition:
+  #     - active_loop: null
+  #   steps:
+  #     - intent: confirm_database_selection
+  #     - action: action_recommend_database_create_ticket
+
+  # - rule: Submit select database form
+  #   condition:
+  #     - active_loop: recommend_database_form
+  #     - slot_was_set:
+  #         - downtime_tolerance
+  #   steps:
+  #     - action: recommend_database_form
+  #     - active_loop: null
+  #     - action: action_recommend_database
+  #     - action: utter_database_selection_confirmation
+
+  # ——— recommend database form ———
   - rule: Activate recommend database form
     steps:
       - intent: recommend_database
@@ -91,12 +116,11 @@ rules:
     condition:
       - active_loop: recommend_database_form
       - slot_was_set:
-          - downtime_tolerance
+          - vendor_recommended_db
     steps:
       - action: recommend_database_form
       - active_loop: null
       - action: action_recommend_database
-      - action: utter_database_selection_confirmation
 
 # #schema explorer
 #   - rule: Activate schema explorer flow
