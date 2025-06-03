@@ -127,42 +127,46 @@ class ActionSubmitQueryAnalysis(Action):
             finally:
                 conn.close()
             
-            # Create final output with metadata
+            # Create final output with metadata - CONSISTENT WITH SCHEMA EXPLORER
             complete_plan = {
                 "metadata": {
                     "query": sql_query,
-                    "timestamp": str(uuid.uuid4())
+                    "timestamp": str(uuid.uuid4()),
+                    "connection_endpoint": connection_string.split('@')[1].split('/')[0] if '@' in connection_string else "unknown"
                 },
                 "execution_plan": execution_plan
             }
             
-            # Store the execution plan in a temporary file
+            # UPDATED: Use same file handling approach as schema_explorer.py
+            # Generate a unique URL/path for the execution plan
             tmp_dir = tempfile.gettempdir()
-            plan_id = str(uuid.uuid4())
-            file_name = f"execution_plan_{plan_id}.json"
-            file_path = os.path.join(tmp_dir, file_name)
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".json", dir=tmp_dir)
+
+            # Convert to JSON and save to file
+            plan_json = json.dumps(complete_plan, indent=4)
+            tmp.write(plan_json.encode("utf-8"))
+            tmp.flush()
+            tmp.close()
+
+            # Store execution plan data in dedicated slots
+            events = [
+                SlotSet("execution_plan_data", complete_plan),
+                SlotSet("execution_plan_path", tmp.name)
+            ]
+
+            # Provide simple confirmation and download link - CONSISTENT WITH SCHEMA EXPLORER
+            dispatcher.utter_message(text="Query analysis complete! Here's your execution plan:")
             
-            with open(file_path, 'w') as f:
-                json.dump(complete_plan, f, indent=4)
-            
-            # Create a fixed path file for easier access
-            fixed_file_path = os.path.join(os.path.dirname(tmp_dir), "latest_execution_plan.json")
-            with open(fixed_file_path, 'w') as f:
-                json.dump(complete_plan, f, indent=4)
-            
-            # Provide simple confirmation and download link
-            dispatcher.utter_message(text=f"Query analysis complete! Here's your execution plan:")
-            dispatcher.utter_message(text=f"Full plan saved to: {fixed_file_path}")
-            
+            # Display the JSON using the same format as schema explorer
             form_message = {
                 "text": "Download the complete execution plan:",
                 "form_type": "download",
-                "file_name": file_name,
+                "file_name": f"execution_plan_{uuid.uuid4()}.json",
                 "objects": complete_plan
             }
             dispatcher.utter_message(custom=form_message)
-            
-            return [SlotSet("execution_plan_path", file_path)]
+
+            return events
             
         except Exception as e:
             dispatcher.utter_message(text=f"Error analyzing query: {e}")

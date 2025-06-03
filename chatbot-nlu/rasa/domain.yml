@@ -21,6 +21,7 @@ intents:
   - affirm_schema
   - provide_schema_selection
   - analyze_query
+  - affirm_query_analyzer
   - inform
 
 entities:
