@@ -91,6 +91,10 @@ slots:
     mappings:
       - type: from_entity
         entity: is_reviewed
+      - type: from_text  # Add this as fallback
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: is_reviewed
 
   epic_link:
     type: text
@@ -103,8 +107,10 @@ slots:
   has_sysid:
     type: text
     mappings:
-      - type: from_entity
-        entity: has_sysid
+      - type: from_text
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: has_sysid
 
   data_nature:
     type: text
@@ -336,12 +342,7 @@ responses:
           payload: '/inform{{"is_reviewed":"No"}}'
 
   utter_ask_has_sysid:
-    - text: "Do you have SYSID or Business mapping information for the Application?"
-      buttons:
-        - title: "Yes"
-          payload: '/inform{{"has_sysid":"Yes"}}'
-        - title: "No"
-          payload: '/inform{{"has_sysid":"No"}}'
+    - text: "Do you have SYSID or Business mapping information for the Application? If yes, please share (if no, type 'No'):"
 
   utter_ask_data_nature:
     - text: "Can you provide the nature of data you intend to store in your Database?"
