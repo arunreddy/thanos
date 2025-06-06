@@ -40,6 +40,8 @@ entities:
   - is_open_source
   - ms_licensing
   - vendor_recommended_db
+  - database_type 
+
 
 forms:
   recommend_database_form:
@@ -166,6 +168,19 @@ slots:
     type: text
     influence_conversation: false
     mappings: []
+
+  database_type:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: database_type
+        intent: affirm_schema  # ADD this mapping
+      - type: from_entity  
+        entity: database_type
+        intent: affirm_query_analyzer  # ADD this mapping
+      - type: from_entity
+        entity: database_type
+        intent: inform  # Keep existing mapping
 
   # — create/delete-database form slots —
   database_name:
@@ -515,19 +530,23 @@ responses:
   utter_postgresql_support_schema:
     - text: |
         Which database type would you like to explore?  
-        We currently support only **PostgreSQL**.
+        We support **PostgreSQL** and **MySQL**.
       buttons:
         - title: "PostgreSQL"
-          payload: "/affirm_schema"
+          payload: '/affirm_schema{{"database_type":"PostgreSQL"}}'
         - title: "MySQL"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_schema{{"database_type":"MySQL"}}'
         - title: "MongoDB"
           payload: "/unsupported_db_type"
         - title: "Oracle"
           payload: "/unsupported_db_type"
 
   utter_ask_connection_string:
-    - text: "Please provide the connection string in the format `postgres://username:password@host:port/database_name`."
+    - text: |
+        Please provide the connection string in the appropriate format:
+        
+        **PostgreSQL:** `postgres://username:password@host:port/database_name`
+        **MySQL:** `mysql://username:password@host:port/database_name`
 
   utter_invalid_connection_string:
     - text: "That doesn’t look like a valid PostgreSQL connection string. Please try again in the correct format."
@@ -566,13 +585,13 @@ responses:
   utter_postgresql_support_query_analyzer:
     - text: |
         Which database type would you like to analyze?  
-        We currently support only **PostgreSQL**.
+        We support **PostgreSQL** and **MySQL**.
       buttons:
         - title: "PostgreSQL"
-          payload: "/affirm_query_analyzer"
-        - title: "MongoDB"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_query_analyzer{{"database_type":"PostgreSQL"}}'
         - title: "MySQL"
+          payload: '/affirm_query_analyzer{{"database_type":"MySQL"}}'
+        - title: "MongoDB"
           payload: "/unsupported_db_type"
         - title: "SQL Server"
           payload: "/unsupported_db_type"

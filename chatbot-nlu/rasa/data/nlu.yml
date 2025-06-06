@@ -170,12 +170,14 @@ nlu:
 
   - intent: affirm_query_analyzer
     examples: |
-      - PostgreSQL
-      - postgres
-      - postgresql
-      - i want to use postgresql
-      - choose postgresql
-      - postgres database
+      - yes
+      - sure
+      - absolutely
+      - sounds good
+      - let's analyze
+      - proceed
+      - continue
+      - go ahead
 
   - intent: inform
     examples: |
