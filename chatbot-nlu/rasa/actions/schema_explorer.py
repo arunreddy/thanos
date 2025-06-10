@@ -59,7 +59,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
             else:
                 dispatcher.utter_message(
                     text="Invalid PostgreSQL connection string format. "
-                         "Please use: postgres://username:password@host:port/database_name"
+                        #  "Please use: postgres://username:password@host:port/database_name"
                 )
                 return {"connection_string": None}
                 
@@ -203,7 +203,7 @@ class ActionSubmitSchemaExplore(Action):
                 elif database_type.lower() == "mysql":
                     # Extract host:port from mysql://user:pass@host:port/dbname
                     parsed = urlparse(conn_str)
-                    host_port = f"{parsed.hostname}:{parsed.port or 3306}"
+                    host_port = f"{parsed.hostname}:{parsed.port}"
             except Exception:
                 host_port = "unknown"
                 
@@ -409,12 +409,12 @@ class ActionFetchAvailableObjects(Action):
             total_objects += count
             object_summary.append(f"• {obj_type.title()}: {count}")
             
-        summary_text = f"🎯 **{database_type} Schema Exploration Results**\n\n" \
+        summary_text = f" **{database_type} Schema Exploration Results**\n\n" \
                       f"Found **{total_objects}** objects:\n" + "\n".join(object_summary)
 
         # Display the JSON content directly
         form_message = {
-            "text": summary_text + "\n\nSelect the objects for which you want detailed definitions:",
+            "text": "Select the objects for which you want detailed definitions:",
             "form_type": "multiselect",
             "objects": available_objects,
         }
@@ -499,7 +499,7 @@ class ActionFetchObjectDefinitions(Action):
 
             # Display the JSON
             form_message = {
-                "text": f"📋 **{database_type} Object Definitions Generated**\n\nDownload the complete definitions:",
+                "text": "Please download the definitions from the link below",
                 "form_type": "download",
                 "file_name": f"{database_type.lower()}_definitions_{uuid.uuid4().hex[:8]}.json",
                 "objects": definitions,
@@ -513,19 +513,97 @@ class ActionFetchObjectDefinitions(Action):
             dispatcher.utter_message(text=f"Error generating {database_type} definitions: {e}")
             return []
 
+    def _generate_postgresql_create_table(self, table_name: str, columns: List[Dict], cursor) -> str:
+        """Generate CREATE TABLE statement for PostgreSQL."""
+        try:
+            # Get primary keys
+            cursor.execute("""
+                SELECT a.attname
+                FROM pg_index i
+                JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
+                WHERE i.indrelid = %s::regclass AND i.indisprimary
+            """, (f"public.{table_name}",))
+            
+            primary_keys = [row[0] for row in cursor.fetchall()]
+            
+            # Build CREATE TABLE statement
+            create_lines = [f"CREATE TABLE {table_name} ("]
+            
+            for i, col in enumerate(columns):
+                line = f"    {col['name']} {col['type']}"
+                
+                if not col['nullable']:
+                    line += " NOT NULL"
+                
+                if col['default']:
+                    line += f" DEFAULT {col['default']}"
+                
+                if col['name'] in primary_keys:
+                    line += " PRIMARY KEY"
+                
+                if i < len(columns) - 1:
+                    line += ","
+                
+                create_lines.append(line)
+            
+            create_lines.append(");")
+            return "\n".join(create_lines)
+            
+        except Exception as e:
+            return f"-- Error generating CREATE TABLE statement: {e}"
+
+    def _generate_mysql_create_table(self, table_name: str, columns: List[Dict], cursor, database_name: str) -> str:
+        """Generate CREATE TABLE statement for MySQL."""
+        try:
+            # Get primary keys
+            cursor.execute(f"""
+                SELECT column_name
+                FROM information_schema.key_column_usage
+                WHERE table_schema = '{database_name}' AND table_name = %s AND constraint_name = 'PRIMARY'
+            """, (table_name,))
+            
+            primary_keys = [row[0] for row in cursor.fetchall()]
+            
+            # Build CREATE TABLE statement
+            create_lines = [f"CREATE TABLE {table_name} ("]
+            
+            for i, col in enumerate(columns):
+                line = f"    {col['name']} {col['type']}"
+                
+                if not col['nullable']:
+                    line += " NOT NULL"
+                
+                if col['default']:
+                    line += f" DEFAULT {col['default']}"
+                
+                if col['name'] in primary_keys:
+                    line += " PRIMARY KEY"
+                
+                if i < len(columns) - 1:
+                    line += ","
+                
+                create_lines.append(line)
+            
+            create_lines.append(");")
+            return "\n".join(create_lines)
+            
+        except Exception as e:
+            return f"-- Error generating CREATE TABLE statement: {e}"
+
     def _get_postgresql_definitions(self, conn_str: str, selected_objects: Dict[str, List[str]]) -> Dict[str, List[Dict]]:
-        """Get detailed PostgreSQL object definitions (existing logic)."""
+        """Get detailed PostgreSQL object definitions with CREATE statements."""
         conn = psycopg2.connect(conn_str)
         cursor = conn.cursor()
         definitions = {}
 
         try:
-            # Process tables (existing logic)
+            # Process tables with CREATE TABLE statements
             if "tables" in selected_objects and selected_objects["tables"]:
                 definitions["tables"] = []
                 for table_name in selected_objects["tables"]:
+                    # Get column information
                     cursor.execute("""
-                        SELECT column_name, data_type, character_maximum_length, is_nullable
+                        SELECT column_name, data_type, character_maximum_length, is_nullable, column_default
                         FROM information_schema.columns
                         WHERE table_schema = 'public' AND table_name = %s
                         ORDER BY ordinal_position
@@ -533,12 +611,49 @@ class ActionFetchObjectDefinitions(Action):
 
                     columns = []
                     for col in cursor.fetchall():
-                        col_name, col_type, max_length, nullable = col
+                        col_name, col_type, max_length, nullable, default = col
                         if max_length:
                             col_type = f"{col_type}({max_length})"
-                        columns.append({"name": col_name, "type": col_type, "nullable": nullable.lower() == "yes"})
+                        columns.append({
+                            "name": col_name, 
+                            "type": col_type, 
+                            "nullable": nullable.lower() == "yes",
+                            "default": default
+                        })
 
-                    definitions["tables"].append({"name": table_name, "columns": columns})
+                    # Generate CREATE TABLE statement
+                    create_statement = self._generate_postgresql_create_table(table_name, columns, cursor)
+
+                    definitions["tables"].append({
+                        "name": table_name, 
+                        "columns": columns,
+                        "definition": create_statement
+                    })
+
+            # Process views with CREATE VIEW statements
+            if "views" in selected_objects and selected_objects["views"]:
+                definitions["views"] = []
+                for view_name in selected_objects["views"]:
+                    cursor.execute("""
+                        SELECT table_name, view_definition
+                        FROM information_schema.views
+                        WHERE table_schema = 'public' AND table_name = %s
+                    """, (view_name,))
+
+                    result = cursor.fetchone()
+                    if result:
+                        name, view_def = result
+                        create_statement = f"CREATE VIEW {name} AS\n{view_def}"
+                        definitions["views"].append({
+                            "name": name, 
+                            "definition": create_statement,
+                            # "view_definition": view_def
+                        })
+                    else:
+                        definitions["views"].append({
+                            "name": view_name, 
+                            "definition": "-- Definition not available"
+                        })
 
             # Process functions (existing logic)
             if "functions" in selected_objects and selected_objects["functions"]:
@@ -554,9 +669,17 @@ class ActionFetchObjectDefinitions(Action):
                     result = cursor.fetchone()
                     if result:
                         name, arguments, return_type, source = result
-                        definitions["functions"].append({"name": name, "arguments": arguments, "return_type": return_type, "source": source})
+                        definitions["functions"].append({
+                            "name": name, 
+                            "arguments": arguments, 
+                            "return_type": return_type, 
+                            "source": source
+                        })
                     else:
-                        definitions["functions"].append({"name": function_name, "source": "-- Definition not available"})
+                        definitions["functions"].append({
+                            "name": function_name, 
+                            "source": "-- Definition not available"
+                        })
 
             # Process Constraints (existing logic)
             if "constraints" in selected_objects and selected_objects["constraints"]:   
@@ -575,23 +698,6 @@ class ActionFetchObjectDefinitions(Action):
                     else:
                         definitions["constraints"].append({"name": constraint_name, "definition": "-- Definition not available"})
             
-            # Process Views (existing logic)
-            if "views" in selected_objects and selected_objects["views"]:
-                definitions["views"] = []
-                for view_name in selected_objects["views"]:
-                    cursor.execute("""
-                        SELECT table_name, view_definition
-                        FROM information_schema.views
-                        WHERE table_schema = 'public' AND table_name = %s
-                    """, (view_name,))
-
-                    result = cursor.fetchone()
-                    if result:
-                        name, definition = result
-                        definitions["views"].append({"name": name, "definition": definition})
-                    else:
-                        definitions["views"].append({"name": view_name, "definition": "-- Definition not available"})
-        
             # Process Indexes (existing logic)
             if "indexes" in selected_objects and selected_objects["indexes"]:
                 definitions["indexes"] = []
@@ -623,9 +729,17 @@ class ActionFetchObjectDefinitions(Action):
                     result = cursor.fetchone()
                     if result:
                         name, arguments, return_type, source = result
-                        definitions["procedures"].append({"name": name, "arguments": arguments, "return_type": return_type, "source": source})
+                        definitions["procedures"].append({
+                            "name": name, 
+                            "arguments": arguments, 
+                            "return_type": return_type, 
+                            "source": source
+                        })
                     else:
-                        definitions["procedures"].append({"name": procedure_name, "source": "-- Definition not available"})
+                        definitions["procedures"].append({
+                            "name": procedure_name, 
+                            "source": "-- Definition not available"
+                        })
             
             # Process Triggers (existing logic)
             if "triggers" in selected_objects and selected_objects["triggers"]:
@@ -658,9 +772,17 @@ class ActionFetchObjectDefinitions(Action):
                     result = cursor.fetchone()
                     if result:
                         name, definition = result
-                        definitions["materialized_views"].append({"name": name, "definition": definition})
+                        create_statement = f"CREATE MATERIALIZED VIEW {name} AS\n{definition}"
+                        definitions["materialized_views"].append({
+                            "name": name, 
+                            "definition": create_statement,
+                            # "view_definition": definition
+                        })
                     else:
-                        definitions["materialized_views"].append({"name": mv_name, "definition": "-- Definition not available"})
+                        definitions["materialized_views"].append({
+                            "name": mv_name, 
+                            "definition": "-- Definition not available"
+                        })
             
             # Process Schemas (existing logic)
             if "schemas" in selected_objects and selected_objects["schemas"]:
@@ -703,7 +825,6 @@ class ActionFetchObjectDefinitions(Action):
                         })
                     else:
                         definitions["sequences"].append({"name": sequence_name, "definition": "-- Definition not available"})
-
             
         finally:
             conn.close()
@@ -711,7 +832,7 @@ class ActionFetchObjectDefinitions(Action):
         return definitions
 
     def _get_mysql_definitions(self, conn_str: str, selected_objects: Dict[str, List[str]]) -> Dict[str, List[Dict]]:
-        """Get detailed MySQL object definitions."""
+        """Get detailed MySQL object definitions with CREATE statements."""
         try:
             import mysql.connector
         except ImportError:
@@ -732,7 +853,7 @@ class ActionFetchObjectDefinitions(Action):
         definitions = {}
 
         try:
-            # Process MySQL tables
+            # Process MySQL tables with CREATE TABLE statements
             if "tables" in selected_objects and selected_objects["tables"]:
                 definitions["tables"] = []
                 for table_name in selected_objects["tables"]:
@@ -755,7 +876,39 @@ class ActionFetchObjectDefinitions(Action):
                             "default": default
                         })
 
-                    definitions["tables"].append({"name": table_name, "columns": columns})
+                    # Generate CREATE TABLE statement for MySQL
+                    create_statement = self._generate_mysql_create_table(table_name, columns, cursor, database_name)
+
+                    definitions["tables"].append({
+                        "name": table_name, 
+                        "columns": columns,
+                        "definition": create_statement
+                    })
+
+            # Process MySQL views with CREATE VIEW statements
+            if "views" in selected_objects and selected_objects["views"]:
+                definitions["views"] = []
+                for view_name in selected_objects["views"]:
+                    cursor.execute(f"""
+                        SELECT table_name, view_definition
+                        FROM information_schema.views
+                        WHERE table_schema = '{database_name}' AND table_name = %s
+                    """, (view_name,))
+
+                    result = cursor.fetchone()
+                    if result:
+                        name, view_def = result
+                        create_statement = f"CREATE VIEW {name} AS\n{view_def}"
+                        definitions["views"].append({
+                            "name": name, 
+                            "definition": create_statement,
+                            # "view_definition": view_def
+                        })
+                    else:
+                        definitions["views"].append({
+                            "name": view_name, 
+                            "definition": "-- Definition not available"
+                        })
 
             # Process MySQL functions
             if "functions" in selected_objects and selected_objects["functions"]:
@@ -791,23 +944,6 @@ class ActionFetchObjectDefinitions(Action):
                         definitions["indexes"].append({"name": name, "columns": columns.split(",")})
                     else:
                         definitions["indexes"].append({"name": index_name, "definition": "-- Definition not available"})
-
-            # Process MySQL views
-            if "views" in selected_objects and selected_objects["views"]:
-                definitions["views"] = []
-                for view_name in selected_objects["views"]:
-                    cursor.execute(f"""
-                        SELECT table_name, view_definition
-                        FROM information_schema.views
-                        WHERE table_schema = '{database_name}' AND table_name = %s
-                    """, (view_name,))
-
-                    result = cursor.fetchone()
-                    if result:
-                        name, definition = result
-                        definitions["views"].append({"name": name, "definition": definition})
-                    else:
-                        definitions["views"].append({"name": view_name, "definition": "-- Definition not available"})
             
             # Process MySQL Constraints
             if "constraints" in selected_objects and selected_objects["constraints"]:
