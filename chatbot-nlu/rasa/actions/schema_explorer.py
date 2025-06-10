@@ -526,11 +526,11 @@ class ActionFetchObjectDefinitions(Action):
             
             primary_keys = [row[0] for row in cursor.fetchall()]
             
-            # Build CREATE TABLE statement
-            create_lines = [f"CREATE TABLE {table_name} ("]
+            # Build CREATE TABLE statement as single line
+            column_definitions = []
             
-            for i, col in enumerate(columns):
-                line = f"    {col['name']} {col['type']}"
+            for col in columns:
+                line = f"{col['name']} {col['type']}"
                 
                 if not col['nullable']:
                     line += " NOT NULL"
@@ -541,13 +541,10 @@ class ActionFetchObjectDefinitions(Action):
                 if col['name'] in primary_keys:
                     line += " PRIMARY KEY"
                 
-                if i < len(columns) - 1:
-                    line += ","
-                
-                create_lines.append(line)
+                column_definitions.append(line)
             
-            create_lines.append(");")
-            return "\n".join(create_lines)
+            # Join all columns with commas and create single-line statement
+            return f"CREATE TABLE {table_name} ({', '.join(column_definitions)});"
             
         except Exception as e:
             return f"-- Error generating CREATE TABLE statement: {e}"
@@ -564,11 +561,11 @@ class ActionFetchObjectDefinitions(Action):
             
             primary_keys = [row[0] for row in cursor.fetchall()]
             
-            # Build CREATE TABLE statement
-            create_lines = [f"CREATE TABLE {table_name} ("]
+            # Build CREATE TABLE statement as single line
+            column_definitions = []
             
-            for i, col in enumerate(columns):
-                line = f"    {col['name']} {col['type']}"
+            for col in columns:
+                line = f"{col['name']} {col['type']}"
                 
                 if not col['nullable']:
                     line += " NOT NULL"
@@ -579,13 +576,13 @@ class ActionFetchObjectDefinitions(Action):
                 if col['name'] in primary_keys:
                     line += " PRIMARY KEY"
                 
-                if i < len(columns) - 1:
-                    line += ","
-                
-                create_lines.append(line)
+                column_definitions.append(line)
             
-            create_lines.append(");")
-            return "\n".join(create_lines)
+            # Join all columns with commas and create single-line statement
+            return f"CREATE TABLE {table_name} ({', '.join(column_definitions)});"
+            
+        except Exception as e:
+            return f"-- Error generating CREATE TABLE statement: {e}"
             
         except Exception as e:
             return f"-- Error generating CREATE TABLE statement: {e}"
@@ -643,7 +640,7 @@ class ActionFetchObjectDefinitions(Action):
                     result = cursor.fetchone()
                     if result:
                         name, view_def = result
-                        create_statement = f"CREATE VIEW {name} AS\n{view_def}"
+                        create_statement = f"CREATE VIEW {name} AS {view_def.strip()}"
                         definitions["views"].append({
                             "name": name, 
                             "definition": create_statement,
@@ -772,7 +769,7 @@ class ActionFetchObjectDefinitions(Action):
                     result = cursor.fetchone()
                     if result:
                         name, definition = result
-                        create_statement = f"CREATE MATERIALIZED VIEW {name} AS\n{definition}"
+                        create_statement = f"CREATE MATERIALIZED VIEW {name} AS {definition.strip()}"
                         definitions["materialized_views"].append({
                             "name": name, 
                             "definition": create_statement,
@@ -898,7 +895,7 @@ class ActionFetchObjectDefinitions(Action):
                     result = cursor.fetchone()
                     if result:
                         name, view_def = result
-                        create_statement = f"CREATE VIEW {name} AS\n{view_def}"
+                        create_statement = f"CREATE VIEW {name} AS {view_def.strip()}"
                         definitions["views"].append({
                             "name": name, 
                             "definition": create_statement,
