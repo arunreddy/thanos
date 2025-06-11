@@ -640,7 +640,8 @@ class ActionFetchObjectDefinitions(Action):
                     result = cursor.fetchone()
                     if result:
                         name, view_def = result
-                        create_statement = f"CREATE VIEW {name} AS {view_def.strip()}"
+                        clean_view_def = view_def.replace('\n', ' ').replace('\t', ' ')
+                        create_statement = f"CREATE VIEW {name} AS {clean_view_def}" 
                         definitions["views"].append({
                             "name": name, 
                             "definition": create_statement,
@@ -895,7 +896,8 @@ class ActionFetchObjectDefinitions(Action):
                     result = cursor.fetchone()
                     if result:
                         name, view_def = result
-                        create_statement = f"CREATE VIEW {name} AS {view_def.strip()}"
+                        clean_view_def = view_def.replace('\n', ' ').replace('\t', ' ')
+                        create_statement = f"CREATE VIEW {name} AS {clean_view_def}" 
                         definitions["views"].append({
                             "name": name, 
                             "definition": create_statement,
