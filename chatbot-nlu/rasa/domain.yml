@@ -51,12 +51,12 @@ forms:
       - epic_link
       - has_sysid
       - data_nature
-      - data_structure
-      - app_type
-      - acid_compliance
-      - is_open_source
-      - ms_licensing
-      - vendor_recommended_db
+      # - data_structure
+      # - app_type
+      # - acid_compliance
+      # - is_open_source
+      # - ms_licensing
+      # - vendor_recommended_db
 
   create_database_form:
     required_slots:
@@ -154,10 +154,9 @@ slots:
   vendor_recommended_db:
     type: text
     mappings:
-      - type: from_text
-        conditions:
-          - active_loop: recommend_database_form
-            requested_slot: vendor_recommended_db
+      - type: from_entity
+        entity: vendor_recommended_db
+
 
   ticket_id:
     type: text
@@ -360,40 +359,48 @@ responses:
   utter_ask_has_sysid:
     - text: "Do you have SYSID or Business mapping information for the Application? If yes, please share (if no, type 'No'):"
 
-  utter_ask_data_nature:
-    - text: "Can you provide the nature of data you intend to store in your Database?"
-      buttons:
-        - title: "Transactional"
-          payload: '/inform{{"data_nature":"Transactional"}}'
-        - title: "Analytics"
-          payload: '/inform{{"data_nature":"Analytics"}}'
-
-  utter_ask_data_structure:
-    - text: "How do you define your Data?"
-      buttons:
-        - title: "Structured"
-          payload: '/inform{{"data_structure":"Structured"}}'
-        - title: "Unstructured"
-          payload: '/inform{{"data_structure":"Unstructured"}}'
-
   utter_ask_app_type:
-    - text: "Is it a Vendor Application (COTS) or CFG developed?"
+    - text: "Is it a Vendor Application (COTS) or custom (CFG) developed?"
       buttons:
-        - title: "Vendor Application"
+        - title: "Vendor Application (COTS)"
           payload: '/inform{{"app_type":"Vendor Application"}}'
-        - title: "CFG Developed"
+        - title: "Custom-built (CFG)"
           payload: '/inform{{"app_type":"CFG Developed"}}'
 
   utter_ask_acid_compliance:
-    - text: "Does your application need to meet strict ACID SQL Compliance or has complex queries (Multi-Join)?"
+    - text: "Does your application need strict ACID SQL compliance or have complex queries (multi-join)?"
       buttons:
         - title: "Yes"
           payload: '/inform{{"acid_compliance":"Yes"}}'
         - title: "No"
           payload: '/inform{{"acid_compliance":"No"}}'
 
+  utter_ask_data_nature:
+    - text: "Can you provide the nature of the data you intend to store in your Database?"
+      buttons:
+        - title: "Transactional (OLTP)"
+          payload: '/inform{{"data_nature":"Transactional"}}'
+        - title: "Analytics (OLAP)"
+          payload: '/inform{{"data_nature":"Analytics"}}'
+
+  utter_ask_data_structure:
+    - text: "How do you define your Data?"
+      buttons:
+        - title: "Structured / relational"
+          payload: '/inform{{"data_structure":"Structured"}}'
+        - title: "Unstructured"
+          payload: '/inform{{"data_structure":"Unstructured"}}'
+
+  utter_ask_vendor_recommended_db:
+    - text: "Does the vendor recommend any database types?"
+      buttons:
+        - title: "Yes (Oracle/Postgres)"
+          payload: '/inform{{"vendor_recommended_db":"Yes"}}'
+        - title: "No"
+          payload: '/inform{{"vendor_recommended_db":"No"}}'
+
   utter_ask_is_open_source:
-    - text: "Is your Application Open source application?"
+    - text: "Is your application open-source?"
       buttons:
         - title: "Yes"
           payload: '/inform{{"is_open_source":"Yes"}}'
@@ -401,18 +408,21 @@ responses:
           payload: '/inform{{"is_open_source":"No"}}'
 
   utter_ask_ms_licensing:
-    - text: "Does your Application have any Microsoft licensing / Windows Infrastructure dependency?"
+    - text: "Does it have any Microsoft-licensing or Windows-infrastructure dependency?"
       buttons:
         - title: "Yes"
           payload: '/inform{{"ms_licensing":"Yes"}}'
         - title: "No"
           payload: '/inform{{"ms_licensing":"No"}}'
+
+  utter_available_soon:
+    - text: "Available soon."
+
+  utter_contact_dba_team:
+    - text: "Require additional review; please contact DBA Team – DL."
   
   utter_ask_epic_link:
     - text: "Please provide the Epic/Initiative link."
-
-  utter_ask_vendor_recommended_db:
-    - text: "Does Vendor recommend any Database types? If yes, please specify."
 
   # — create-database form prompts —
   utter_ask_database_name:
@@ -633,6 +643,7 @@ actions:
   - utter_ask_for_schema_selection
   - validate_analyze_query_form
   - action_submit_query_analysis
+  - validate_recommend_database_form
 
 session_config:
   session_expiration_time: 60

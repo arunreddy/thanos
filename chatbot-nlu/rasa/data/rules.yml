@@ -116,7 +116,7 @@ rules:
     condition:
       - active_loop: recommend_database_form
       - slot_was_set:
-          - vendor_recommended_db
+          - data_nature
     steps:
       - action: recommend_database_form
       - active_loop: null

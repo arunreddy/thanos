@@ -1,6 +1,6 @@
 # rasa/actions/__init__.py
 
-from .recommend_database import ActionRecommendDatabase, ActionRecommendDatabaseCreateTicket
+from .recommend_database import ActionRecommendDatabase, ActionRecommendDatabaseCreateTicket, ValidateRecommendDatabaseForm
 from .restart import ActionRestart
 from .schema_explorer import (
     ActionFetchAvailableObjects,
@@ -15,6 +15,7 @@ from .query_analyzer import ValidateAnalyzeQueryForm, ActionSubmitQueryAnalysis
 __all__ = [
     "ActionRecommendDatabase",
     "ActionRecommendDatabaseCreateTicket",
+    "ValidateRecommendDatabaseForm",
     "ActionRestart",
     "ActionSubmitDatabase",
     "ValidateCreateDatabaseForm",
