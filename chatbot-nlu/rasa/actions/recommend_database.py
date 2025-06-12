@@ -22,7 +22,15 @@ class ValidateRecommendDatabaseForm(FormValidationAction):
     ) -> List[Text]:
         """Define conditional required slots based on user answers."""
         
-        required_slots = ["app_architect", "is_reviewed", "epic_link", "has_sysid", "data_nature"]
+        required_slots = ["app_architect", "is_reviewed"]
+        
+        # If reviewed = Yes, need epic link
+        is_reviewed = tracker.get_slot("is_reviewed")
+        if is_reviewed == "Yes":
+            required_slots.append("epic_link")
+        
+        # Always need has_sysid and data_nature after the review question
+        required_slots.extend(["has_sysid", "data_nature"])
         
         data_nature = tracker.get_slot("data_nature")
         
@@ -59,6 +67,9 @@ class ValidateRecommendDatabaseForm(FormValidationAction):
                     # If Yes to ACID, need open source and MS licensing questions
                     if acid_compliance == "Yes":
                         required_slots.extend(["is_open_source", "ms_licensing"])
+                    elif acid_compliance == "No":
+                        # If No to ACID, need database size question
+                        required_slots.append("database_size_large")
         
         return required_slots
 
@@ -117,29 +128,32 @@ class ActionRecommendDatabase(Action):
                             
                     elif app_type == "CFG Developed":
                         if acid_compliance == "Yes":
-                            # Need ACID compliance
+                            # Need ACID compliance - ask about open source
                             if is_open_source == "Yes":
                                 # Open source application
                                 if ms_licensing == "Yes":
-                                    recommended_db = "PostgreSQL"
+                                    recommended_db = "MS SQL Server"
                                     recommendation_reason = "Selected for open-source application with Microsoft dependencies requiring ACID compliance."
                                 elif ms_licensing == "No":
-                                    # Open source + No MS licensing → Available soon
-                                    dispatcher.utter_message(text="Available soon.")
-                                    return []
+                                    recommended_db = "PostgreSQL"
+                                    recommendation_reason = "Selected for open-source application without Microsoft dependencies requiring ACID compliance."
                             elif is_open_source == "No":
-                                # Not open source (proprietary)
+                                # Proprietary application
                                 if ms_licensing == "Yes":
-                                    recommended_db = "MySQL Server"
+                                    recommended_db = "MS SQL Server"
                                     recommendation_reason = "Selected for proprietary application with Microsoft dependencies requiring ACID compliance."
                                 elif ms_licensing == "No":
-                                    # Proprietary + No MS licensing → Available soon
-                                    dispatcher.utter_message(text="Available soon.")
-                                    return []
+                                    recommended_db = "PostgreSQL"
+                                    recommendation_reason = "Selected for proprietary application without Microsoft dependencies requiring ACID compliance."
                         elif acid_compliance == "No":
-                            # No ACID compliance needed → MySQL
-                            recommended_db = "MySQL"
-                            recommendation_reason = "Selected for custom application without strict ACID compliance requirements."
+                            # No ACID compliance needed - ask about database size
+                            database_size_large = tracker.get_slot("database_size_large")
+                            if database_size_large == "Yes":
+                                recommended_db = "PostgreSQL"
+                                recommendation_reason = "Selected for large database (>300GB) without strict ACID compliance requirements."
+                            elif database_size_large == "No":
+                                recommended_db = "MySQL"
+                                recommendation_reason = "Selected for smaller database (<300GB) without strict ACID compliance requirements."
             
             # If we got a recommendation, show it
             if recommended_db != "No recommendation":

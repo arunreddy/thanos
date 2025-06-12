@@ -115,8 +115,6 @@ rules:
   - rule: Submit select database form
     condition:
       - active_loop: recommend_database_form
-      - slot_was_set:
-          - data_nature
     steps:
       - action: recommend_database_form
       - active_loop: null

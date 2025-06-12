@@ -41,7 +41,7 @@ entities:
   - ms_licensing
   - vendor_recommended_db
   - database_type 
-
+  - database_size_large
 
 forms:
   recommend_database_form:
@@ -167,6 +167,12 @@ slots:
     type: text
     influence_conversation: false
     mappings: []
+
+  database_size_large:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: database_size_large
 
   database_type:
     type: text
@@ -414,6 +420,14 @@ responses:
           payload: '/inform{{"ms_licensing":"Yes"}}'
         - title: "No"
           payload: '/inform{{"ms_licensing":"No"}}'
+
+  utter_ask_database_size_large:
+    - text: "Is estimated size of database going to be more than 300 GB in next 3-5 Years?"
+      buttons:
+        - title: "Yes"
+          payload: '/inform{{"database_size_large":"Yes"}}'
+        - title: "No"
+          payload: '/inform{{"database_size_large":"No"}}'
 
   utter_available_soon:
     - text: "Available soon."
