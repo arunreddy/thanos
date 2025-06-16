@@ -273,7 +273,8 @@ class ValidateExploreSchemaForm(FormValidationAction):
                 host=parsed.hostname,
                 port=parsed.port,
                 user=parsed.username,
-                password=parsed.password
+                password=parsed.password,
+                database=parsed.path[1:]
             )
             cursor = conn.cursor()
             try:
@@ -520,7 +521,8 @@ class ActionSubmitSchemaExplore(Action):
             host=parsed.hostname,
             port=parsed.port,
             user=parsed.username,
-            password=parsed.password
+            password=parsed.password,
+            database=parsed.path[1:]
         )
         
         cursor = conn.cursor()
@@ -1168,7 +1170,8 @@ class ActionFetchObjectDefinitions(Action):
             host=parsed.hostname,
             port=parsed.port,
             user=parsed.username,
-            password=parsed.password
+            password=parsed.password,
+            database=parsed.path[1:]
         )
         
         cursor = conn.cursor()
