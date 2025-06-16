@@ -27,104 +27,115 @@ class ValidateExploreSchemaForm(FormValidationAction):
         tracker: Tracker,
         domain: DomainDict,
     ) -> Dict[Text, Any]:
-        """
-        Validate connection string based on database type (PostgreSQL or MySQL).
-        """
         if not slot_value:
             dispatcher.utter_message(text="Please provide a connection string.")
             return {"connection_string": None}
 
         database_type = tracker.get_slot("database_type")
-        
         if not database_type:
             dispatcher.utter_message(text="Please select a database type first.")
             return {"connection_string": None}
 
-        # PostgreSQL connection string pattern
+        # parse out the "default" schema from the URL
+        parsed = urlparse(slot_value)
+        target_schema = parsed.path.lstrip("/")
+
+        # connection-string patterns
         postgres_pattern = r"^postgres(?:ql)?://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
-        
-        # MySQL connection string pattern
-        mysql_pattern = r"^mysql://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
-        
+        mysql_pattern    = r"^mysql://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
+
+        # ── PostgreSQL ──────────────────────────────────────────────────────────
         if database_type.lower() == "postgresql":
-            if re.match(postgres_pattern, slot_value, re.IGNORECASE):
-                # Test PostgreSQL connection
-                try:
-                    conn = psycopg2.connect(slot_value)
-                    conn.close()
-                    
-                    # Immediately fetch and show available schemas
-                    try:
-                        available_schemas = self._fetch_available_schemas(slot_value, database_type)
-                        if available_schemas:
-                            schema_list = ", ".join(available_schemas)
-                            message = (
-                                f"**Available schemas in your {database_type} database:**\n\n"
-                                f"📋 {schema_list}\n\n"
-                                f"Please select which schemas you want to explore (separate multiple schemas with commas or spaces):"
-                            )
-                            dispatcher.utter_message(text=message)
-                        else:
-                            dispatcher.utter_message(text="No schemas found in the database.")
-                    except Exception as e:
-                        print(f"DEBUG: Error fetching schemas during connection validation: {e}")
-                        dispatcher.utter_message(text="Connected successfully, but couldn't fetch schemas. You can proceed with schema selection.")
-                    
-                    return {"connection_string": slot_value}
-                except Exception as e:
-                    dispatcher.utter_message(text=f"Could not connect to PostgreSQL database: {e}")
-                    return {"connection_string": None}
-            else:
-                dispatcher.utter_message(
-                    text="Invalid PostgreSQL connection string format."
-                )
+            if not re.match(postgres_pattern, slot_value, re.IGNORECASE):
+                dispatcher.utter_message(text="Invalid PostgreSQL connection string format.")
                 return {"connection_string": None}
-                
+
+            # test connection
+            try:
+                conn = psycopg2.connect(slot_value)
+                conn.close()
+            except Exception as e:
+                dispatcher.utter_message(text=f"Could not connect to PostgreSQL database: {e}")
+                return {"connection_string": None}
+
+            # fetch schemas
+            try:
+                available = self._fetch_available_schemas(slot_value, database_type)
+            except Exception:
+                available = []
+
+            # if none returned, default to the one you passed
+            if not available:
+                dispatcher.utter_message(text=f"✅ Selected schemas: **{target_schema}**")
+                return {
+                    "connection_string": slot_value,
+                    "selected_schemas": [target_schema]
+                }
+
+            # otherwise always list what you did find
+            schema_list = ", ".join(available)
+            dispatcher.utter_message(text=(
+                f"**Available schemas in your {database_type} database:**\n\n"
+                f"📋 {schema_list}\n\n"
+                "Please select which schemas you want to explore "
+                "(separate multiple schemas with commas or spaces):"
+            ))
+            return {"connection_string": slot_value}
+
+        # ── MySQL ───────────────────────────────────────────────────────────────
         elif database_type.lower() == "mysql":
-            if re.match(mysql_pattern, slot_value, re.IGNORECASE):
-                # Test MySQL connection
-                try:
-                    import mysql.connector
-                    parsed = urlparse(slot_value)
-                    conn = mysql.connector.connect(
-                        host=parsed.hostname,
-                        port=parsed.port,
-                        database=parsed.path[1:],
-                        user=parsed.username,
-                        password=parsed.password
-                    )
-                    conn.close()
-                    
-                    # Immediately fetch and show available schemas for MySQL
-                    try:
-                        available_schemas = self._fetch_available_schemas(slot_value, database_type)
-                        if available_schemas:
-                            schema_list = ", ".join(available_schemas)
-                            message = (
-                                f"**Available schemas in your {database_type} database:**\n\n"
-                                f"📋 {schema_list}\n\n"
-                                f"Please select which schemas you want to explore (separate multiple schemas with commas or spaces):"
-                            )
-                            dispatcher.utter_message(text=message)
-                        else:
-                            dispatcher.utter_message(text="No schemas found in the database.")
-                    except Exception as e:
-                        print(f"DEBUG: Error fetching schemas during connection validation: {e}")
-                        dispatcher.utter_message(text="Connected successfully, but couldn't fetch schemas. You can proceed with schema selection.")
-                    
-                    return {"connection_string": slot_value}
-                except ImportError:
-                    dispatcher.utter_message(text="mysql-connector-python library required for MySQL connections. Install with: pip install mysql-connector-python")
-                    return {"connection_string": None}
-                except Exception as e:
-                    dispatcher.utter_message(text=f"Could not connect to MySQL database: {e}")
-                    return {"connection_string": None}
-            else:
-                dispatcher.utter_message(
-                    text="Invalid MySQL connection string format. "
-                         "Please use: mysql://username:password@host:port/database_name"
-                )
+            if not re.match(mysql_pattern, slot_value, re.IGNORECASE):
+                dispatcher.utter_message(text=(
+                    "Invalid MySQL connection string format. "
+                    "Please use: mysql://username:password@host:port/database_name"
+                ))
                 return {"connection_string": None}
+
+            # test connection
+            try:
+                import mysql.connector
+                conn = mysql.connector.connect(
+                    host=parsed.hostname,
+                    port=parsed.port,
+                    user=parsed.username,
+                    password=parsed.password
+                )
+                conn.close()
+            except ImportError:
+                dispatcher.utter_message(text=(
+                    "mysql-connector-python library required. Install with:\n"
+                    "pip install mysql-connector-python"
+                ))
+                return {"connection_string": None}
+            except Exception as e:
+                dispatcher.utter_message(text=f"Could not connect to MySQL database: {e}")
+                return {"connection_string": None}
+
+            # fetch schemas
+            try:
+                available = self._fetch_available_schemas(slot_value, database_type)
+            except Exception:
+                available = []
+
+            # if none returned, default to the one you passed
+            if not available:
+                dispatcher.utter_message(text=f"✅ Selected schemas: **{target_schema}**")
+                return {
+                    "connection_string": slot_value,
+                    "selected_schemas": [target_schema]
+                }
+
+            # otherwise always list what you did find
+            schema_list = ", ".join(available)
+            dispatcher.utter_message(text=(
+                f"**Available schemas in your {database_type} database:**\n\n"
+                f"{schema_list}\n\n"
+                "Please select which schemas you want to explore "
+                "(separate multiple schemas with commas or spaces):"
+            ))
+            return {"connection_string": slot_value}
+
+        # ── Unsupported ─────────────────────────────────────────────────────────
         else:
             dispatcher.utter_message(text="Unsupported database type. Please select PostgreSQL or MySQL.")
             return {"connection_string": None}
@@ -268,23 +279,31 @@ class ValidateExploreSchemaForm(FormValidationAction):
         try:
             import mysql.connector
             parsed = urlparse(conn_str)
-            
+            target_db = parsed.path.lstrip("/")  # the database you connected to
             conn = mysql.connector.connect(
                 host=parsed.hostname,
                 port=parsed.port,
                 user=parsed.username,
-                password=parsed.password,
-                database=parsed.path[1:]
+                password=parsed.password
             )
             cursor = conn.cursor()
             try:
                 cursor.execute("SHOW DATABASES")
-                return [row[0] for row in cursor.fetchall() 
-                       if row[0] not in ('information_schema', 'performance_schema', 'mysql', 'sys')]
+                # filter out system schemas
+                all_dbs = [
+                    row[0]
+                    for row in cursor.fetchall()
+                    if row[0] not in ('information_schema', 'performance_schema', 'mysql', 'sys')
+                ]
             finally:
                 conn.close()
+            # if your target is in the list, return only that; otherwise return all
+            if target_db in all_dbs:
+                return [target_db]
+            return all_dbs
         except ImportError:
             raise Exception("mysql-connector-python library required")
+
 
     def validate_object_types(
         self,
@@ -521,8 +540,7 @@ class ActionSubmitSchemaExplore(Action):
             host=parsed.hostname,
             port=parsed.port,
             user=parsed.username,
-            password=parsed.password,
-            database=parsed.path[1:]
+            password=parsed.password
         )
         
         cursor = conn.cursor()
@@ -1170,8 +1188,7 @@ class ActionFetchObjectDefinitions(Action):
             host=parsed.hostname,
             port=parsed.port,
             user=parsed.username,
-            password=parsed.password,
-            database=parsed.path[1:]
+            password=parsed.password
         )
         
         cursor = conn.cursor()
