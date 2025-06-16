@@ -52,14 +52,31 @@ class ValidateExploreSchemaForm(FormValidationAction):
                 try:
                     conn = psycopg2.connect(slot_value)
                     conn.close()
+                    
+                    # Immediately fetch and show available schemas
+                    try:
+                        available_schemas = self._fetch_available_schemas(slot_value, database_type)
+                        if available_schemas:
+                            schema_list = ", ".join(available_schemas)
+                            message = (
+                                f"**Available schemas in your {database_type} database:**\n\n"
+                                f"📋 {schema_list}\n\n"
+                                f"Please select which schemas you want to explore (separate multiple schemas with commas or spaces):"
+                            )
+                            dispatcher.utter_message(text=message)
+                        else:
+                            dispatcher.utter_message(text="No schemas found in the database.")
+                    except Exception as e:
+                        print(f"DEBUG: Error fetching schemas during connection validation: {e}")
+                        dispatcher.utter_message(text="Connected successfully, but couldn't fetch schemas. You can proceed with schema selection.")
+                    
                     return {"connection_string": slot_value}
                 except Exception as e:
                     dispatcher.utter_message(text=f"Could not connect to PostgreSQL database: {e}")
                     return {"connection_string": None}
             else:
                 dispatcher.utter_message(
-                    text="Invalid PostgreSQL connection string format. "
-                        #  "Please use: postgres://username:password@host:port/database_name"
+                    text="Invalid PostgreSQL connection string format."
                 )
                 return {"connection_string": None}
                 
@@ -77,6 +94,24 @@ class ValidateExploreSchemaForm(FormValidationAction):
                         password=parsed.password
                     )
                     conn.close()
+                    
+                    # Immediately fetch and show available schemas for MySQL
+                    try:
+                        available_schemas = self._fetch_available_schemas(slot_value, database_type)
+                        if available_schemas:
+                            schema_list = ", ".join(available_schemas)
+                            message = (
+                                f"**Available schemas in your {database_type} database:**\n\n"
+                                f"📋 {schema_list}\n\n"
+                                f"Please select which schemas you want to explore (separate multiple schemas with commas or spaces):"
+                            )
+                            dispatcher.utter_message(text=message)
+                        else:
+                            dispatcher.utter_message(text="No schemas found in the database.")
+                    except Exception as e:
+                        print(f"DEBUG: Error fetching schemas during connection validation: {e}")
+                        dispatcher.utter_message(text="Connected successfully, but couldn't fetch schemas. You can proceed with schema selection.")
+                    
                     return {"connection_string": slot_value}
                 except ImportError:
                     dispatcher.utter_message(text="mysql-connector-python library required for MySQL connections. Install with: pip install mysql-connector-python")
@@ -93,6 +128,162 @@ class ValidateExploreSchemaForm(FormValidationAction):
         else:
             dispatcher.utter_message(text="Unsupported database type. Please select PostgreSQL or MySQL.")
             return {"connection_string": None}
+
+    def validate_selected_schemas(
+        self,
+        slot_value: Any,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: DomainDict,
+    ) -> Dict[Text, Any]:
+        """
+        Validate user's schema selection (schemas were already shown during connection validation).
+        """
+        database_type = tracker.get_slot("database_type")
+        conn_str = tracker.get_slot("connection_string")
+        
+        print(f"DEBUG: validate_selected_schemas called with slot_value: {slot_value}")
+        
+        if not conn_str or not database_type:
+            dispatcher.utter_message(text="Connection information is missing.")
+            return {"selected_schemas": None}
+
+        try:
+            # Fetch available schemas for validation
+            available_schemas = self._fetch_available_schemas(conn_str, database_type)
+            
+            if not available_schemas:
+                dispatcher.utter_message(text="No schemas found in the database.")
+                return {"selected_schemas": None}
+
+            # Handle empty input (user didn't provide any schemas)
+            if not slot_value or (isinstance(slot_value, str) and slot_value.strip() == "") or (isinstance(slot_value, list) and (len(slot_value) == 0 or (len(slot_value) == 1 and slot_value[0].strip() == ""))):
+                schema_list = ", ".join(available_schemas)
+                dispatcher.utter_message(text=f"Please select from available schemas: {schema_list}")
+                return {"selected_schemas": None}
+
+            # Parse user input - handle both string and list formats
+            user_schemas = []
+            
+            if isinstance(slot_value, str):
+                # Handle comma or space separated input
+                if "," in slot_value:
+                    user_schemas = [s.strip() for s in slot_value.split(",") if s.strip()]
+                else:
+                    user_schemas = [s.strip() for s in slot_value.split() if s.strip()]
+            elif isinstance(slot_value, list):
+                # Handle list input (flatten and clean)
+                for item in slot_value:
+                    if isinstance(item, str):
+                        if "," in item:
+                            # Handle comma-separated strings within list
+                            parts = [s.strip() for s in item.split(",") if s.strip()]
+                            user_schemas.extend(parts)
+                        elif item.strip():
+                            user_schemas.append(item.strip())
+            
+            # Remove any empty strings
+            user_schemas = [s for s in user_schemas if s]
+
+            if not user_schemas:
+                schema_list = ", ".join(available_schemas)
+                dispatcher.utter_message(text=f"Please select from available schemas: {schema_list}")
+                return {"selected_schemas": None}
+
+            # Validate user selection against available schemas (case-insensitive)
+            available_lower = [s.lower() for s in available_schemas]
+            valid_schemas = []
+            invalid_schemas = []
+            
+            for schema in user_schemas:
+                schema_lower = schema.lower()
+                if schema_lower in available_lower:
+                    # Find original case
+                    original_schema = available_schemas[available_lower.index(schema_lower)]
+                    valid_schemas.append(original_schema)
+                else:
+                    invalid_schemas.append(schema)
+
+            # Show validation results
+            if invalid_schemas:
+                schema_list = ", ".join(available_schemas)
+                invalid_list = ", ".join(invalid_schemas)
+                dispatcher.utter_message(
+                    text=f"❌ Invalid schema(s): **{invalid_list}**\n\n" +
+                         f"✅ Available schemas: {schema_list}\n\n" +
+                         f"Please select valid schemas from the list above."
+                )
+                return {"selected_schemas": None}
+
+            if valid_schemas:
+                selected_list = ", ".join(valid_schemas)
+                dispatcher.utter_message(text=f"✅ Selected schemas: **{selected_list}**")
+                return {"selected_schemas": valid_schemas}
+
+            return {"selected_schemas": None}
+
+        except Exception as e:
+            logger.error(f"Error in validate_selected_schemas: {e}", exc_info=True)
+            print(f"DEBUG: Exception occurred: {e}")
+            dispatcher.utter_message(text=f"Error validating schemas: {e}")
+            return {"selected_schemas": None}
+
+    def _fetch_available_schemas(self, conn_str: str, database_type: str) -> List[str]:
+        """Fetch available schemas from database."""
+        print(f"DEBUG: _fetch_available_schemas called with database_type: {database_type}")
+        if database_type.lower() == "postgresql":
+            return self._fetch_postgresql_schemas(conn_str)
+        elif database_type.lower() == "mysql":
+            return self._fetch_mysql_schemas(conn_str)
+        else:
+            print(f"DEBUG: Unsupported database type: {database_type}")
+            return []
+
+    def _fetch_postgresql_schemas(self, conn_str: str) -> List[str]:
+        """Fetch PostgreSQL schemas."""
+        print(f"DEBUG: Attempting to connect to PostgreSQL with: {conn_str}")
+        try:
+            conn = psycopg2.connect(conn_str)
+            cursor = conn.cursor()
+            print(f"DEBUG: Connected successfully to PostgreSQL")
+            try:
+                cursor.execute("""
+                    SELECT nspname FROM pg_namespace
+                    WHERE nspname NOT IN ('information_schema', 'pg_catalog', 'pg_toast')
+                    AND nspname NOT LIKE 'pg_temp_%' AND nspname NOT LIKE 'pg_toast_temp_%'
+                    ORDER BY nspname
+                """)
+                schemas = [row[0] for row in cursor.fetchall()]
+                print(f"DEBUG: PostgreSQL schemas found: {schemas}")
+                return schemas
+            finally:
+                conn.close()
+                print(f"DEBUG: PostgreSQL connection closed")
+        except Exception as e:
+            print(f"DEBUG: Error connecting to PostgreSQL: {e}")
+            raise
+
+    def _fetch_mysql_schemas(self, conn_str: str) -> List[str]:
+        """Fetch MySQL schemas (databases)."""
+        try:
+            import mysql.connector
+            parsed = urlparse(conn_str)
+            
+            conn = mysql.connector.connect(
+                host=parsed.hostname,
+                port=parsed.port,
+                user=parsed.username,
+                password=parsed.password
+            )
+            cursor = conn.cursor()
+            try:
+                cursor.execute("SHOW DATABASES")
+                return [row[0] for row in cursor.fetchall() 
+                       if row[0] not in ('information_schema', 'performance_schema', 'mysql', 'sys')]
+            finally:
+                conn.close()
+        except ImportError:
+            raise Exception("mysql-connector-python library required")
 
     def validate_object_types(
         self,
@@ -132,9 +323,6 @@ class ValidateExploreSchemaForm(FormValidationAction):
         # Initialize selected list
         selected = []
 
-        # Debug the input
-        print(f"Input object_types value: {slot_value!r}")
-
         # Handle different input formats
         if isinstance(slot_value, list):
             # If it's a list with comma-separated strings inside
@@ -157,8 +345,6 @@ class ValidateExploreSchemaForm(FormValidationAction):
 
             selected = [part for part in parts if part in supported]
 
-        print(f"Selected object types: {selected}")
-
         if selected:
             return {"object_types": selected}
 
@@ -180,11 +366,14 @@ class ActionSubmitSchemaExplore(Action):
     ) -> List[Dict[Text, Any]]:
         database_type = tracker.get_slot("database_type")
         conn_str = tracker.get_slot("connection_string")
+        selected_schemas = tracker.get_slot("selected_schemas") or []
         object_types = tracker.get_slot("object_types") or []
 
-        print(f"ActionSubmitSchemaExplore#{database_type} Object types: {object_types}")
+        print(f"ActionSubmitSchemaExplore#{database_type} Selected schemas: {selected_schemas}, Object types: {object_types}")
 
-        # Ensure object_types is a list
+        # Ensure both are lists
+        if isinstance(selected_schemas, str):
+            selected_schemas = [selected_schemas]
         if isinstance(object_types, str):
             if "," in object_types:
                 object_types = [obj.strip().lower() for obj in object_types.split(",") if obj.strip()]
@@ -196,12 +385,10 @@ class ActionSubmitSchemaExplore(Action):
         if conn_str:
             try:
                 if database_type.lower() == "postgresql":
-                    # Extract host:port from postgres://user:pass@host:port/dbname
                     match = re.search(r"@([^/]+)/", conn_str)
                     if match:
                         host_port = match.group(1)
                 elif database_type.lower() == "mysql":
-                    # Extract host:port from mysql://user:pass@host:port/dbname
                     parsed = urlparse(conn_str)
                     host_port = f"{parsed.hostname}:{parsed.port}"
             except Exception:
@@ -215,15 +402,16 @@ class ActionSubmitSchemaExplore(Action):
             "comments": "Review the object lists and keep only the required objects",
             "database_type": database_type,
             "database_host_endpoint": host_port,
+            "selected_schemas": selected_schemas,
             "objects": {}
         }
 
         try:
-            # Get objects based on database type
+            # Get objects based on database type for selected schemas
             if database_type.lower() == "postgresql":
-                schema_data["objects"] = self._fetch_postgresql_objects(conn_str, object_types)
+                schema_data["objects"] = self._fetch_postgresql_objects(conn_str, object_types, selected_schemas)
             elif database_type.lower() == "mysql":
-                schema_data["objects"] = self._fetch_mysql_objects(conn_str, object_types)
+                schema_data["objects"] = self._fetch_mysql_objects(conn_str, object_types, selected_schemas)
             else:
                 dispatcher.utter_message(text="Unsupported database type.")
                 return events
@@ -243,97 +431,94 @@ class ActionSubmitSchemaExplore(Action):
             dispatcher.utter_message(text=f"Error fetching {database_type} schema: {e}")
             return events
 
-    def _fetch_postgresql_objects(self, conn_str: str, object_types: List[str]) -> Dict[str, List[str]]:
-        """Fetch PostgreSQL objects (existing logic)."""
+    def _fetch_postgresql_objects(self, conn_str: str, object_types: List[str], selected_schemas: List[str]) -> Dict[str, List[str]]:
+        """Fetch PostgreSQL objects from selected schemas only."""
         conn = psycopg2.connect(conn_str)
         cursor = conn.cursor()
         objects = {}
 
         try:
-            # Only query the specifically requested object types
+            # Create schema filter for SQL queries
+            schema_filter = "(" + ",".join([f"'{schema}'" for schema in selected_schemas]) + ")"
+            
+            # Only query the specifically requested object types from selected schemas
             for obj in object_types:
                 if obj == "tables":
-                    cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';")
+                    cursor.execute(f"SELECT table_name, table_schema FROM information_schema.tables WHERE table_schema IN {schema_filter} AND table_type='BASE TABLE';")
                     rows = cursor.fetchall()
-                    objects["tables"] = [r[0] for r in rows]
+                    objects["tables"] = [f"{r[1]}.{r[0]}" for r in rows]
 
                 elif obj == "views":
-                    cursor.execute("SELECT table_name FROM information_schema.views WHERE table_schema='public';")
+                    cursor.execute(f"SELECT table_name, table_schema FROM information_schema.views WHERE table_schema IN {schema_filter};")
                     rows = cursor.fetchall()
-                    objects["views"] = [r[0] for r in rows]
+                    objects["views"] = [f"{r[1]}.{r[0]}" for r in rows]
 
                 elif obj == "functions":
-                    cursor.execute("SELECT routine_name FROM information_schema.routines WHERE routine_schema='public' AND routine_type='FUNCTION';")
+                    cursor.execute(f"SELECT routine_name, routine_schema FROM information_schema.routines WHERE routine_schema IN {schema_filter} AND routine_type='FUNCTION';")
                     rows = cursor.fetchall()
-                    objects["functions"] = [r[0] for r in rows]
+                    objects["functions"] = [f"{r[1]}.{r[0]}" for r in rows]
 
-                elif obj == "sequences":
-                    cursor.execute("SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema='public';")
+                elif obj == "Constraints":
+                    cursor.execute(f"""
+                        SELECT constraint_name, table_schema 
+                        FROM information_schema.table_constraints 
+                        WHERE table_schema IN {schema_filter} AND constraint_type = 'FOREIGN KEY';
+                    """)
                     rows = cursor.fetchall()
-                    objects["sequences"] = [r[0] for r in rows]
+                    objects["constraints"] = [f"{r[1]}.{r[0]}" for r in rows]
 
                 elif obj == "indexes":
-                    cursor.execute("SELECT indexname FROM pg_indexes WHERE schemaname = 'public';")
+                    schema_filter_pg = " OR ".join([f"schemaname = '{schema}'" for schema in selected_schemas])
+                    cursor.execute(f"SELECT indexname, schemaname FROM pg_indexes WHERE {schema_filter_pg};")
                     rows = cursor.fetchall()
-                    objects["indexes"] = [r[0] for r in rows]
+                    objects["indexes"] = [f"{r[1]}.{r[0]}" for r in rows]
 
-                elif obj == "constraints":
-                    cursor.execute("""
-                        SELECT conname FROM pg_constraint c
-                        JOIN pg_namespace n ON n.oid = c.connamespace
-                        WHERE n.nspname = 'public'
-                    """)
+                elif obj == "Procedures":
+                    cursor.execute(f"SELECT routine_name, routine_schema FROM information_schema.routines WHERE routine_schema IN {schema_filter} AND routine_type='PROCEDURE';")
                     rows = cursor.fetchall()
-                    objects["constraints"] = [r[0] for r in rows]
+                    objects["procedures"] = [f"{r[1]}.{r[0]}" for r in rows]
 
                 elif obj == "triggers":
-                    cursor.execute("""
-                        SELECT tgname FROM pg_trigger t
-                        JOIN pg_class c ON t.tgrelid = c.oid
-                        JOIN pg_namespace n ON c.relnamespace = n.oid
-                        WHERE n.nspname = 'public' AND NOT t.tgisinternal
+                    cursor.execute(f"""
+                        SELECT trigger_name, event_object_schema 
+                        FROM information_schema.triggers 
+                        WHERE event_object_schema IN {schema_filter};
                     """)
                     rows = cursor.fetchall()
-                    objects["triggers"] = [r[0] for r in rows]
-                    
+                    objects["triggers"] = [f"{r[1]}.{r[0]}" for r in rows]
+                
                 elif obj == "materialized_views":
-                    cursor.execute("SELECT matviewname FROM pg_matviews WHERE schemaname = 'public';")
+                    cursor.execute(f"SELECT matviewname, schemaname FROM pg_matviews WHERE schemaname IN {schema_filter};")
                     rows = cursor.fetchall()
-                    objects["materialized_views"] = [r[0] for r in rows]
-                    
-                elif obj == "procedures":
-                    cursor.execute("SELECT routine_name FROM information_schema.routines WHERE routine_schema='public' AND routine_type='PROCEDURE';")
-                    rows = cursor.fetchall()
-                    objects["procedures"] = [r[0] for r in rows]
-                    
+                    objects["materialized_views"] = [f"{r[1]}.{r[0]}" for r in rows]
+                
                 elif obj == "schemas":
-                    cursor.execute("""
-                        SELECT nspname FROM pg_namespace
-                        WHERE nspname NOT IN ('information_schema', 'pg_catalog', 'pg_toast')
-                        AND nspname NOT LIKE 'pg_temp_%' AND nspname NOT LIKE 'pg_toast_temp_%'
-                    """)
+                    cursor.execute(f"SELECT nspname FROM pg_namespace WHERE nspname IN {schema_filter} AND nspname NOT IN ('information_schema', 'pg_catalog', 'pg_toast');")
                     rows = cursor.fetchall()
                     objects["schemas"] = [r[0] for r in rows]
+
+                elif obj == "sequences":
+                    cursor.execute(f"SELECT sequence_name, sequence_schema FROM information_schema.sequences WHERE sequence_schema IN {schema_filter};")
+                    rows = cursor.fetchall()
+                    objects["sequences"] = [f"{r[1]}.{r[0]}" for r in rows]
 
         finally:
             conn.close()
             
         return objects
 
-    def _fetch_mysql_objects(self, conn_str: str, object_types: List[str]) -> Dict[str, List[str]]:
-        """Fetch MySQL objects."""
+    def _fetch_mysql_objects(self, conn_str: str, object_types: List[str], selected_schemas: List[str]) -> Dict[str, List[str]]:
+        """Fetch MySQL objects from selected schemas only."""
         try:
             import mysql.connector
         except ImportError:
-            raise Exception("mysql-connector-python library required for MySQL. Install with: pip install mysql-connector-python")
+            raise Exception("mysql-connector-python library required for MySQL")
             
         parsed = urlparse(conn_str)
-        database_name = parsed.path[1:]  # Remove leading slash
 
         conn = mysql.connector.connect(
             host=parsed.hostname,
             port=parsed.port,
-            database=database_name,
             user=parsed.username,
             password=parsed.password
         )
@@ -342,48 +527,58 @@ class ActionSubmitSchemaExplore(Action):
         objects = {}
 
         try:
-            # Query MySQL-specific object types
+            # Create schema filter for SQL queries
+            schema_filter = "(" + ",".join([f"'{schema}'" for schema in selected_schemas]) + ")"
+            
+            # Query MySQL-specific object types from selected schemas
             for obj in object_types:
                 if obj == "tables":
-                    cursor.execute(f"SELECT table_name FROM information_schema.tables WHERE table_schema='{database_name}' AND table_type='BASE TABLE';")
+                    cursor.execute(f"SELECT table_name, table_schema FROM information_schema.tables WHERE table_schema IN {schema_filter} AND table_type='BASE TABLE';")
                     rows = cursor.fetchall()
-                    objects["tables"] = [r[0] for r in rows]
+                    objects["tables"] = [f"{r[1]}.{r[0]}" for r in rows]
 
                 elif obj == "views":
-                    cursor.execute(f"SELECT table_name FROM information_schema.views WHERE table_schema='{database_name}';")
+                    cursor.execute(f"SELECT table_name, table_schema FROM information_schema.views WHERE table_schema IN {schema_filter};")
                     rows = cursor.fetchall()
-                    objects["views"] = [r[0] for r in rows]
+                    objects["views"] = [f"{r[1]}.{r[0]}" for r in rows]
 
                 elif obj == "functions":
-                    cursor.execute(f"SELECT routine_name FROM information_schema.routines WHERE routine_schema='{database_name}' AND routine_type='FUNCTION';")
+                    cursor.execute(f"SELECT routine_name, routine_schema FROM information_schema.routines WHERE routine_schema IN {schema_filter} AND routine_type='FUNCTION';")
                     rows = cursor.fetchall()
-                    objects["functions"] = [r[0] for r in rows]
-
-                elif obj == "procedures":
-                    cursor.execute(f"SELECT routine_name FROM information_schema.routines WHERE routine_schema='{database_name}' AND routine_type='PROCEDURE';")
+                    objects["functions"] = [f"{r[1]}.{r[0]}" for r in rows]
+                
+                elif obj == "Indexes":
+                    cursor.execute(f"SELECT index_name, table_schema FROM information_schema.statistics WHERE table_schema IN {schema_filter};")
                     rows = cursor.fetchall()
-                    objects["procedures"] = [r[0] for r in rows]
-
-                elif obj == "triggers":
-                    cursor.execute(f"SELECT trigger_name FROM information_schema.triggers WHERE trigger_schema='{database_name}';")
-                    rows = cursor.fetchall()
-                    objects["triggers"] = [r[0] for r in rows]
-
-                elif obj == "indexes":
-                    cursor.execute(f"SELECT DISTINCT index_name FROM information_schema.statistics WHERE table_schema='{database_name}' AND index_name != 'PRIMARY';")
-                    rows = cursor.fetchall()
-                    objects["indexes"] = [r[0] for r in rows]
+                    objects["indexes"] = [f"{r[1]}.{r[0]}" for r in rows]
                 
                 elif obj == "constraints":
-                    cursor.execute(f"SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema='{database_name}' AND constraint_type='FOREIGN KEY';")
+                    cursor.execute(f"""
+                        SELECT constraint_name, table_schema 
+                        FROM information_schema.table_constraints 
+                        WHERE table_schema IN {schema_filter} AND constraint_type = 'FOREIGN KEY';
+                    """)
                     rows = cursor.fetchall()
-                    objects["constraints"] = [r[0] for r in rows]
+                    objects["constraints"] = [f"{r[1]}.{r[0]}" for r in rows]
+                
+                elif obj == "Procedures":
+                    cursor.execute(f"SELECT routine_name, routine_schema FROM information_schema.routines WHERE routine_schema IN {schema_filter} AND routine_type='PROCEDURE';")
+                    rows = cursor.fetchall()
+                    objects["procedures"] = [f"{r[1]}.{r[0]}" for r in rows]
 
+                elif obj == "triggers":
+                    cursor.execute(f"""
+                        SELECT trigger_name, event_object_schema 
+                        FROM information_schema.triggers 
+                        WHERE event_object_schema IN {schema_filter};
+                    """)
+                    rows = cursor.fetchall()
+                    objects["triggers"] = [f"{r[1]}.{r[0]}" for r in rows]
+                
         finally:
             conn.close()
             
         return objects
-
 
 class ActionFetchAvailableObjects(Action):
     def name(self) -> Text:
@@ -459,6 +654,10 @@ class ActionFetchObjectDefinitions(Action):
                 dispatcher.utter_message(text="No objects were specified in your selection. Please include at least one object type.")
                 return []
 
+            # Get selected schemas from tracker to help with object resolution
+            selected_schemas = tracker.get_slot("selected_schemas") or ["public"]
+            print(f"DEBUG: Using selected_schemas: {selected_schemas}")
+
             # Step 2: Store filtered objects selection
             events = [SlotSet("filtered_objects", selected_objects)]
 
@@ -474,9 +673,9 @@ class ActionFetchObjectDefinitions(Action):
 
             # Get detailed definitions based on database type
             if database_type.lower() == "postgresql":
-                definitions["definitions"] = self._get_postgresql_definitions(conn_str, selected_objects)
+                definitions["definitions"] = self._get_postgresql_definitions(conn_str, selected_objects, selected_schemas)
             elif database_type.lower() == "mysql":
-                definitions["definitions"] = self._get_mysql_definitions(conn_str, selected_objects)
+                definitions["definitions"] = self._get_mysql_definitions(conn_str, selected_objects, selected_schemas)
             else:
                 dispatcher.utter_message(text="Unsupported database type for detailed definitions.")
                 return events
@@ -513,16 +712,63 @@ class ActionFetchObjectDefinitions(Action):
             dispatcher.utter_message(text=f"Error generating {database_type} definitions: {e}")
             return []
 
-    def _generate_postgresql_create_table(self, table_name: str, columns: List[Dict], cursor) -> str:
+    def _find_table_schema(self, cursor, table_name: str, selected_schemas: List[str]) -> str:
+        """Find which schema contains the table."""
+        print(f"DEBUG: Finding schema for table '{table_name}' in schemas: {selected_schemas}")
+        for schema in selected_schemas:
+            cursor.execute("""
+                SELECT 1 FROM information_schema.tables 
+                WHERE table_schema = %s AND table_name = %s
+            """, (schema, table_name))
+            if cursor.fetchone():
+                print(f"DEBUG: Found table '{table_name}' in schema '{schema}'")
+                return schema
+        print(f"DEBUG: Table '{table_name}' not found, defaulting to 'public'")
+        return "public"  # fallback
+
+    def _find_view_schema(self, cursor, view_name: str, selected_schemas: List[str]) -> str:
+        """Find which schema contains the view."""
+        for schema in selected_schemas:
+            cursor.execute("""
+                SELECT 1 FROM information_schema.views 
+                WHERE table_schema = %s AND table_name = %s
+            """, (schema, view_name))
+            if cursor.fetchone():
+                return schema
+        return "public"  # fallback
+
+    def _find_function_schema(self, cursor, function_name: str, selected_schemas: List[str]) -> str:
+        """Find which schema contains the function."""
+        for schema in selected_schemas:
+            cursor.execute("""
+                SELECT 1 FROM information_schema.routines 
+                WHERE routine_schema = %s AND routine_name = %s AND routine_type = 'FUNCTION'
+            """, (schema, function_name))
+            if cursor.fetchone():
+                return schema
+        return "public"  # fallback
+    
+    def _find_procedure_schema(self, cursor, procedure_name: str, selected_schemas: List[str]) -> str:
+        """Find which schema contains the procedure."""
+        for schema in selected_schemas:
+            cursor.execute("""
+                SELECT 1 FROM information_schema.routines 
+                WHERE routine_schema = %s AND routine_name = %s AND routine_type = 'PROCEDURE'
+            """, (schema, procedure_name))
+            if cursor.fetchone():
+                return schema
+        return "public" # fallback
+
+    def _generate_postgresql_create_table(self, table_name: str, columns: List[Dict], cursor, schema_name: str = "public") -> str:
         """Generate CREATE TABLE statement for PostgreSQL."""
         try:
-            # Get primary keys
+            # Get primary keys using the original working approach
             cursor.execute("""
                 SELECT a.attname
                 FROM pg_index i
                 JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
                 WHERE i.indrelid = %s::regclass AND i.indisprimary
-            """, (f"public.{table_name}",))
+            """, (f"{schema_name}.{table_name}",))
             
             primary_keys = [row[0] for row in cursor.fetchall()]
             
@@ -544,20 +790,21 @@ class ActionFetchObjectDefinitions(Action):
                 column_definitions.append(line)
             
             # Join all columns with commas and create single-line statement
-            return f"CREATE TABLE {table_name} ({', '.join(column_definitions)});"
+            full_table_name = f"{schema_name}.{table_name}" if schema_name != "public" else table_name
+            return f"CREATE TABLE {full_table_name} ({', '.join(column_definitions)});"
             
         except Exception as e:
             return f"-- Error generating CREATE TABLE statement: {e}"
 
-    def _generate_mysql_create_table(self, table_name: str, columns: List[Dict], cursor, database_name: str) -> str:
+    def _generate_mysql_create_table(self, table_name: str, columns: List[Dict], cursor, schema_name: str) -> str:
         """Generate CREATE TABLE statement for MySQL."""
         try:
             # Get primary keys
             cursor.execute(f"""
                 SELECT column_name
                 FROM information_schema.key_column_usage
-                WHERE table_schema = '{database_name}' AND table_name = %s AND constraint_name = 'PRIMARY'
-            """, (table_name,))
+                WHERE table_schema = %s AND table_name = %s AND constraint_name = 'PRIMARY'
+            """, (schema_name, table_name))
             
             primary_keys = [row[0] for row in cursor.fetchall()]
             
@@ -583,12 +830,9 @@ class ActionFetchObjectDefinitions(Action):
             
         except Exception as e:
             return f"-- Error generating CREATE TABLE statement: {e}"
-            
-        except Exception as e:
-            return f"-- Error generating CREATE TABLE statement: {e}"
 
-    def _get_postgresql_definitions(self, conn_str: str, selected_objects: Dict[str, List[str]]) -> Dict[str, List[Dict]]:
-        """Get detailed PostgreSQL object definitions with CREATE statements."""
+    def _get_postgresql_definitions(self, conn_str: str, selected_objects: Dict[str, List[str]], selected_schemas: List[str]) -> Dict[str, List[Dict]]:
+        """Get detailed PostgreSQL object definitions with CREATE statements - schema-aware version."""
         conn = psycopg2.connect(conn_str)
         cursor = conn.cursor()
         definitions = {}
@@ -598,13 +842,25 @@ class ActionFetchObjectDefinitions(Action):
             if "tables" in selected_objects and selected_objects["tables"]:
                 definitions["tables"] = []
                 for table_name in selected_objects["tables"]:
+                    print(f"DEBUG: Processing table: {table_name}")
+                    
+                    # Parse schema.table format or determine schema
+                    if "." in table_name:
+                        schema_name, table_only = table_name.split(".", 1)
+                        print(f"DEBUG: Table has schema prefix: {schema_name}.{table_only}")
+                    else:
+                        # If no schema specified, try to find it in selected schemas
+                        schema_name = self._find_table_schema(cursor, table_name, selected_schemas)
+                        table_only = table_name
+                        print(f"DEBUG: No schema prefix, found in schema: {schema_name}")
+                    
                     # Get column information
                     cursor.execute("""
                         SELECT column_name, data_type, character_maximum_length, is_nullable, column_default
                         FROM information_schema.columns
-                        WHERE table_schema = 'public' AND table_name = %s
+                        WHERE table_schema = %s AND table_name = %s
                         ORDER BY ordinal_position
-                    """, (table_name,))
+                    """, (schema_name, table_only))
 
                     columns = []
                     for col in cursor.fetchall():
@@ -618,34 +874,51 @@ class ActionFetchObjectDefinitions(Action):
                             "default": default
                         })
 
+                    if not columns:
+                        print(f"DEBUG: No columns found for table {table_name} in schema {schema_name}")
+                        definitions["tables"].append({
+                            "name": table_name, 
+                            "columns": [],
+                            "definition": f"-- Table {table_name} not found in schema {schema_name}"
+                        })
+                        continue
+
                     # Generate CREATE TABLE statement
-                    create_statement = self._generate_postgresql_create_table(table_name, columns, cursor)
+                    create_statement = self._generate_postgresql_create_table(table_only, columns, cursor, schema_name)
 
                     definitions["tables"].append({
                         "name": table_name, 
                         "columns": columns,
                         "definition": create_statement
                     })
+                    print(f"DEBUG: Successfully processed table: {table_name}")
 
             # Process views with CREATE VIEW statements
             if "views" in selected_objects and selected_objects["views"]:
                 definitions["views"] = []
                 for view_name in selected_objects["views"]:
+                    # Parse schema.view format or determine schema
+                    if "." in view_name:
+                        schema_name, view_only = view_name.split(".", 1)
+                    else:
+                        schema_name = self._find_view_schema(cursor, view_name, selected_schemas)
+                        view_only = view_name
+                        
                     cursor.execute("""
                         SELECT table_name, view_definition
                         FROM information_schema.views
-                        WHERE table_schema = 'public' AND table_name = %s
-                    """, (view_name,))
+                        WHERE table_schema = %s AND table_name = %s
+                    """, (schema_name, view_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, view_def = result
                         clean_view_def = view_def.replace('\n', ' ').replace('\t', ' ')
-                        create_statement = f"CREATE VIEW {name} AS {clean_view_def}" 
+                        full_view_name = f"{schema_name}.{view_only}" if schema_name != "public" else view_only
+                        create_statement = f"CREATE VIEW {full_view_name} AS {clean_view_def}" 
                         definitions["views"].append({
-                            "name": name, 
-                            "definition": create_statement,
-                            # "view_definition": view_def
+                            "name": view_name, 
+                            "definition": create_statement
                         })
                     else:
                         definitions["views"].append({
@@ -653,22 +926,29 @@ class ActionFetchObjectDefinitions(Action):
                             "definition": "-- Definition not available"
                         })
 
-            # Process functions (existing logic)
+            # Process functions
             if "functions" in selected_objects and selected_objects["functions"]:
                 definitions["functions"] = []
                 for function_name in selected_objects["functions"]:
+                    # Parse schema.function format or determine schema
+                    if "." in function_name:
+                        schema_name, func_only = function_name.split(".", 1)
+                    else:
+                        schema_name = self._find_function_schema(cursor, function_name, selected_schemas)
+                        func_only = function_name
+                        
                     cursor.execute("""
                         SELECT p.proname as name, pg_catalog.pg_get_function_arguments(p.oid) as arguments,
                                pg_catalog.pg_get_function_result(p.oid) as return_type, p.prosrc as source
                         FROM pg_proc p JOIN pg_namespace n ON p.pronamespace = n.oid
-                        WHERE n.nspname = 'public' AND p.proname = %s
-                    """, (function_name,))
+                        WHERE n.nspname = %s AND p.proname = %s
+                    """, (schema_name, func_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, arguments, return_type, source = result
                         definitions["functions"].append({
-                            "name": name, 
+                            "name": function_name, 
                             "arguments": arguments, 
                             "return_type": return_type, 
                             "source": source
@@ -679,56 +959,77 @@ class ActionFetchObjectDefinitions(Action):
                             "source": "-- Definition not available"
                         })
 
-            # Process Constraints (existing logic)
+            # Process Constraints
             if "constraints" in selected_objects and selected_objects["constraints"]:   
                 definitions["constraints"] = []
                 for constraint_name in selected_objects["constraints"]:
+                    # Parse schema.constraint format or search in selected schemas
+                    if "." in constraint_name:
+                        schema_name, constraint_only = constraint_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        constraint_only = constraint_name
+                        
                     cursor.execute("""
                         SELECT conname, pg_catalog.pg_get_constraintdef(c.oid) as definition
                         FROM pg_constraint c JOIN pg_namespace n ON c.connamespace = n.oid
-                        WHERE n.nspname = 'public' AND conname = %s
-                    """, (constraint_name,))
+                        WHERE n.nspname = %s AND conname = %s
+                    """, (schema_name, constraint_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, definition = result
-                        definitions["constraints"].append({"name": name, "definition": definition})
+                        definitions["constraints"].append({"name": constraint_name, "definition": definition})
                     else:
                         definitions["constraints"].append({"name": constraint_name, "definition": "-- Definition not available"})
             
-            # Process Indexes (existing logic)
+            # Process Indexes
             if "indexes" in selected_objects and selected_objects["indexes"]:
                 definitions["indexes"] = []
                 for index_name in selected_objects["indexes"]:
+                    # Parse schema.index format or search in selected schemas
+                    if "." in index_name:
+                        schema_name, index_only = index_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        index_only = index_name
+                        
                     cursor.execute("""
                         SELECT indexname, indexdef
                         FROM pg_indexes
-                        WHERE schemaname = 'public' AND indexname = %s
-                    """, (index_name,))
+                        WHERE schemaname = %s AND indexname = %s
+                    """, (schema_name, index_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, definition = result
-                        definitions["indexes"].append({"name": name, "definition": definition})
+                        definitions["indexes"].append({"name": index_name, "definition": definition})
                     else:
                         definitions["indexes"].append({"name": index_name, "definition": "-- Definition not available"})
             
-            # Process Procedures (existing logic)
+            # Process Procedures
             if "procedures" in selected_objects and selected_objects["procedures"]:
                 definitions["procedures"] = []
                 for procedure_name in selected_objects["procedures"]:
+                    # Parse schema.procedure format or search in selected schemas
+                    if "." in procedure_name:
+                        schema_name, proc_only = procedure_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        proc_only = procedure_name
+                        
                     cursor.execute("""
                         SELECT p.proname as name, pg_catalog.pg_get_function_arguments(p.oid) as arguments,
                                pg_catalog.pg_get_function_result(p.oid) as return_type, p.prosrc as source
                         FROM pg_proc p JOIN pg_namespace n ON p.pronamespace = n.oid
-                        WHERE n.nspname = 'public' AND p.proname = %s AND p.prokind = 'p'
-                    """, (procedure_name,))
+                        WHERE n.nspname = %s AND p.proname = %s AND p.prokind = 'p'
+                    """, (schema_name, proc_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, arguments, return_type, source = result
                         definitions["procedures"].append({
-                            "name": name, 
+                            "name": procedure_name, 
                             "arguments": arguments, 
                             "return_type": return_type, 
                             "source": source
@@ -739,81 +1040,106 @@ class ActionFetchObjectDefinitions(Action):
                             "source": "-- Definition not available"
                         })
             
-            # Process Triggers (existing logic)
+            # Process Triggers
             if "triggers" in selected_objects and selected_objects["triggers"]:
                 definitions["triggers"] = []
                 for trigger_name in selected_objects["triggers"]:
+                    # Parse schema.trigger format or search in selected schemas
+                    if "." in trigger_name:
+                        schema_name, trigger_only = trigger_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        trigger_only = trigger_name
+                        
                     cursor.execute("""
                         SELECT tgname, pg_catalog.pg_get_triggerdef(t.oid) as definition
                         FROM pg_trigger t JOIN pg_class c ON t.tgrelid = c.oid
                         JOIN pg_namespace n ON c.relnamespace = n.oid
-                        WHERE n.nspname = 'public' AND tgname = %s AND NOT t.tgisinternal
-                    """, (trigger_name,))
+                        WHERE n.nspname = %s AND tgname = %s AND NOT t.tgisinternal
+                    """, (schema_name, trigger_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, definition = result
-                        definitions["triggers"].append({"name": name, "definition": definition})
+                        definitions["triggers"].append({"name": trigger_name, "definition": definition})
                     else:
                         definitions["triggers"].append({"name": trigger_name, "definition": "-- Definition not available"})
             
-            # Process Materialized Views (existing logic)
+            # Process Materialized Views
             if "materialized_views" in selected_objects and selected_objects["materialized_views"]:
                 definitions["materialized_views"] = []
                 for mv_name in selected_objects["materialized_views"]:
+                    # Parse schema.matview format or search in selected schemas
+                    if "." in mv_name:
+                        schema_name, mv_only = mv_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        mv_only = mv_name
+                        
                     cursor.execute("""
                         SELECT matviewname, pg_catalog.pg_get_viewdef(m.oid, true) as definition
                         FROM pg_matviews m JOIN pg_namespace n ON m.schemaname = n.nspname
-                        WHERE n.nspname = 'public' AND matviewname = %s
-                    """, (mv_name,))
+                        WHERE n.nspname = %s AND matviewname = %s
+                    """, (schema_name, mv_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, definition = result
-                        create_statement = f"CREATE MATERIALIZED VIEW {name} AS {definition.strip()}"
+                        full_mv_name = f"{schema_name}.{mv_only}" if schema_name != "public" else mv_only
+                        create_statement = f"CREATE MATERIALIZED VIEW {full_mv_name} AS {definition.strip()}"
                         definitions["materialized_views"].append({
-                            "name": name, 
-                            "definition": create_statement,
-                            # "view_definition": definition
+                            "name": mv_name, 
+                            "definition": create_statement
                         })
                     else:
                         definitions["materialized_views"].append({
                             "name": mv_name, 
                             "definition": "-- Definition not available"
                         })
-            
-            # Process Schemas (existing logic)
+
+            # Process Schemas   
             if "schemas" in selected_objects and selected_objects["schemas"]:
                 definitions["schemas"] = []
                 for schema_name in selected_objects["schemas"]:
                     cursor.execute("""
-                        SELECT nspname, pg_catalog.pg_get_userbyid(nspowner) as owner
-                        FROM pg_namespace
-                        WHERE nspname = %s AND nspname NOT IN ('information_schema', 'pg_catalog', 'pg_toast')
+                        SELECT schema_name, schema_owner
+                        FROM information_schema.schemata
+                        WHERE schema_name = %s
                     """, (schema_name,))
 
                     result = cursor.fetchone()
                     if result:
                         name, owner = result
-                        definitions["schemas"].append({"name": name, "owner": owner})
+                        definitions["schemas"].append({
+                            "name": name,
+                            "owner": owner,
+                            "definition": f"CREATE SCHEMA {name} AUTHORIZATION {owner};"
+                        })
                     else:
-                        definitions["schemas"].append({"name": schema_name, "owner": "-- Definition not available"})   
-
-            # Process Sequences (existing logic)
+                        definitions["schemas"].append({"name": schema_name, "definition": "-- Definition not available"})
+            
+            # Process Sequences
             if "sequences" in selected_objects and selected_objects["sequences"]:
                 definitions["sequences"] = []
                 for sequence_name in selected_objects["sequences"]:
+                    # Parse schema.sequence format or search in selected schemas
+                    if "." in sequence_name:
+                        schema_name, seq_only = sequence_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        seq_only = sequence_name
+                        
                     cursor.execute("""
                         SELECT sequence_name, data_type, increment_by, min_value, max_value, start_value, cycle_option
                         FROM information_schema.sequences
-                        WHERE sequence_schema = 'public' AND sequence_name = %s
-                    """, (sequence_name,))
+                        WHERE sequence_schema = %s AND sequence_name = %s
+                    """, (schema_name, seq_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, data_type, increment_by, min_value, max_value, start_value, cycle_option = result
                         definitions["sequences"].append({
-                            "name": name,
+                            "name": sequence_name,
                             "data_type": data_type,
                             "increment_by": increment_by,
                             "min_value": min_value,
@@ -829,20 +1155,18 @@ class ActionFetchObjectDefinitions(Action):
             
         return definitions
 
-    def _get_mysql_definitions(self, conn_str: str, selected_objects: Dict[str, List[str]]) -> Dict[str, List[Dict]]:
-        """Get detailed MySQL object definitions with CREATE statements."""
+    def _get_mysql_definitions(self, conn_str: str, selected_objects: Dict[str, List[str]], selected_schemas: List[str]) -> Dict[str, List[Dict]]:
+        """Get detailed MySQL object definitions with CREATE statements - schema-aware version."""
         try:
             import mysql.connector
         except ImportError:
             raise Exception("mysql-connector-python library required for MySQL")
             
         parsed = urlparse(conn_str)
-        database_name = parsed.path[1:]
 
         conn = mysql.connector.connect(
             host=parsed.hostname,
             port=parsed.port,
-            database=database_name,
             user=parsed.username,
             password=parsed.password
         )
@@ -855,12 +1179,19 @@ class ActionFetchObjectDefinitions(Action):
             if "tables" in selected_objects and selected_objects["tables"]:
                 definitions["tables"] = []
                 for table_name in selected_objects["tables"]:
+                    # Parse schema.table format or determine schema
+                    if "." in table_name:
+                        schema_name, table_only = table_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        table_only = table_name
+                        
                     cursor.execute(f"""
                         SELECT column_name, data_type, character_maximum_length, is_nullable, column_default
                         FROM information_schema.columns
-                        WHERE table_schema = '{database_name}' AND table_name = %s
+                        WHERE table_schema = %s AND table_name = %s
                         ORDER BY ordinal_position
-                    """, (table_name,))
+                    """, (schema_name, table_only))
 
                     columns = []
                     for col in cursor.fetchall():
@@ -875,7 +1206,7 @@ class ActionFetchObjectDefinitions(Action):
                         })
 
                     # Generate CREATE TABLE statement for MySQL
-                    create_statement = self._generate_mysql_create_table(table_name, columns, cursor, database_name)
+                    create_statement = self._generate_mysql_create_table(table_only, columns, cursor, schema_name)
 
                     definitions["tables"].append({
                         "name": table_name, 
@@ -887,21 +1218,26 @@ class ActionFetchObjectDefinitions(Action):
             if "views" in selected_objects and selected_objects["views"]:
                 definitions["views"] = []
                 for view_name in selected_objects["views"]:
+                    if "." in view_name:
+                        schema_name, view_only = view_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        view_only = view_name
+                        
                     cursor.execute(f"""
                         SELECT table_name, view_definition
                         FROM information_schema.views
-                        WHERE table_schema = '{database_name}' AND table_name = %s
-                    """, (view_name,))
+                        WHERE table_schema = %s AND table_name = %s
+                    """, (schema_name, view_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, view_def = result
                         clean_view_def = view_def.replace('\n', ' ').replace('\t', ' ')
-                        create_statement = f"CREATE VIEW {name} AS {clean_view_def}" 
+                        create_statement = f"CREATE VIEW {view_name} AS {clean_view_def}" 
                         definitions["views"].append({
-                            "name": name, 
-                            "definition": create_statement,
-                            # "view_definition": view_def
+                            "name": view_name, 
+                            "definition": create_statement
                         })
                     else:
                         definitions["views"].append({
@@ -913,34 +1249,45 @@ class ActionFetchObjectDefinitions(Action):
             if "functions" in selected_objects and selected_objects["functions"]:
                 definitions["functions"] = []
                 for function_name in selected_objects["functions"]:
+                    if "." in function_name:
+                        schema_name, func_only = function_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        func_only = function_name
+                        
                     cursor.execute(f"""
                         SELECT routine_name, routine_definition, data_type as return_type
                         FROM information_schema.routines
-                        WHERE routine_schema = '{database_name}' AND routine_name = %s AND routine_type = 'FUNCTION'
-                    """, (function_name,))
+                        WHERE routine_schema = %s AND routine_name = %s AND routine_type = 'FUNCTION'
+                    """, (schema_name, func_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, definition, return_type = result
-                        definitions["functions"].append({"name": name, "definition": definition, "return_type": return_type})
+                        definitions["functions"].append({"name": function_name, "definition": definition, "return_type": return_type})
                     else:
                         definitions["functions"].append({"name": function_name, "definition": "-- Definition not available"})
 
-            # Process Indexes
+            # Process MySQL Indexes
             if "indexes" in selected_objects and selected_objects["indexes"]:
                 definitions["indexes"] = []
                 for index_name in selected_objects["indexes"]:
+                    if "." in index_name:
+                        schema_name, index_only = index_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        index_only = index_name
+                        
                     cursor.execute(f"""
-                        SELECT index_name, group_concat(column_name ORDER BY seq_in_index) as columns
+                        SELECT index_name, index_definition
                         FROM information_schema.statistics
-                        WHERE table_schema = '{database_name}' AND index_name = %s
-                        GROUP BY index_name
-                    """, (index_name,))
+                        WHERE table_schema = %s AND index_name = %s
+                    """, (schema_name, index_only))
 
                     result = cursor.fetchone()
                     if result:
-                        name, columns = result
-                        definitions["indexes"].append({"name": name, "columns": columns.split(",")})
+                        name, definition = result
+                        definitions["indexes"].append({"name": index_name, "definition": definition})
                     else:
                         definitions["indexes"].append({"name": index_name, "definition": "-- Definition not available"})
             
@@ -948,39 +1295,52 @@ class ActionFetchObjectDefinitions(Action):
             if "constraints" in selected_objects and selected_objects["constraints"]:
                 definitions["constraints"] = []
                 for constraint_name in selected_objects["constraints"]:
+                    if "." in constraint_name:
+                        schema_name, constraint_only = constraint_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        constraint_only = constraint_name
+                        
                     cursor.execute(f"""
-                        SELECT constraint_name, column_name, referenced_table_name, referenced_column_name
-                        FROM information_schema.key_column_usage
-                        WHERE table_schema = '{database_name}' AND constraint_name = %s
-                    """, (constraint_name,))
+                        SELECT constraint_name, constraint_type, column_name
+                        FROM information_schema.table_constraints tc
+                        JOIN information_schema.key_column_usage kcu 
+                        ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
+                        WHERE tc.table_schema = %s AND tc.constraint_name = %s
+                    """, (schema_name, constraint_only))
 
-                    rows = cursor.fetchall()
-                    if rows:
-                        for row in rows:
-                            name, column, ref_table, ref_column = row
+                    result = cursor.fetchall()
+                    if result:
+                        for row in result:
+                            name, ctype, column_name = row
                             definitions["constraints"].append({
-                                "name": name,
-                                "column": column,
-                                "referenced_table": ref_table,
-                                "referenced_column": ref_column
+                                "name": f"{constraint_only}.{column_name}",
+                                "type": ctype,
+                                "definition": f"{ctype} on {column_name}"
                             })
                     else:
                         definitions["constraints"].append({"name": constraint_name, "definition": "-- Definition not available"})
-            
+
             # Process MySQL Procedures
             if "procedures" in selected_objects and selected_objects["procedures"]:
                 definitions["procedures"] = []
                 for procedure_name in selected_objects["procedures"]:
+                    if "." in procedure_name:
+                        schema_name, proc_only = procedure_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        proc_only = procedure_name
+                        
                     cursor.execute(f"""
                         SELECT routine_name, routine_definition, data_type as return_type
                         FROM information_schema.routines
-                        WHERE routine_schema = '{database_name}' AND routine_name = %s AND routine_type = 'PROCEDURE'
-                    """, (procedure_name,))
+                        WHERE routine_schema = %s AND routine_name = %s AND routine_type = 'PROCEDURE'
+                    """, (schema_name, proc_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, definition, return_type = result
-                        definitions["procedures"].append({"name": name, "definition": definition, "return_type": return_type})
+                        definitions["procedures"].append({"name": procedure_name, "definition": definition, "return_type": return_type})
                     else:
                         definitions["procedures"].append({"name": procedure_name, "definition": "-- Definition not available"})
 
@@ -988,16 +1348,22 @@ class ActionFetchObjectDefinitions(Action):
             if "triggers" in selected_objects and selected_objects["triggers"]:
                 definitions["triggers"] = []
                 for trigger_name in selected_objects["triggers"]:
+                    if "." in trigger_name:
+                        schema_name, trigger_only = trigger_name.split(".", 1)
+                    else:
+                        schema_name = selected_schemas[0] if selected_schemas else "public"
+                        trigger_only = trigger_name
+                        
                     cursor.execute(f"""
                         SELECT trigger_name, action_statement
                         FROM information_schema.triggers
-                        WHERE trigger_schema = '{database_name}' AND trigger_name = %s
-                    """, (trigger_name,))
+                        WHERE trigger_schema = %s AND trigger_name = %s
+                    """, (schema_name, trigger_only))
 
                     result = cursor.fetchone()
                     if result:
                         name, definition = result
-                        definitions["triggers"].append({"name": name, "definition": definition})
+                        definitions["triggers"].append({"name": trigger_name, "definition": definition})
                     else:
                         definitions["triggers"].append({"name": trigger_name, "definition": "-- Definition not available"})
 

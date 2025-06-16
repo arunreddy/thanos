@@ -73,6 +73,7 @@ forms:
   explore_schema_form:
     required_slots:
       - connection_string
+      - selected_schemas 
       - object_types
 
   analyze_query_form:
@@ -278,6 +279,14 @@ slots:
     type: text
     influence_conversation: false
     mappings: []
+
+  selected_schemas:
+    type: list
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: explore_schema_form
+            requested_slot: selected_schemas
 
   database_host_endpoint:
     type: text
@@ -581,8 +590,9 @@ responses:
   utter_ask_confirm_schema_explore:
     - text: |
         You're about to explore schema for:
-        - Database type: PostgreSQL  
+        - Database type: {database_type}  
         - Connection string: `{connection_string}`  
+        - Selected schemas: `{selected_schemas}`
         - Object types: `{object_types}`  
 
         Would you like to proceed?
@@ -597,6 +607,9 @@ responses:
 
   utter_cancel_schema_explore:
     - text: "Schema exploration has been cancelled. Let me know if you need anything else."
+
+  utter_ask_selected_schemas:
+    - text: " "
 
   utter_ask_for_schema_selection:
     - text: |
