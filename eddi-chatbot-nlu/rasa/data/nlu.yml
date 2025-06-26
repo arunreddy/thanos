@@ -1,0 +1,178 @@
+# nlu.yml
+version: "3.1"
+
+nlu:
+  - intent: greet
+    examples: |
+      - hey
+      - hello
+      - hi
+      - good morning
+      - good evening
+      - hey there
+      - hi there
+      - greetings
+      - hello there
+      - good afternoon
+      - howdy
+      - hello, is anyone there?
+      - hi, how are you?
+      - hello bot
+      - sup
+      - hiya
+      - hey bot
+    
+  - intent: goodbye
+    examples: |
+      - bye
+      - goodbye
+      - see you later
+      - good-bye
+      - good bye
+      - have a nice day
+      - nice to meet you
+      - nice to meet you too
+
+  - intent: help
+    examples: |
+      - help
+      - I need assistance
+      - what can you do?
+      - what are you able to do?
+      - what can you do for me?
+
+  - intent: help_website
+    examples: |
+      - help website
+      - website help
+      - show me website help
+      - how to use the website
+
+  - intent: restart
+    examples: |
+      - restart
+      - start over
+      - let’s start again
+      - start from the beginning
+      - start again
+
+  - intent: recommend_database
+    examples: |
+      - recommend a database
+      - help me choose a database
+      - what database should I use?
+      - I need to pick a database
+      - I need to select a database
+
+  - intent: create_database
+    examples: |
+      - create a database
+      - provision a new database
+      - set up a DB for me
+      - spin up a database
+      - add a database
+      - create a tessel instance
+      - provision a development database
+      - create a development database
+
+  - intent: delete_database
+    examples: |
+      - delete a database
+      - remove a database
+      - drop a database
+      - decommission a database
+      - delete a tessel instance
+      - remove a tessel instance
+      - drop a tessel instance
+      - decommission a tessel instance
+
+  - intent: inform_database_version
+    examples: |
+      - PostgreSQL13
+      - PostgreSQL14
+      - PostgreSQL15
+      - PostgreSQL16
+
+  - intent: out_of_scope
+    examples: |
+      - what's the weather?
+      - tell me a joke
+      - who won the game?
+      - foobar
+      - lorem ipsum
+      - book me a flight
+      - what time is it
+      - who is the president
+      - where can I find pizza
+      - how tall is Mount Everest
+      - translate this to Spanish
+      - solve this math problem
+      - what's your favorite color
+      - do you like movies
+      - can you help me with my homework
+      - what's the meaning of life
+      - write me a poem
+      - tell me a story
+      - what's the stock price
+      - what are your hobbies
+
+  - intent: unsupported_db_type
+    examples: |
+      - MySQL
+      - mysql
+      - MongoDB
+      - mongodb
+      - Oracle
+      - oracle
+
+  - intent: affirm_delete
+    examples: |
+      - yes
+      - yep
+      - sure
+      - go ahead
+
+  - intent: explore_schema
+    examples: |
+      - explore a database schema
+      - show me the schema of my database
+      - I want to explore a DB schema
+      - schema explorer
+
+  - intent: affirm_schema
+    examples: |
+      - yes
+      - sure
+      - absolutely
+      - sounds good
+
+  # - intent: inform_object_type
+  #   examples: |
+  #     - tables
+  #     - views
+  #     - functions
+  #     - indexes
+
+  - intent: provide_schema_selection
+    examples: |
+      - {"database_host_endpoint": "localhost:5432", "objects": {"tables": ["employees"]}}
+      - {"objects": {"tables": ["departments"], "functions": ["calculate_age"]}}
+      - Here is the json {"objects": {"tables": ["cars"]}}
+      - I want details for {"objects": {"functions": ["update_car_status"]}}
+
+  - intent: analyze_query
+    examples: |
+      - analyze a query
+      - check query performance
+      - review my SQL query
+      - analyze database query
+      - query analyzer
+
+  - intent: affirm_query_analyzer
+    examples: |
+      - PostgreSQL
+      - postgres
+      - postgresql
+      - i want to use postgresql
+      - choose postgresql
+      - postgres database

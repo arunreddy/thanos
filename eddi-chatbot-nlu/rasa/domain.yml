@@ -1,0 +1,535 @@
+# domain.yml
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - help
+  - help_website
+  - restart
+  - recommend_database
+  - create_database
+  - delete_database
+  - out_of_scope
+  - inform_database_version 
+  - confirm_database_selection
+  - unsupported_db_type
+  - affirm_delete
+  - affirm
+  - deny
+  - explore_schema
+  - affirm_schema
+  - provide_schema_selection
+  - analyze_query
+  - affirm_query_analyzer
+
+entities:
+  - database_name
+  - database_instance
+  - database_version
+  - sysid
+
+forms:
+  recommend_database_form:
+    required_slots:
+      - app_type
+      - feature_type
+      - relationship_type
+      - downtime_tolerance
+
+  create_database_form:
+    required_slots:
+      - database_name
+      - database_version
+      - sysid
+
+  delete_database_form:
+    required_slots:
+      - database_name
+      - database_instance 
+      - sysid
+
+  explore_schema_form:
+    required_slots:
+      - connection_string
+      - object_types
+
+  analyze_query_form:
+    required_slots:
+      - connection_string
+      - sql_query
+
+slots:
+  # — select-database form slots —
+  app_type:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: app_type
+
+  feature_type:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: feature_type
+
+  relationship_type:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: relationship_type
+
+  downtime_tolerance:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: downtime_tolerance
+
+  # — create/delete-database form slots —
+  database_name:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: database_name
+          - active_loop: delete_database_form
+            requested_slot: database_name
+
+  database_version:
+    type: text
+    mappings:
+      - type: from_entity    # pull from the inform_database_version intent
+        entity: database_version
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: database_version
+      - type: from_text
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: database_version
+
+  database_instance:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: delete_database_form
+            requested_slot: database_instance 
+
+  sysid:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: create_database_form
+            requested_slot: sysid
+          - active_loop: delete_database_form
+            requested_slot: sysid
+
+  # — output slots for recommendation flow —
+  recommended_database:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  estimated_cost:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  confirmed:
+    type: bool
+    influence_conversation: true
+    mappings:
+      - type: from_intent
+        intent: affirm
+        value: true
+        conditions:
+          - active_loop: null
+            requested_slot: null
+      - type: from_intent
+        intent: deny
+        value: false
+        conditions:
+          - active_loop: null
+            requested_slot: null
+
+# schema-explorer
+  connection_string:
+    type: text
+    mappings:
+      # Existing mapping for explore_schema_form
+      - type: from_text
+        conditions:
+          - active_loop: explore_schema_form
+            requested_slot: connection_string
+      # Add this new mapping for analyze_query_form
+      - type: from_text
+        conditions:
+          - active_loop: analyze_query_form
+            requested_slot: connection_string
+
+  object_types:
+    type: list
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: explore_schema_form
+            requested_slot: object_types
+
+  schema_file_path:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  definitions_file_path:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  database_host_endpoint:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  available_objects:
+    type: any
+    influence_conversation: false
+    mappings: []
+  
+  filtered_objects:
+    type: any
+    influence_conversation: false
+    mappings: []
+  
+  object_definitions:
+    type: any
+    influence_conversation: false
+    mappings: []
+  
+  object_definitions_url:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  sql_query:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: analyze_query_form
+            requested_slot: sql_query
+
+  execution_plan_path:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  execution_plan_data:
+    type: any
+    influence_conversation: false
+    mappings: []
+
+responses:
+  utter_greet:
+    - text: "Hello! How can I help you today?"
+
+  utter_goodbye:
+    - text: "Goodbye! Have a nice day."
+
+  utter_help:
+    - text: |
+        I can help you:
+        • Recommend a database  
+        • Create a new database  
+        • Delete an existing database  
+        What would you like to do?
+      buttons:
+        - title: "Recommend a Database"
+          payload: "/recommend_database"
+        - title: "Create Database"
+          payload: "/create_database"
+        - title: "Delete Database"
+          payload: "/delete_database"
+
+  utter_help_website:
+    - text: |
+        Here’s what I can do:
+        1. Recommend a database.  
+        2. Provision (create) a new database.  
+        3. Decommission (delete) a database.
+
+  # — select-database form prompts —
+  utter_ask_app_type:
+    - text: "What best describes your setup?"
+      buttons:
+        - title: "Structured data, vendor app"
+          payload: "Structured data, vendor app"
+        - title: "Structured data, home-grown app"
+          payload: "Structured data, home-grown app"
+        - title: "Unstructured data, vendor app"
+          payload: "Unstructured data, vendor app"
+        - title: "Unstructured data, home-grown app"
+          payload: "Unstructured data, home-grown app"
+
+  utter_ask_feature_type:
+    - text: "Any special features? (full-text search, embeddings, nested docs, etc.)"
+      buttons:
+        - title: "Yes, Oracle-only"
+          payload: "Yes, Oracle-only"
+        - title: "Yes, but flexible"
+          payload: "Yes, but flexible on database"
+        - title: "No special features"
+          payload: "No special features needed"
+
+  utter_ask_relationship_type:
+    - text: "Do you need single-key access, complex relationships, or none?"
+      buttons:
+        - title: "Single-key access only"
+          payload: "Single-key access only"
+        - title: "Complex relationships/schema"
+          payload: "Complex relationships or relational schema"
+        - title: "None"
+          payload: "None of these"
+
+  utter_ask_downtime_tolerance:
+    - text: "Can your app tolerate about an hour of downtime?"
+      buttons:
+        - title: "Yes"
+          payload: "Yes"
+        - title: "No"
+          payload: "No"
+
+  # — final submit for recommendation —
+  utter_request_submitted:
+    - text: "Based on your responses, we recommend {recommended_database} (≈{estimated_cost}). A Jira ticket has been created."
+
+  # — create-database form prompts —
+  utter_ask_database_name:
+    - text: "Could you please provide the name of the database."
+
+
+  utter_ask_database_version:
+      - text: "Which version do you need?"
+        buttons:
+          - title: "PostgreSQL 15"
+            payload: '/inform_database_version{"database_version":"postgresql15"}'
+          - title: "PostgreSQL 16"
+            payload: '/inform_database_version{"database_version":"postgresql16"}'
+
+  utter_ask_sysid:
+    - text: "Please provide the SYSID for your database."
+
+  utter_submit_database:
+    - text: "Your request to create {database_name} ({database_version}) with SYSID {sysid} has been submitted!"
+
+  utter_ask_confirm_database_creation:
+    - text: "You're about to create a database with these details:\n\n- Name: {database_name}\n- Version: {database_version}\n- SYSID: {sysid}\n\nWould you like to proceed with this database creation?"
+      buttons:
+        - title: "Yes, create the database"
+          payload: "/affirm"
+        - title: "No, start over"
+          payload: "/deny"
+
+  # — delete-database confirmation —
+  utter_confirm_delete_database:
+    - text: "Your request to delete {database_name} ({database_version}) with SYSID {sysid} has been submitted!"
+  
+  utter_ask_database_instance:
+    - text: "Please provide the database instance you want to delete."
+
+  utter_ask_confirm_database_deletion:
+    - text: |
+        You're about to delete a database with these details:
+        - Name: {database_name}
+        - Instance: {database_instance}
+        - SysID: {sysid}
+
+        Are you sure you want to proceed?
+      buttons:
+        - title: "Yes, delete it"
+          payload: "/affirm"
+        - title: "No, cancel"
+          payload: "/deny"
+
+  utter_database_creation_cancelled:
+    - text: "Database creation has been cancelled. What would you like to do next?"
+      buttons:
+        - title: "Try again"
+          payload: "/create_database"
+        - title: "Help"
+          payload: "/help"
+
+  utter_oos:
+    - text: "I'm sorry, I don't understand that request or it's outside the scope of what I can do. I'm primarily designed to help with database-related tasks like selecting, creating, or deleting databases. Could you try asking me about one of these topics instead?"
+      buttons:
+        - title: "Select Database"
+          payload: "/start_database_selection"
+        - title: "Create Database"
+          payload: "/create_database"
+        - title: "Delete Database"
+          payload: "/delete_database"
+        - title: "Help"
+          payload: "/help"
+
+  utter_database_selection_confirmation:
+    - text: "Would you like to proceed with this recommendation?"
+      buttons:
+        - title: "Yes, create ticket"
+          payload: "/confirm_database_selection"
+        - title: "No, let's try again"
+          payload: "/restart"
+
+  utter_postgresql_support:
+    - text: |
+        Which database type would you like?  
+        We currently support only **PostgreSQL**.  
+        Other types will be available later.  
+        For any further questions, email dhahka.com.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+        - title: "MongoDB"
+          payload: "/unsupported_db_type"
+        - title: "Oracle"
+          payload: "/unsupported_db_type"
+  
+  utter_postgresql_support_delete:
+    - text: |
+        Which database type would you like?  
+        We currently support only **PostgreSQL**.  
+        Other types will be available later.  
+        For any further questions, email dhahka.com.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm_delete"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+        - title: "MongoDB"
+          payload: "/unsupported_db_type"
+        - title: "Oracle"
+          payload: "/unsupported_db_type"
+
+  utter_working_on_features:
+    - text: |
+        Sorry, we’re still working on those database types.  
+        They’ll be available soon!  
+
+#schema-explorer
+  utter_postgresql_support_schema:
+    - text: |
+        Which database type would you like to explore?  
+        We currently support only **PostgreSQL**.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm_schema"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+        - title: "MongoDB"
+          payload: "/unsupported_db_type"
+        - title: "Oracle"
+          payload: "/unsupported_db_type"
+
+  utter_ask_connection_string:
+    - text: "Please provide the connection string in the format `postgres://username:password@host:port/database_name`."
+
+  utter_invalid_connection_string:
+    - text: "That doesn’t look like a valid PostgreSQL connection string. Please try again in the correct format."
+
+  utter_ask_object_types:
+    - text: "Which object types would you like to explore? (e.g., tables, views, functions, sequences)"
+
+  utter_ask_confirm_schema_explore:
+    - text: |
+        You're about to explore schema for:
+        - Database type: PostgreSQL  
+        - Connection string: `{connection_string}`  
+        - Object types: `{object_types}`  
+
+        Would you like to proceed?
+      buttons:
+        - title: "Yes"
+          payload: "/affirm"
+        - title: "No"
+          payload: "/deny"
+
+  utter_schema_download:
+    - text: "Here’s your schema! [Download link]"
+
+  utter_cancel_schema_explore:
+    - text: "Schema exploration has been cancelled. Let me know if you need anything else."
+
+  utter_ask_for_schema_selection:
+    - text: |
+        Select the objects for which you want detailed definitions
+          
+#query-analyzer
+  utter_ask_sql_query:
+    - text: "Please enter the SQL query you want to analyze."
+
+  utter_postgresql_support_query_analyzer:
+    - text: |
+        Which database type would you like to analyze?  
+        We currently support only **PostgreSQL**.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm_query_analyzer"
+        - title: "MongoDB"
+          payload: "/unsupported_db_type"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+        - title: "SQL Server"
+          payload: "/unsupported_db_type"
+        - title: "DB2"
+          payload: "/unsupported_db_type"
+
+  utter_ask_confirm_query_analysis:
+    - text: |
+        You're about to analyze this query:
+        ```
+        {sql_query}
+        ```
+        Would you like to proceed?
+      buttons:
+        - title: "Yes"
+          payload: "/affirm"
+        - title: "No"
+          payload: "/deny"
+
+  utter_query_analysis_cancelled:
+    - text: "Query analysis has been cancelled. What would you like to do next?"
+      buttons:
+        - title: "Try again"
+          payload: "/analyze_query"
+        - title: "Help"
+          payload: "/help"
+
+actions:
+  - action_recommend_database
+  - action_recommend_database_create_ticket
+  - action_submit_database
+  - action_submit_delete_database
+  - action_restart
+  - validate_create_database_form
+  - validate_explore_schema_form     
+  - action_fetch_available_objects  
+  - action_submit_schema_explore
+  - action_fetch_object_definitions
+  - utter_ask_for_schema_selection
+  - validate_analyze_query_form
+  - action_submit_query_analysis
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: false
