@@ -563,14 +563,14 @@ responses:
   utter_postgresql_support_schema:
     - text: |
         Which database type would you like to explore?  
-        We support **PostgreSQL** and **MySQL**.
+        We support **PostgreSQL**, **MySQL**, and **MongoDB**.
       buttons:
         - title: "PostgreSQL"
           payload: '/affirm_schema{{"database_type":"PostgreSQL"}}'
         - title: "MySQL"
           payload: '/affirm_schema{{"database_type":"MySQL"}}'
         - title: "MongoDB"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_schema{{"database_type":"MongoDB"}}'
         - title: "Oracle"
           payload: "/unsupported_db_type"
 
@@ -580,6 +580,7 @@ responses:
         
         **PostgreSQL:** `postgres://username:password@host:port/database_name`
         **MySQL:** `mysql://username:password@host:port/database_name`
+        **MongoDB:** `mongodb://username:password@host:port/database_name`
 
   utter_invalid_connection_string:
     - text: "That doesn’t look like a valid PostgreSQL connection string. Please try again in the correct format."
@@ -622,14 +623,14 @@ responses:
   utter_postgresql_support_query_analyzer:
     - text: |
         Which database type would you like to analyze?  
-        We support **PostgreSQL** and **MySQL**.
+        We support **PostgreSQL**, **MySQL**, and **MongoDB**.
       buttons:
         - title: "PostgreSQL"
           payload: '/affirm_query_analyzer{{"database_type":"PostgreSQL"}}'
         - title: "MySQL"
           payload: '/affirm_query_analyzer{{"database_type":"MySQL"}}'
         - title: "MongoDB"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_query_analyzer{{"database_type":"MongoDB"}}'
         - title: "SQL Server"
           payload: "/unsupported_db_type"
         - title: "DB2"
