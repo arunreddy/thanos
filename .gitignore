@@ -4,3 +4,5 @@
 eddi-chatbot-nlu/rasa/models/
 server-db-mock-data.sql
 dbq-server-dbschema.sql
+serverdb.sql
+eddi-chatbot-nlu/env.example

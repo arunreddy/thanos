@@ -195,20 +195,20 @@ nlu:
       - patch details
       - what patches are available
       - check patch information
-      - get patch info for [server-001](hostname)
-      - show patches for [server-002](hostname)
-      - patch information for [server-003](hostname)
-      - get patch info for [aws.rds.com](hostname)
-      - show patches for [localhost](hostname)
-      - patch information for [prod-server](hostname)
-      - I want patch information for [server-001](hostname)
-      - Get patch info for [server-002](hostname)
-      - Show me patches for [server-003](hostname)
-      - Patch info for [aws.rds.com](hostname)
-      - [server-001](hostname) patch info
-      - [aws.rds.com](hostname) patch information
-      - [server-002](hostname) patches
-      - [server-003](hostname) patch status
+      - get patch info for [postgres-prod-01.company.com](hostname)
+      - show patches for [mysql-prod-01.company.com](hostname)
+      - patch information for [oracle-prod-01.company.com](hostname)
+      - get patch info for [sqlserver-prod-01.company.com](hostname)
+      - show patches for [mongodb-prod-01.company.com](hostname)
+      - patch information for [redis-prod-01.company.com](hostname)
+      - I want patch information for [postgres-prod-02.company.com](hostname)
+      - Get patch info for [mysql-prod-02.company.com](hostname)
+      - Show me patches for [oracle-prod-02.company.com](hostname)
+      - Patch info for [sqlserver-prod-02.company.com](hostname)
+      - [postgres-staging-01.company.com](hostname) patch info
+      - [mysql-dev-01.company.com](hostname) patch information
+      - [cassandra-prod-01.company.com](hostname) patches
+      - [elasticsearch-prod-01.company.com](hostname) patch status
       - patch
       - patches
       - patch info
@@ -242,23 +242,44 @@ nlu:
 
   - intent: inform_hostname
     examples: |
-      - [server-001](hostname)
-      - [server-002](hostname)
-      - [server-003](hostname)
-      - [aws.rds.com](hostname)
-      - [localhost](hostname)
-      - [prod-server](hostname)
-      - [dev-server](hostname)
-      - [test-server](hostname)
-      - [database-server](hostname)
-      - [web-server](hostname)
-      - [app-server](hostname)
-      - [db-server](hostname)
-      - [api-server](hostname)
-      - [cache-server](hostname)
-      - [load-balancer](hostname)
-      - [monitoring-server](hostname)
-      - [backup-server](hostname)
-      - [staging-server](hostname)
-      - [production-server](hostname)
-      - [development-server](hostname)
+      - [postgres-prod-01.company.com](hostname)
+      - [postgres-prod-02.company.com](hostname)
+      - [postgres-staging-01.company.com](hostname)
+      - [mysql-prod-01.company.com](hostname)
+      - [mysql-prod-02.company.com](hostname)
+      - [mysql-dev-01.company.com](hostname)
+      - [oracle-prod-01.company.com](hostname)
+      - [oracle-prod-02.company.com](hostname)
+      - [sqlserver-prod-01.company.com](hostname)
+      - [sqlserver-prod-02.company.com](hostname)
+      - [mongodb-prod-01.company.com](hostname)
+      - [mongodb-prod-02.company.com](hostname)
+      - [redis-prod-01.company.com](hostname)
+      - [redis-prod-02.company.com](hostname)
+      - [cassandra-prod-01.company.com](hostname)
+      - [cassandra-prod-02.company.com](hostname)
+      - [elasticsearch-prod-01.company.com](hostname)
+      - [elasticsearch-prod-02.company.com](hostname)
+      - [legacy-oracle-01.company.com](hostname)
+      - [legacy-sqlserver-01.company.com](hostname)
+      - postgres-prod-01.company.com
+      - mysql-prod-01.company.com
+      - oracle-prod-01.company.com
+      - sqlserver-prod-01.company.com
+      - mongodb-prod-01.company.com
+      - redis-prod-01.company.com
+      - cassandra-prod-01.company.com
+      - elasticsearch-prod-01.company.com
+      - The hostname is [postgres-prod-01.company.com](hostname)
+      - It's [mysql-prod-01.company.com](hostname)
+      - [oracle-prod-01.company.com](hostname)
+      - [sqlserver-prod-01.company.com](hostname)
+      - [mongodb-prod-01.company.com](hostname)
+      - [redis-prod-01.company.com](hostname)
+      - [cassandra-prod-01.company.com](hostname)
+      - [elasticsearch-prod-01.company.com](hostname)
+
+# Regex patterns for entity extraction
+regex:
+  - name: hostname
+    pattern: '[a-zA-Z0-9.-]+\\.[a-zA-Z0-9.-]+'
