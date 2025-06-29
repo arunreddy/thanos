@@ -144,7 +144,7 @@ rules:
 
 
 # ——— create‐database form ———
-  # 1) when the user says “create_database” first warn that only Postgres is supported
+  # 1) when the user says "create_database" first warn that only Postgres is supported
   - rule: postgres support notice for create database
     steps:
       - intent: create_database
@@ -203,7 +203,7 @@ rules:
 
 # ——— delete‐database form ———
 
-# 1) when the user says “delete_database” first warn that only Postgres is supported
+# 1) when the user says "delete_database" first warn that only Postgres is supported
   - rule: postgres support notice for delete database
     steps:
       - intent: delete_database
@@ -251,7 +251,7 @@ rules:
           - sysid
     steps:
       - intent: deny
-      - action: utter_database_creation_cancelled  # or create your own “cancelled delete” utter
+      - action: utter_database_creation_cancelled  # or create your own "cancelled delete" utter
 
 
 # ——— explore‐schema flow ———
@@ -374,8 +374,66 @@ rules:
     condition:
       - active_loop: null
       - slot_was_set:
-          - connection_string 
           - sql_query
     steps:
       - intent: deny
       - action: utter_query_analysis_cancelled
+
+# ——— patch information flow ———
+  - rule: Activate patch information flow
+    steps:
+      - intent: get_patch_information
+      - action: action_ask_hostname
+      - action: action_listen
+
+  - rule: Handle hostname provided directly
+    steps:
+      - intent: inform_hostname
+      - action: action_confirm_hostname
+      - action: action_listen
+
+  - rule: Handle hostname confirmation
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - action: action_confirm_hostname
+      - action: action_listen
+
+  - rule: Handle affirm for patch information
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - intent: affirm
+      - action: action_get_patch_information
+
+  - rule: Handle deny for patch information (reset hostname)
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - intent: deny
+      - action: action_reset_patch_form
+      - action: action_ask_hostname
+      - action: action_listen
+
+  - rule: Handle help during patch flow
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - intent: help
+      - action: action_back_to_main_menu
+      - action: utter_help
+      - action: action_listen
+
+  - rule: Handle help during patch flow (no hostname set)
+    steps:
+      - intent: help
+      - action: utter_help
+      - action: action_listen

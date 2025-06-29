@@ -18,7 +18,7 @@ ENV PATH="/root/.local/bin:$PATH"
 WORKDIR /app
 
 # Copy dependency files
-COPY uv.lock pyproject.toml .python-version ./
+COPY uv.lock pyproject.toml ./
 
 # Install dependencies with uv
 RUN uv sync

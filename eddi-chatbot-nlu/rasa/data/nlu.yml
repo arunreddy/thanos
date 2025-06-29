@@ -52,7 +52,7 @@ nlu:
     examples: |
       - restart
       - start over
-      - let’s start again
+      - let's start again
       - start from the beginning
       - start again
 
@@ -176,3 +176,89 @@ nlu:
       - i want to use postgresql
       - choose postgresql
       - postgres database
+
+  - intent: get_patch_information
+    examples: |
+      - get patch information
+      - show me patch information
+      - what patches are installed
+      - check patch status
+      - patch information
+      - get patch details
+      - show patch info
+      - what patches do I have
+      - check for patches
+      - patch status
+      - installed patches
+      - get patch history
+      - show patch history
+      - patch details
+      - what patches are available
+      - check patch information
+      - get patch info for [server-001](hostname)
+      - show patches for [server-002](hostname)
+      - patch information for [server-003](hostname)
+      - get patch info for [aws.rds.com](hostname)
+      - show patches for [localhost](hostname)
+      - patch information for [prod-server](hostname)
+      - I want patch information for [server-001](hostname)
+      - Get patch info for [server-002](hostname)
+      - Show me patches for [server-003](hostname)
+      - Patch info for [aws.rds.com](hostname)
+      - [server-001](hostname) patch info
+      - [aws.rds.com](hostname) patch information
+      - [server-002](hostname) patches
+      - [server-003](hostname) patch status
+      - patch
+      - patches
+      - patch info
+      - patch details
+      - patch status
+      - patch history
+      - installed patches
+      - system patches
+      - server patches
+      - host patches
+      - check patches
+      - list patches
+      - show patches
+      - get patches
+      - patch list
+      - current patches
+      - available patches
+      - patch report
+      - patch summary
+      - patch overview
+      - patch inventory
+      - patch audit
+      - patch compliance
+      - patch management
+      - patch tracking
+      - patch monitoring
+      - patch analysis
+      - patch review
+      - patch assessment
+      - patch verification
+
+  - intent: inform_hostname
+    examples: |
+      - [server-001](hostname)
+      - [server-002](hostname)
+      - [server-003](hostname)
+      - [aws.rds.com](hostname)
+      - [localhost](hostname)
+      - [prod-server](hostname)
+      - [dev-server](hostname)
+      - [test-server](hostname)
+      - [database-server](hostname)
+      - [web-server](hostname)
+      - [app-server](hostname)
+      - [db-server](hostname)
+      - [api-server](hostname)
+      - [cache-server](hostname)
+      - [load-balancer](hostname)
+      - [monitoring-server](hostname)
+      - [backup-server](hostname)
+      - [staging-server](hostname)
+      - [production-server](hostname)
+      - [development-server](hostname)

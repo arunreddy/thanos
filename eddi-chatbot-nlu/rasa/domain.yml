@@ -22,12 +22,15 @@ intents:
   - provide_schema_selection
   - analyze_query
   - affirm_query_analyzer
+  - get_patch_information
+  - inform_hostname
 
 entities:
   - database_name
   - database_instance
   - database_version
   - sysid
+  - hostname
 
 forms:
   recommend_database_form:
@@ -239,6 +242,20 @@ slots:
     influence_conversation: false
     mappings: []
 
+  hostname:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: hostname
+      - type: from_text
+        conditions:
+          - active_loop: null
+            requested_slot: hostname
+        not_intent:
+          - affirm
+          - deny
+          - help
+
 responses:
   utter_greet:
     - text: "Hello! How can I help you today?"
@@ -252,6 +269,7 @@ responses:
         • Recommend a database  
         • Create a new database  
         • Delete an existing database  
+        • Get patch information
         What would you like to do?
       buttons:
         - title: "Recommend a Database"
@@ -260,10 +278,12 @@ responses:
           payload: "/create_database"
         - title: "Delete Database"
           payload: "/delete_database"
+        - title: "Get Patch Information"
+          payload: "/get_patch_information"
 
   utter_help_website:
     - text: |
-        Here’s what I can do:
+        Here's what I can do:
         1. Recommend a database.  
         2. Provision (create) a new database.  
         3. Decommission (delete) a database.
@@ -370,7 +390,7 @@ responses:
           payload: "/help"
 
   utter_oos:
-    - text: "I'm sorry, I don't understand that request or it's outside the scope of what I can do. I'm primarily designed to help with database-related tasks like selecting, creating, or deleting databases. Could you try asking me about one of these topics instead?"
+    - text: "I'm sorry, I don't understand that request or it's outside the scope of what I can do. I'm primarily designed to help with database-related tasks like selecting, creating, or deleting databases, and getting patch information. Could you try asking me about one of these topics instead?"
       buttons:
         - title: "Select Database"
           payload: "/start_database_selection"
@@ -378,6 +398,8 @@ responses:
           payload: "/create_database"
         - title: "Delete Database"
           payload: "/delete_database"
+        - title: "Get Patch Information"
+          payload: "/get_patch_information"
         - title: "Help"
           payload: "/help"
 
@@ -423,8 +445,8 @@ responses:
 
   utter_working_on_features:
     - text: |
-        Sorry, we’re still working on those database types.  
-        They’ll be available soon!  
+        Sorry, we're still working on those database types.  
+        They'll be available soon!  
 
 #schema-explorer
   utter_postgresql_support_schema:
@@ -445,7 +467,7 @@ responses:
     - text: "Please provide the connection string in the format `postgres://username:password@host:port/database_name`."
 
   utter_invalid_connection_string:
-    - text: "That doesn’t look like a valid PostgreSQL connection string. Please try again in the correct format."
+    - text: "That doesn't look like a valid PostgreSQL connection string. Please try again in the correct format."
 
   utter_ask_object_types:
     - text: "Which object types would you like to explore? (e.g., tables, views, functions, sequences)"
@@ -465,7 +487,7 @@ responses:
           payload: "/deny"
 
   utter_schema_download:
-    - text: "Here’s your schema! [Download link]"
+    - text: "Here's your schema! [Download link]"
 
   utter_cancel_schema_explore:
     - text: "Schema exploration has been cancelled. Let me know if you need anything else."
@@ -515,6 +537,27 @@ responses:
         - title: "Help"
           payload: "/help"
 
+#patch-information
+  utter_ask_hostname:
+    - text: "Please provide the hostname for which you want patch information."
+
+  utter_confirm_hostname:
+    - text: "I'll look up patch information for hostname: **{hostname}**. Is this correct?"
+      buttons:
+        - title: "Yes, proceed"
+          payload: "/affirm"
+        - title: "No, change hostname"
+          payload: "/deny"
+
+  utter_patch_information_not_found:
+    - text: "No patch information found for hostname: **{hostname}**"
+
+  utter_patch_information_error:
+    - text: "Sorry, I encountered an error while querying the patch database. Please try again later."
+
+  utter_patch_information_success:
+    - text: "Here's the patch information for **{hostname}**:"
+
 actions:
   - action_recommend_database
   - action_recommend_database_create_ticket
@@ -529,6 +572,11 @@ actions:
   - utter_ask_for_schema_selection
   - validate_analyze_query_form
   - action_submit_query_analysis
+  - action_ask_hostname
+  - action_confirm_hostname
+  - action_get_patch_information
+  - action_reset_patch_form
+  - action_back_to_main_menu
 
 session_config:
   session_expiration_time: 60
