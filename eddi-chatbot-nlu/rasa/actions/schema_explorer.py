@@ -1523,7 +1523,6 @@ class ActionFetchObjectDefinitions(Action):
                         "name": collection_name,
                         "document_count": collection.count_documents({}),
                         "sample_schema": schema_info,
-                        # "definition": f"Collection: {collection_name} ({collection.count_documents({})} documents)"
                     })
             
             # Process indexes
@@ -1540,14 +1539,12 @@ class ActionFetchObjectDefinitions(Action):
                         for index in collection.list_indexes():
                             if index['name'] == idx_name:
                                 definitions["indexes"].append({
-                                    "name": index_name,
-                                    "definition": f"Index on {col_name}: {index.get('key', {})}"
+                                    "name": index_name
                                 })
                                 break
                         else:
                             definitions["indexes"].append({
-                                "name": index_name,
-                                "definition": "-- Index definition not available"
+                                "name": index_name
                             })
 
             # Process views
