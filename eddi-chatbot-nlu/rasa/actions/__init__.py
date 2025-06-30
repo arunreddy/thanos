@@ -11,7 +11,12 @@ from .schema_explorer import (
 from .submit_database import ActionSubmitDatabase, ValidateCreateDatabaseForm
 from .submit_delete_database import ActionSubmitDeleteDatabase
 from .query_analyzer import ValidateAnalyzeQueryForm, ActionSubmitQueryAnalysis
-
+from .patch_information import (
+    ActionAskHostname,
+    ActionConfirmHostname,
+    ActionGetPatchInformation,
+    ActionResetPatchForm,
+)
 __all__ = [
     "ActionRecommendDatabase",
     "ActionRecommendDatabaseCreateTicket",
@@ -25,4 +30,8 @@ __all__ = [
     "ActionFetchObjectDefinitions",
     "ValidateAnalyzeQueryForm",
     "ActionSubmitQueryAnalysis",
+    "ActionAskHostname",
+    "ActionConfirmHostname",
+    "ActionGetPatchInformation",
+    "ActionResetPatchForm",
 ]

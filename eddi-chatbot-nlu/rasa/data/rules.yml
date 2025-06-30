@@ -386,3 +386,62 @@ rules:
     steps:
       - intent: deny
       - action: utter_query_analysis_cancelled
+
+# ——— patch information flow ———
+  - rule: Activate patch information flow
+    steps:
+      - intent: get_patch_information
+      - action: action_ask_hostname
+      - action: action_listen
+
+  - rule: Handle hostname provided directly
+    steps:
+      - intent: inform_hostname
+      - action: action_confirm_hostname
+      - action: action_listen
+
+  - rule: Handle hostname confirmation
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - action: action_confirm_hostname
+      - action: action_listen
+
+  - rule: Handle affirm for patch information
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - intent: affirm
+      - action: action_get_patch_information
+
+  - rule: Handle deny for patch information (reset hostname)
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - intent: deny
+      - action: action_reset_patch_form
+      - action: action_ask_hostname
+      - action: action_listen
+
+  - rule: Handle help during patch flow
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - intent: help
+      - action: action_back_to_main_menu
+      - action: utter_help
+      - action: action_listen
+
+  - rule: Handle help during patch flow (no hostname set)
+    steps:
+      - intent: help
+      - action: utter_help
+      - action: action_listen

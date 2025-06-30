@@ -201,3 +201,35 @@ nlu:
       - Oracle
       - MySQL
       - MongoDB
+
+  - intent: get_patch_information
+    examples: |
+      - get patch information
+      - show me patch information
+      - what patches are installed
+      - check patch status
+      - patch information
+      - get patch details
+      - show patch info
+      - patch status
+      - installed patches
+      - patch history
+
+  - intent: inform_hostname
+    examples: |
+      - [postgres-prod-01.company.com](hostname)
+      - [mysql-prod-01.company.com](hostname)
+      - [oracle-prod-01.company.com](hostname)
+      - [sqlserver-prod-01.company.com](hostname)
+      - [mongodb-prod-01.company.com](hostname)
+      - [redis-prod-01.company.com](hostname)
+      - [cassandra-prod-01.company.com](hostname)
+      - [elasticsearch-prod-01.company.com](hostname)
+      - postgres-prod-01.company.com
+      - mysql-prod-01.company.com
+      - oracle-prod-01.company.com
+      - sqlserver-prod-01.company.com
+      - mongodb-prod-01.company.com
+      - redis-prod-01.company.com
+      - cassandra-prod-01.company.com
+      - elasticsearch-prod-01.company.com
