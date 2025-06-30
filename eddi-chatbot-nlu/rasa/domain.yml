@@ -24,6 +24,7 @@ intents:
   - affirm_query_analyzer
   - get_patch_information
   - inform_hostname
+  - inform
 
 entities:
   - database_name
@@ -31,14 +32,34 @@ entities:
   - database_version
   - sysid
   - hostname
+  - app_architect
+  - is_reviewed
+  - epic_link
+  - has_sysid
+  - data_nature
+  - data_structure
+  - app_type
+  - acid_compliance
+  - is_open_source
+  - ms_licensing
+  - vendor_recommended_db
+  - database_type 
+  - database_size_large
 
 forms:
   recommend_database_form:
     required_slots:
-      - app_type
-      - feature_type
-      - relationship_type
-      - downtime_tolerance
+      - app_architect
+      - is_reviewed
+      - epic_link
+      - has_sysid
+      - data_nature
+      # - data_structure
+      # - app_type
+      # - acid_compliance
+      # - is_open_source
+      # - ms_licensing
+      # - vendor_recommended_db
 
   create_database_form:
     required_slots:
@@ -55,6 +76,7 @@ forms:
   explore_schema_form:
     required_slots:
       - connection_string
+      - selected_schemas 
       - object_types
 
   analyze_query_form:
@@ -63,38 +85,111 @@ forms:
       - sql_query
 
 slots:
-  # — select-database form slots —
+  app_architect:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: app_architect
+
+  is_reviewed:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: is_reviewed
+      - type: from_text  # Add this as fallback
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: is_reviewed
+
+  epic_link:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: epic_link
+
+  has_sysid:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: recommend_database_form
+            requested_slot: has_sysid
+
+  data_nature:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: data_nature
+
+  data_structure:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: data_structure
+
   app_type:
     type: text
     mappings:
-      - type: from_text
-        conditions:
-          - active_loop: recommend_database_form
-            requested_slot: app_type
+      - type: from_entity
+        entity: app_type
 
-  feature_type:
+  acid_compliance:
     type: text
     mappings:
-      - type: from_text
-        conditions:
-          - active_loop: recommend_database_form
-            requested_slot: feature_type
+      - type: from_entity
+        entity: acid_compliance
 
-  relationship_type:
+  is_open_source:
     type: text
     mappings:
-      - type: from_text
-        conditions:
-          - active_loop: recommend_database_form
-            requested_slot: relationship_type
+      - type: from_entity
+        entity: is_open_source
 
-  downtime_tolerance:
+  ms_licensing:
     type: text
     mappings:
-      - type: from_text
-        conditions:
-          - active_loop: recommend_database_form
-            requested_slot: downtime_tolerance
+      - type: from_entity
+        entity: ms_licensing
+
+  vendor_recommended_db:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: vendor_recommended_db
+
+
+  ticket_id:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  recommended_database:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  database_size_large:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: database_size_large
+
+  database_type:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: database_type
+        intent: affirm_schema  # ADD this mapping
+      - type: from_entity  
+        entity: database_type
+        intent: affirm_query_analyzer  # ADD this mapping
+      - type: from_entity
+        entity: database_type
+        intent: inform  # Keep existing mapping
 
   # — create/delete-database form slots —
   database_name:
@@ -138,17 +233,6 @@ slots:
           - active_loop: delete_database_form
             requested_slot: sysid
 
-  # — output slots for recommendation flow —
-  recommended_database:
-    type: text
-    influence_conversation: false
-    mappings: []
-
-  estimated_cost:
-    type: text
-    influence_conversation: false
-    mappings: []
-
   confirmed:
     type: bool
     influence_conversation: true
@@ -175,7 +259,7 @@ slots:
         conditions:
           - active_loop: explore_schema_form
             requested_slot: connection_string
-      # Add this new mapping for analyze_query_form
+      # new mapping for analyze_query_form
       - type: from_text
         conditions:
           - active_loop: analyze_query_form
@@ -198,6 +282,14 @@ slots:
     type: text
     influence_conversation: false
     mappings: []
+
+  selected_schemas:
+    type: list
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: explore_schema_form
+            requested_slot: selected_schemas
 
   database_host_endpoint:
     type: text
@@ -288,55 +380,96 @@ responses:
         2. Provision (create) a new database.  
         3. Decommission (delete) a database.
 
-  # — select-database form prompts —
-  utter_ask_app_type:
-    - text: "What best describes your setup?"
-      buttons:
-        - title: "Structured data, vendor app"
-          payload: "Structured data, vendor app"
-        - title: "Structured data, home-grown app"
-          payload: "Structured data, home-grown app"
-        - title: "Unstructured data, vendor app"
-          payload: "Unstructured data, vendor app"
-        - title: "Unstructured data, home-grown app"
-          payload: "Unstructured data, home-grown app"
+  utter_ask_app_architect:
+    - text: "Please provide the Application Architect or Experience Owner name."
 
-  utter_ask_feature_type:
-    - text: "Any special features? (full-text search, embeddings, nested docs, etc.)"
-      buttons:
-        - title: "Yes, Oracle-only"
-          payload: "Yes, Oracle-only"
-        - title: "Yes, but flexible"
-          payload: "Yes, but flexible on database"
-        - title: "No special features"
-          payload: "No special features needed"
-
-  utter_ask_relationship_type:
-    - text: "Do you need single-key access, complex relationships, or none?"
-      buttons:
-        - title: "Single-key access only"
-          payload: "Single-key access only"
-        - title: "Complex relationships/schema"
-          payload: "Complex relationships or relational schema"
-        - title: "None"
-          payload: "None of these"
-
-  utter_ask_downtime_tolerance:
-    - text: "Can your app tolerate about an hour of downtime?"
+  utter_ask_is_reviewed:
+    - text: "Is the solution reviewed with Architecture review board?"
       buttons:
         - title: "Yes"
-          payload: "Yes"
+          payload: '/inform{{"is_reviewed":"Yes"}}'
         - title: "No"
-          payload: "No"
+          payload: '/inform{{"is_reviewed":"No"}}'
 
-  # — final submit for recommendation —
-  utter_request_submitted:
-    - text: "Based on your responses, we recommend {recommended_database} (≈{estimated_cost}). A Jira ticket has been created."
+  utter_ask_has_sysid:
+    - text: "Do you have SYSID or Business mapping information for the Application? If yes, please share (if no, type 'No'):"
+
+  utter_ask_app_type:
+    - text: "Is it a Vendor Application (COTS) or custom (CFG) developed?"
+      buttons:
+        - title: "Vendor Application (COTS)"
+          payload: '/inform{{"app_type":"Vendor Application"}}'
+        - title: "Custom-built (CFG)"
+          payload: '/inform{{"app_type":"CFG Developed"}}'
+
+  utter_ask_acid_compliance:
+    - text: "Does your application need strict ACID SQL compliance or have complex queries (multi-join)?"
+      buttons:
+        - title: "Yes"
+          payload: '/inform{{"acid_compliance":"Yes"}}'
+        - title: "No"
+          payload: '/inform{{"acid_compliance":"No"}}'
+
+  utter_ask_data_nature:
+    - text: "Can you provide the nature of the data you intend to store in your Database?"
+      buttons:
+        - title: "Transactional (OLTP)"
+          payload: '/inform{{"data_nature":"Transactional"}}'
+        - title: "Analytics (OLAP)"
+          payload: '/inform{{"data_nature":"Analytics"}}'
+
+  utter_ask_data_structure:
+    - text: "How do you define your Data?"
+      buttons:
+        - title: "Structured / relational"
+          payload: '/inform{{"data_structure":"Structured"}}'
+        - title: "Unstructured"
+          payload: '/inform{{"data_structure":"Unstructured"}}'
+
+  utter_ask_vendor_recommended_db:
+    - text: "Does the vendor recommend any database types?"
+      buttons:
+        - title: "Yes (Oracle/Postgres)"
+          payload: '/inform{{"vendor_recommended_db":"Yes"}}'
+        - title: "No"
+          payload: '/inform{{"vendor_recommended_db":"No"}}'
+
+  utter_ask_is_open_source:
+    - text: "Is your application open-source?"
+      buttons:
+        - title: "Yes"
+          payload: '/inform{{"is_open_source":"Yes"}}'
+        - title: "No"
+          payload: '/inform{{"is_open_source":"No"}}'
+
+  utter_ask_ms_licensing:
+    - text: "Does it have any Microsoft-licensing or Windows-infrastructure dependency?"
+      buttons:
+        - title: "Yes"
+          payload: '/inform{{"ms_licensing":"Yes"}}'
+        - title: "No"
+          payload: '/inform{{"ms_licensing":"No"}}'
+
+  utter_ask_database_size_large:
+    - text: "Is estimated size of database going to be more than 300 GB in next 3-5 Years?"
+      buttons:
+        - title: "Yes"
+          payload: '/inform{{"database_size_large":"Yes"}}'
+        - title: "No"
+          payload: '/inform{{"database_size_large":"No"}}'
+
+  utter_available_soon:
+    - text: "Available soon."
+
+  utter_contact_dba_team:
+    - text: "Require additional review; please contact DBA Team – DL."
+  
+  utter_ask_epic_link:
+    - text: "Please provide the Epic/Initiative link."
 
   # — create-database form prompts —
   utter_ask_database_name:
     - text: "Could you please provide the name of the database."
-
 
   utter_ask_database_version:
       - text: "Which version do you need?"
@@ -452,19 +585,24 @@ responses:
   utter_postgresql_support_schema:
     - text: |
         Which database type would you like to explore?  
-        We currently support only **PostgreSQL**.
+        We support **PostgreSQL**, **MySQL**, and **MongoDB**.
       buttons:
         - title: "PostgreSQL"
-          payload: "/affirm_schema"
+          payload: '/affirm_schema{{"database_type":"PostgreSQL"}}'
         - title: "MySQL"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_schema{{"database_type":"MySQL"}}'
         - title: "MongoDB"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_schema{{"database_type":"MongoDB"}}'
         - title: "Oracle"
           payload: "/unsupported_db_type"
 
   utter_ask_connection_string:
-    - text: "Please provide the connection string in the format `postgres://username:password@host:port/database_name`."
+    - text: |
+        Please provide the connection string in the appropriate format:
+        
+        **PostgreSQL:** `postgres://username:password@host:port/database_name`
+        **MySQL:** `mysql://username:password@host:port/database_name`
+        **MongoDB:** `mongodb://username:password@host:port/database_name`
 
   utter_invalid_connection_string:
     - text: "That doesn't look like a valid PostgreSQL connection string. Please try again in the correct format."
@@ -475,8 +613,9 @@ responses:
   utter_ask_confirm_schema_explore:
     - text: |
         You're about to explore schema for:
-        - Database type: PostgreSQL  
+        - Database type: {database_type}  
         - Connection string: `{connection_string}`  
+        - Selected schemas: `{selected_schemas}`
         - Object types: `{object_types}`  
 
         Would you like to proceed?
@@ -492,6 +631,9 @@ responses:
   utter_cancel_schema_explore:
     - text: "Schema exploration has been cancelled. Let me know if you need anything else."
 
+  utter_ask_selected_schemas:
+    - text: " "
+
   utter_ask_for_schema_selection:
     - text: |
         Select the objects for which you want detailed definitions
@@ -503,14 +645,14 @@ responses:
   utter_postgresql_support_query_analyzer:
     - text: |
         Which database type would you like to analyze?  
-        We currently support only **PostgreSQL**.
+        We support **PostgreSQL**, **MySQL**, and **MongoDB**.
       buttons:
         - title: "PostgreSQL"
-          payload: "/affirm_query_analyzer"
-        - title: "MongoDB"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_query_analyzer{{"database_type":"PostgreSQL"}}'
         - title: "MySQL"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_query_analyzer{{"database_type":"MySQL"}}'
+        - title: "MongoDB"
+          payload: '/affirm_query_analyzer{{"database_type":"MongoDB"}}'
         - title: "SQL Server"
           payload: "/unsupported_db_type"
         - title: "DB2"
@@ -577,6 +719,7 @@ actions:
   - action_get_patch_information
   - action_reset_patch_form
   - action_back_to_main_menu
+  - validate_recommend_database_form
 
 session_config:
   session_expiration_time: 60
