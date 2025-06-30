@@ -23,6 +23,8 @@ intents:
   - analyze_query
   - affirm_query_analyzer
   - inform
+  - get_patch_information
+  - inform_hostname
 
 entities:
   - database_name
@@ -42,6 +44,7 @@ entities:
   - vendor_recommended_db
   - database_type 
   - database_size_large
+  - hostname
 
 forms:
   recommend_database_form:
@@ -330,6 +333,20 @@ slots:
     type: any
     influence_conversation: false
     mappings: []
+
+  hostname:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: hostname
+      - type: from_text
+        conditions:
+          - active_loop: null
+            requested_slot: hostname
+        not_intent:
+          - affirm
+          - deny
+          - help
 
 responses:
   utter_greet:
@@ -657,6 +674,27 @@ responses:
         - title: "Help"
           payload: "/help"
 
+#patch-information
+  utter_ask_hostname:
+    - text: "Please provide the hostname for which you want patch information."
+
+  utter_confirm_hostname:
+    - text: "I'll look up patch information for hostname: **{hostname}**. Is this correct?"
+      buttons:
+        - title: "Yes, proceed"
+          payload: "/affirm"
+        - title: "No, change hostname"
+          payload: "/deny"
+
+  utter_patch_information_not_found:
+    - text: "No patch information found for hostname: **{hostname}**"
+
+  utter_patch_information_error:
+    - text: "Sorry, I encountered an error while querying the patch database. Please try again later."
+
+  utter_patch_information_success:
+    - text: "Here's the patch information for **{hostname}**:"
+
 actions:
   - action_recommend_database
   - action_recommend_database_create_ticket
@@ -672,6 +710,11 @@ actions:
   - validate_analyze_query_form
   - action_submit_query_analysis
   - validate_recommend_database_form
+  - action_ask_hostname
+  - action_confirm_hostname
+  - action_get_patch_information
+  - action_reset_patch_form
+  - action_back_to_main_menu
 
 session_config:
   session_expiration_time: 60
