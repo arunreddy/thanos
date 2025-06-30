@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { User, Bot } from "lucide-react";
 import { motion } from "framer-motion";
 import { CustomForm } from "@/types";
-import React, { useState } from "react";
+import { useState } from "react";
 import { API_URL } from "@/lib/api";
 interface Button {
   title: string;
@@ -28,14 +28,13 @@ export default function ChatMessage({
   onButtonClick,
 }: ChatMessageProps) {
   const isUser = role === "user";
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 0.3 } },
     exit: { opacity: 0, transition: { duration: 0.2 } },
   };
-
-  console.log("-----> CUSTOM FORM", customForm);
 
   const messageVariants = {
     hidden: {
@@ -62,6 +61,51 @@ export default function ChatMessage({
       transition: { duration: 0.2 },
     },
   };
+
+  const formatContent = (role:string, text: string) => {
+    // Format the content to replace new lines with <br />
+    var formattedText = text;
+
+    // /inform_database_version{"database_version":"postgresql15"}
+    if(text.startsWith("/")){
+      formattedText = text.replace("/","")
+    }
+    
+    console.log("Formatted Text: ", formattedText);
+
+    if (role == "assistant" && formattedText.includes("{")) {
+      const [_, json] = formattedText.split("{");
+      const jsonString = "{" + json;
+      const parsedJson = JSON.parse(jsonString);
+      // extract the value of the first key
+      const firstKey = Object.keys(parsedJson)[0];
+      const firstValue = parsedJson[firstKey];
+      formattedText = `${firstValue}`;
+    } 
+
+    // Replace a url with a clickable link
+    // const urlRegex = /(https?:\/\/[^\s]+)/g;
+    // formattedText = formattedText.replace(urlRegex, (url) => {
+    //   return `<a href="${url}" target="_blank" class="text-blue-500 hover:underline">${url}</a>`;
+    // });
+
+    // Replace markdown-like links [text](url) with clickable HTML links, allowing optional whitespace or newlines inside the URL
+    const markdownLinkRegex = /\[([^\]]+)\]\s*\((https?:\/\/[^\)]+)\)/g;
+    formattedText = formattedText.replace(markdownLinkRegex, (_, text, url) => {
+      const cleanedUrl = url.trim(); // Remove any leading or trailing whitespace/newlines
+      return `<a href="${cleanedUrl}" target="_blank" class="text-blue-500 hover:underline">${text}</a>`;
+    });
+
+    // Replace new lines with <br />
+    formattedText = formattedText.replace(/\n/g, "<br />");
+    // Replace multiple spaces with a single space
+    formattedText = formattedText.replace(/\s+/g, " ");
+    // Replace multiple new lines with a single new line
+    formattedText = formattedText.replace(/\n+/g, "\n");
+
+    return formattedText;
+
+  }
 
   // Ensure consistent animation by using a memo for the variants
   // This prevents animation glitches when messages are added/removed
@@ -97,7 +141,10 @@ export default function ChatMessage({
         }
       `}
       >
-        <div className="whitespace-pre-wrap">{content}</div>
+        <div
+          className="whitespace-pre-wrap"
+          dangerouslySetInnerHTML={{ __html: formatContent(role, content) }}
+        ></div>
 
         {buttons && buttons.length > 0 && (
           <motion.div

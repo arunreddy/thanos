@@ -25,7 +25,6 @@ class ChatHistory(BaseModel):
     conversation_id: str
     messages: List[Dict[str, Any]]
 
-
 @chat_router.post("/new", response_model=MessageResponse)
 async def new_conversation(request: MessageRequest):
     response = await chat_service.process_message(message=request.message, user_id=request.user_id, conversation_id=request.conversation_id)
@@ -37,8 +36,8 @@ async def send_message(request: MessageRequest):
     try:
         response = await chat_service.process_message(message=request.message, user_id=request.user_id, conversation_id=request.conversation_id)
 
-        print("-----> RESPONSE", response)
         # Format the response to match what the frontend expects
+        print("-----> RESPONSE", response)
         return {
             "message": {"role": "assistant", "content": response["response"], "buttons": response.get("buttons", []), "custom": response.get("custom", {})},
             "conversation_id": response["conversation_id"],
@@ -87,5 +86,7 @@ async def delete_conversation(conversation_id: str):
             return {"status": "success", "message": f"Conversation {conversation_id} deleted"}
         else:
             raise HTTPException(status_code=404, detail=f"Conversation {conversation_id} not found")
+    except HTTPException as e:
+        raise e  # Re-raise HTTP exceptions
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

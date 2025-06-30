@@ -1,6 +1,7 @@
-import { MessageRequest, MessageResponse, ChatHistory } from "@/types";
+import { MessageResponse } from "@/types";
 // frontend/src/lib/api.ts
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// export const API_URL = "http://localhost:3000";
+export const API_URL = "https://dbq-dev-chatbot.p2.ocp.citizensbank.com"
 
 // Get token from localStorage
 // const getToken = () => {

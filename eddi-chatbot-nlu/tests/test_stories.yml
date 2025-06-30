@@ -1,0 +1,130 @@
+#### This file contains tests to evaluate that your bot behaves as expected.
+#### If you want to learn more, please see the docs: https://rasa.com/docs/rasa/testing-your-assistant
+
+stories:
+- story: happy path 1
+  steps:
+  - user: |
+      hello there!
+    intent: greet
+  - action: utter_greet
+  - user: |
+      amazing
+    intent: mood_great
+  - action: utter_happy
+
+- story: happy path 2
+  steps:
+  - user: |
+      hello there!
+    intent: greet
+  - action: utter_greet
+  - user: |
+      amazing
+    intent: mood_great
+  - action: utter_happy
+  - user: |
+      bye-bye!
+    intent: goodbye
+  - action: utter_goodbye
+
+- story: sad path 1
+  steps:
+  - user: |
+      hello
+    intent: greet
+  - action: utter_greet
+  - user: |
+      not good
+    intent: mood_unhappy
+  - action: utter_cheer_up
+  - action: utter_did_that_help
+  - user: |
+      yes
+    intent: affirm
+  - action: utter_happy
+
+- story: sad path 2
+  steps:
+  - user: |
+      hello
+    intent: greet
+  - action: utter_greet
+  - user: |
+      not good
+    intent: mood_unhappy
+  - action: utter_cheer_up
+  - action: utter_did_that_help
+  - user: |
+      not really
+    intent: deny
+  - action: utter_goodbye
+
+- story: sad path 3
+  steps:
+  - user: |
+      hi
+    intent: greet
+  - action: utter_greet
+  - user: |
+      very terrible
+    intent: mood_unhappy
+  - action: utter_cheer_up
+  - action: utter_did_that_help
+  - user: |
+      no
+    intent: deny
+  - action: utter_goodbye
+
+- story: say goodbye
+  steps:
+  - user: |
+      bye-bye!
+    intent: goodbye
+  - action: utter_goodbye
+
+- story: bot challenge
+  steps:
+  - user: |
+      are you a bot?
+    intent: bot_challenge
+  - action: utter_iamabot
+
+- story: analyze query happy path
+  steps:
+    - user: |
+        I want to analyze a query
+      intent: analyze_query
+    - action: utter_welcome_sql_query_analysis
+    - action: utter_ask_db_environment
+    - user: |
+        dev
+      intent: provide_db_environment
+    - slot_was_set:
+        - db_environment: dev
+    - action: utter_ask_db_host_endpoint
+    - user: |
+        localhost
+      intent: provide_db_host_endpoint
+    - slot_was_set:
+        - db_host_endpoint: localhost
+    - action: utter_ask_db_type
+    - user: |
+        PostgreSQL
+      intent: provide_db_type
+    - slot_was_set:
+        - db_type: PostgreSQL
+    - action: utter_ask_query_output_format
+    - user: |
+        JSON
+      intent: provide_output_format
+    - slot_was_set:
+        - output_format: JSON
+    - action: utter_ask_sql_query
+    - user: |
+        SELECT * FROM users;
+      intent: provide_sql_query
+    - slot_was_set:
+        - sql_query: SELECT * FROM users;
+    - action: action_validate_sql
+    - action: action_analyze_query

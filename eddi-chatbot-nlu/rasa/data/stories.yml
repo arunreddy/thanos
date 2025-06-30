@@ -1,3 +1,88 @@
 version: "3.1"
 
-stories: []
+stories:
+- story: database selection flow
+  steps:
+  - intent: start_database_selection
+  - action: utter_welcome_database_selection
+  - action: utter_ask_app_type
+  - intent: inform_app_type
+    entities:
+      - app_type: "Structured data, vendor app"
+  - action: utter_ask_features
+  - intent: inform_features
+    entities:
+      - feature_type: "Yes, Oracle-only"
+  - action: utter_ask_relationship_needs
+  - intent: inform_relationship_needs
+    entities:
+      - relationship_type: "Single-key access only"
+  - action: utter_ask_downtime_tolerance
+  - intent: inform_downtime_tolerance
+    entities:
+      - downtime_tolerance: "Yes"
+  - action: action_recommend_database
+  - action: utter_confirm_database_choice
+  - intent: confirm_database_choice
+    entities:
+      - confirmation: "Yes, proceed"
+  - action: action_submit_request
+  - action: utter_request_submitted
+
+- story: database selection flow with change
+  steps:
+  - intent: start_database_selection
+  - action: utter_welcome_database_selection
+  - action: utter_ask_app_type
+  - intent: inform_app_type
+    entities:
+      - app_type: "Structured data, vendor app"
+  - action: utter_ask_features
+  - intent: inform_features
+    entities:
+      - feature_type: "Yes, Oracle-only"
+  - action: utter_ask_relationship_needs
+  - intent: inform_relationship_needs
+    entities:
+      - relationship_type: "Single-key access only"
+  - action: utter_ask_downtime_tolerance
+  - intent: inform_downtime_tolerance
+    entities:
+      - downtime_tolerance: "Yes"
+  - action: action_recommend_database
+  - action: utter_confirm_database_choice
+  - intent: confirm_database_choice
+    entities:
+      - confirmation: "No, change choices"
+  - action: action_restart
+
+- story: query analyzer flow
+  steps:
+    - intent: analyze_query
+    - action: utter_welcome_sql_query_analysis
+    - action: slot_reset
+    - action: utter_ask_db_environment
+    - intent: provide_db_environment
+      entities:
+        - db_environment: "Production"
+    - action: validate_db_environment
+    - action: utter_ask_db_host_endpoint
+    - intent: provide_db_host_endpoint
+      entities:
+        - db_host_endpoint: "example.rds.amazonaws.com"
+    - action: validate_db_host_endpoint
+    - action: utter_ask_db_type
+    - intent: provide_db_type
+      entities:
+        - db_type: "Postgres"
+    - action: utter_ask_query_output_format
+    - intent: provide_output_format
+      entities:
+        - output_format: "JSON"
+    - action: utter_ask_sql_query
+    - intent: provide_sql_query
+      entities:
+        - sql_query: "SELECT * FROM users"
+    - action: action_validate_sql
+    - action: action_analyze_query
+    - action: utter_provide_execution_plan

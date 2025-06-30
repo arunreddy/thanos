@@ -1,10 +1,16 @@
 from typing import Any, Dict, Optional
-
+import os
 import httpx
 
 
 class RasaConnector:
-    def __init__(self, rasa_url: str = "http://chatbot-nlu:5005"):  # Changed port to 45005
+    def __init__(self, rasa_url: str = ""): 
+        
+        if rasa_url == "":
+            # "http://dbq-eddi-chatbot-nlu:9090"
+            rasa_url = os.getenv("EDDI_RASA_CONNECTOR_URL") or "http://dbq-eddi-chatbot-nlu:9090"
+            
+        # Changed port to 45005
         self.rasa_url = rasa_url
         self.client = httpx.AsyncClient(timeout=30.0)
 

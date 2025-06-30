@@ -1,108 +1,99 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, renderHook, act } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { ThemeProvider, useTheme } from "./index";
+import userEvent from "@testing-library/user-event";
+import { vi, describe, beforeEach, it, beforeAll, afterAll, expect } from "vitest";
 
 describe("ThemeProvider", () => {
-  const mockSetItem = vi.fn();
-  const mockGetItem = vi.fn();
+  const TestComponent = () => {
+    const { theme, setTheme } = useTheme();
+    return (
+      <div>
+        <p data-testid="current-theme">{theme}</p>
+        <button onClick={() => setTheme("light")}>Set Light Theme</button>
+        <button onClick={() => setTheme("dark")}>Set Dark Theme</button>
+      </div>
+    );
+  };
+
+  const localStorageMock = (() => {
+    let store: Record<string, string> = {};
+    return {
+      getItem: (key: string) => store[key] || null,
+      setItem: (key: string, value: string) => {
+        store[key] = value;
+      },
+      clear: () => {
+        store = {};
+      },
+    };
+  })();
+
+  beforeAll(() => {
+    Object.defineProperty(global, "localStorage", {
+      value: localStorageMock,
+    });
+  });
+
+  afterAll(() => {
+    delete (global as any).localStorage;
+  });
 
   beforeEach(() => {
-    vi.resetModules();
-    vi.stubGlobal("localStorage", {
-      getItem: mockGetItem,
-      setItem: mockSetItem,
-    });
+    localStorage.clear();
     document.documentElement.className = "";
   });
 
-  it("should use system theme by default", () => {
-    mockGetItem.mockReturnValue(null);
-    render(<ThemeProvider>Test</ThemeProvider>);
-
-    expect(mockGetItem).toHaveBeenCalledWith("theme");
-    expect(document.documentElement.className).toBe("system");
-  });
-
-  it("should use saved theme from localStorage", () => {
-    mockGetItem.mockReturnValue("dark");
-    render(<ThemeProvider>Test</ThemeProvider>);
-
-    expect(mockGetItem).toHaveBeenCalledWith("theme");
+  it("initializes with the saved theme from localStorage", () => {
+    localStorage.setItem("theme", "dark");
+    render(
+      <ThemeProvider>
+        <TestComponent />
+      </ThemeProvider>
+    );
+    expect(screen.getByTestId("current-theme").textContent).toBe("dark");
     expect(document.documentElement.className).toBe("dark");
   });
 
-  it("should update theme when setTheme is called", () => {
-    mockGetItem.mockReturnValue("light");
+  it("defaults to 'system' theme if no saved theme exists", () => {
+    render(
+      <ThemeProvider>
+        <TestComponent />
+      </ThemeProvider>
+    );
+    expect(screen.getByTestId("current-theme").textContent).toBe("system");
+    expect(document.documentElement.className).toBe("system");
+  });
 
-    const TestComponent = () => {
-      const { setTheme } = useTheme();
-      return <button onClick={() => setTheme("dark")}>Toggle</button>;
-    };
-
-    const { getByText } = render(
+  it("updates the theme and saves it to localStorage", async () => {
+    const user = userEvent.setup();
+    render(
       <ThemeProvider>
         <TestComponent />
       </ThemeProvider>
     );
 
-    act(() => {
-      getByText("Toggle").click();
-    });
-
-    expect(mockSetItem).toHaveBeenCalledWith("theme", "dark");
-    expect(document.documentElement.className).toBe("dark");
-  });
-
-  it("should save theme to localStorage when changed", () => {
-    mockGetItem.mockReturnValue("light");
-
-    const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
-    });
-
-    act(() => {
-      result.current.setTheme("dark");
-    });
-
-    expect(mockSetItem).toHaveBeenCalledWith("theme", "dark");
-  });
-
-  it("should throw error when useTheme is used outside ThemeProvider", () => {
-    expect(() => {
-      renderHook(() => useTheme());
-    }).toThrow("useTheme must be used within a ThemeProvider");
-  });
-
-  it("should render children", () => {
-    const { getByText } = render(
-      <ThemeProvider>
-        <div>Test Child</div>
-      </ThemeProvider>
-    );
-
-    expect(getByText("Test Child")).toBeTruthy();
-  });
-
-  it("should handle all theme types", () => {
-    mockGetItem.mockReturnValue("light");
-
-    const { result } = renderHook(() => useTheme(), {
-      wrapper: ThemeProvider,
-    });
-
-    act(() => {
-      result.current.setTheme("light");
-    });
+    await user.click(screen.getByText("Set Light Theme"));
+    expect(screen.getByTestId("current-theme").textContent).toBe("light");
+    expect(localStorage.getItem("theme")).toBe("light");
     expect(document.documentElement.className).toBe("light");
 
-    act(() => {
-      result.current.setTheme("dark");
-    });
+    await user.click(screen.getByText("Set Dark Theme"));
+    expect(screen.getByTestId("current-theme").textContent).toBe("dark");
+    expect(localStorage.getItem("theme")).toBe("dark");
     expect(document.documentElement.className).toBe("dark");
+  });
 
-    act(() => {
-      result.current.setTheme("system");
-    });
-    expect(document.documentElement.className).toBe("system");
+  it("throws an error when useTheme is used outside ThemeProvider", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const InvalidComponent = () => {
+      expect(() => useTheme()).toThrowError(
+        "useTheme must be used within a ThemeProvider"
+      );
+      return <div />;
+    };
+
+    render(<InvalidComponent />);
+
+    consoleError.mockRestore();
   });
 });

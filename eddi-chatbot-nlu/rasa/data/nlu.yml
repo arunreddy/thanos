@@ -21,7 +21,7 @@ nlu:
       - sup
       - hiya
       - hey bot
-    
+
   - intent: goodbye
     examples: |
       - bye
@@ -54,7 +54,6 @@ nlu:
       - start over
       - let’s start again
       - start from the beginning
-      - start again
 
   - intent: recommend_database
     examples: |
@@ -170,9 +169,34 @@ nlu:
 
   - intent: affirm_query_analyzer
     examples: |
+      - yes
+      - sure
+      - absolutely
+      - sounds good
+      - let's analyze
+      - proceed
+      - continue
+      - go ahead
+
+  - intent: inform
+    examples: |
+      - [Yes](is_reviewed)
+      - [No](is_reviewed)
+      - [Yes](has_sysid)
+      - [No](has_sysid)
+      - [Transactional](data_nature)
+      - [Analytics](data_nature)
+      - [Structured](data_structure)
+      - [Unstructured](data_structure)
+      - [Vendor Application](app_type)
+      - [CFG Developed](app_type)
+      - [Yes](acid_compliance)
+      - [No](acid_compliance)
+      - [Yes](is_open_source)
+      - [No](is_open_source)
+      - [Yes](ms_licensing)
+      - [No](ms_licensing)
       - PostgreSQL
-      - postgres
-      - postgresql
-      - i want to use postgresql
-      - choose postgresql
-      - postgres database
+      - Oracle
+      - MySQL
+      - MongoDB

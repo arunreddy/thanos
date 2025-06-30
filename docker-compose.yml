@@ -26,15 +26,15 @@ services:
   chatbot-web:
     container_name: thanos-chatbot-web
     build:
-      context: ./chatbot-web
+      context: ./eddi-chatbot-web
       dockerfile: Dockerfile
       args:
         BUILD_MODE: development
     ports:
       - "3000:3000"
     volumes:
-      - ./chatbot-web/src:/app/src:ro
-      - ./chatbot-web/public:/app/public:ro
+      - ./eddi-chatbot-web/src:/app/src:ro
+      - ./eddi-chatbot-web/public:/app/public:ro
     environment:
       - NODE_ENV=development
       - PORT=3000
@@ -44,14 +44,14 @@ services:
   chatbot-api:
     container_name: thanos-chatbot-api
     build:
-      context: ./chatbot-api
+      context: ./eddi-chatbot-api
       dockerfile: Dockerfile
     command: ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
       - "8000:8000"
     volumes:
-      - ./chatbot-api/main.py:/app/main.py:ro
-      - ./chatbot-api/app:/app/app:ro
+      - ./eddi-chatbot-api/main.py:/app/main.py:ro
+      - ./eddi-chatbot-api/app:/app/app:ro
     environment:
       - NODE_ENV=development
       - PORT=8000
@@ -61,27 +61,27 @@ services:
   chatbot-nlu:
     container_name: thanos-chatbot-nlu
     build:
-      context: ./chatbot-nlu
+      context: ./eddi-chatbot-nlu
       dockerfile: Dockerfile
     ports:
       - "5005:5005"
     volumes:
-      - ./chatbot-nlu/rasa/config.yml:/app/config.yml:ro
-      - ./chatbot-nlu/rasa/domain.yml:/app/domain.yml:ro
-      - ./chatbot-nlu/rasa/endpoints.docker.yml:/app/endpoints.yml:ro
-      - ./chatbot-nlu/rasa/actions:/app/actions:ro
-      - ./chatbot-nlu/rasa/data:/app/data:ro
-      - ./chatbot-nlu/rasa/models:/app/models
+      - ./eddi-chatbot-nlu/rasa/config.yml:/app/config.yml:ro
+      - ./eddi-chatbot-nlu/rasa/domain.yml:/app/domain.yml:ro
+      - ./eddi-chatbot-nlu/rasa/endpoints.docker.yml:/app/endpoints.yml:ro
+      - ./eddi-chatbot-nlu/rasa/actions:/app/actions:ro
+      - ./eddi-chatbot-nlu/rasa/data:/app/data:ro
+      - ./eddi-chatbot-nlu/rasa/models:/app/models
     networks:
       - thanos-network
 
   action_server:
     container_name: thanos-chatbot-action-server
     build:
-      context: ./chatbot-nlu
+      context: ./eddi-chatbot-nlu
       dockerfile: Dockerfile.actions
     volumes:
-      - ./chatbot-nlu/rasa/actions:/app/actions:ro
+      - ./eddi-chatbot-nlu/rasa/actions:/app/actions:ro
     ports:
       - "5055:5055"
     networks:

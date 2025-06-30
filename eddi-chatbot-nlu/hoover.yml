@@ -1,0 +1,65 @@
+version: 1.7
+appname: eddi-chatbot-nlu
+app: eddi-chatbot-nlu
+description: eddi-chatbot-nlu
+town: enterprise-data-and-integration-platforms
+sysId: SYSID-08804
+owner: Enterprise Data Engineering
+lifecycle: dev
+jiraProjectKey: Enterprise Data Engineering
+slack: some-slack-channel
+
+# Software Stack
+## Stack Options: asp, dotnet-legacy, dotnet, dotnet-5, cots, go-1.16, gradle, java-11, msbuild, node, node-14, node-16, python, website
+stack: python
+stackVersion: 39
+
+# ServiceNow - Automated Change Management
+## Enrollment Required: https://confluence.corp.internal.citizensbank.com/display/CP/Standard+Change+Template+Creation
+autoCreate: No
+standardChangeTemplateId: get-from-servicenow
+businessService: get-from-servicenow
+businessServiceQA: get-from-servicenow
+cmdbci: get-from-servicenow
+businessLine: get-from-servicenow
+changeAssignmentGroup: get-from-servicenow
+changeApproverGroup: get-from-servicenow
+changeOwner: get-from-servicenow
+assignee: get-from-servicenow
+
+# ServiceNow - Automated Incident Management
+incidentAssignmentGroup: get-from-servicenow
+
+# Fortify - Application Vulnerability Scanning
+## Enrollment Required: https://citizensfinancialgroup.sharepoint.com/sites/applicationsecurity/SiteAssets/appsec-request/Home.aspx | More Info: https://confluence.corp.internal.citizensbank.com/display/CDVM/Fortify+Code+Scans+Pipeline+Configuration
+execFODScan: Yes
+execFODOpenSource: No
+fodAppName: DBQuasar
+fodServiceName: chatbot-nlu
+fodEnv: PreProd
+fodStack: PYTHON
+
+# Contrast - Interactive Application Vulnerability Scanning
+## Enrollment Required: https://citizensfinancialgroup.sharepoint.com/sites/applicationsecurity/SiteAssets/appsec-request/Home.aspx | More Info: https://confluence.corp.internal.citizensbank.com/display/CDVM/Contrast+Enterprise+Pipeline+Configuration
+enableContrast: No
+contrastGroup: get-from-app-security-team
+contrastAppTags: get-from-app-security-team
+contrastServerTags: get-from-app-security-team
+contastLogLevel: ERROR
+
+# S3 Bucket and Folder Details
+devAppProject: eddi-chatbot-nlu
+devAppFolder: eddi-chatbot-nlu
+
+# OpenShift Continuous Deployment
+landingZone: openshift
+
+# What to Deploy to OpenShift
+## Options: ci-only, in-place, main-only
+deploy: ci-only
+deployStyle: in-place
+
+# OpenShift Configuration
+osAppName: eddi-chatbot-nlu
+osProjectName: p2-dbq-dev
+ciOcpDeployment: false
