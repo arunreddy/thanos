@@ -29,15 +29,33 @@ okta_redirect_uri = os.getenv("EDDI_OKTA_REDIRECT_URI")
 session_secret_key = os.getenv("EDDI_SESSION_SECRET_KEY")
 eddi_chatbot_app_url = os.getenv("EDDI_CHATBOT_APP_URL")
 
-# Configure CORS
+# Detect development environment
+is_development = os.getenv("NODE_ENV", "development").lower() == "development"
+
+# Configure CORS based on environment
+if is_development:
+    # Allow all localhost origins for development
+    allowed_origins = [
+        "http://localhost:3000",
+        "http://localhost:3001", 
+        "http://localhost:3005",
+        "http://localhost:43000",
+        "http://localhost:48000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:43000"
+    ]
+else:
+    # Production origins only
+    allowed_origins = [
+        "https://eddi-chatbot.p2.ocp.citizensbank.com",
+        "https://dbq-dev-chatbot.p2.ocp.citizensbank.com"
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3005",
-                   "http://localhost:3000",
-                   "http://localhost:3001",
-                   "https://eddi-chatbot.p2.ocp.citizensbank.com", "https://dbq-dev-chatbot.p2.ocp.citizensbank.com"], 
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["OPTIONS", "*"],  # Explicitly include OPTIONS
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -107,6 +125,16 @@ async def auth_callback(request:Request, code: str, state: str):
 @app.get("/auth/user")
 async def get_user(request: Request):
     """Endpoint to get user information"""
+    
+    # In development mode, return a default user without authentication
+    if is_development:
+        return {
+            "name": "John Doe",
+            "email": "john.doe@example.com",
+            "preferred_username": "john.doe",
+            "given_name": "John",
+            "family_name": "Doe",
+        }
     
     access_token = request.session.get("access_token")
     

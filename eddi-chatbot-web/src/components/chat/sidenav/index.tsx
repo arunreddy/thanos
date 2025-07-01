@@ -63,7 +63,6 @@ const SideNav: React.FC<ChatsListProps> = ({
   const [isBackgroundLoading, setIsBackgroundLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"chats" | "actions">("actions");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
@@ -183,29 +182,13 @@ const SideNav: React.FC<ChatsListProps> = ({
           </Link>
         </div>
 
-        <div className="flex justify-around mt-4 border-b border-border">
-          <div
-            className={`px-4 py-2 text-sm font-medium cursor-pointer ${activeTab === "actions"
-              ? "border-b-2 border-gray-500 text-accent-foreground"
-              : "text-foreground"
-              }`}
-            onClick={() => setActiveTab("actions")}
-          >
-            Actions
-          </div>
-          <div
-            className={`px-4 py-2 text-sm font-medium cursor-pointer ${activeTab === "chats"
-              ? "border-b-2 border-gray-500 text-accent-foreground"
-              : "text-foreground"
-              }`}
-            onClick={() => setActiveTab("chats")}
-          >
+        <div className="mt-4 border-b border-border">
+          <div className="px-4 py-2 text-sm font-medium border-b-2 border-gray-500 text-accent-foreground">
             History
           </div>
         </div>
 
-        {activeTab === "chats" && (
-          <div className="overflow-y-auto flex-1 -mx-4 px-4">
+        <div className="overflow-y-auto flex-1 -mx-4 px-4">
             {isLoading ? (
               <div className="space-y-1 mt-2">
                 {/* Loading skeleton */}
@@ -284,33 +267,7 @@ const SideNav: React.FC<ChatsListProps> = ({
                 </motion.div>
               </AnimatePresence>
             )}
-          </div>
-        )}
-
-        {activeTab === "actions" && (
-          <div className="overflow-y-auto flex-1 -mx-4 px-4">
-            <div className="space-y-2 mt-2">
-              <Link
-                to="/new?action=recommend-database"
-                className="w-full px-4 py-2 text-left text-sm font-medium rounded-md hover:bg-muted/70 block"
-              >
-                Recommend a database
-              </Link>
-              <Link
-                to="/new?action=create-database"
-                className="w-full px-4 py-2 text-left text-sm font-medium rounded-md hover:bg-muted/70 block"
-              >
-                Create a database
-              </Link>
-              <Link
-                to="/new?action=delete-database"
-                className="w-full px-4 py-2 text-left text-sm font-medium rounded-md hover:bg-muted/70 block"
-              >
-                Delete a database
-              </Link>
-            </div>
-          </div>
-        )}
+        </div>
 
         <div className="flex items-center gap-4 mt-4">
           {loadingUser ? (

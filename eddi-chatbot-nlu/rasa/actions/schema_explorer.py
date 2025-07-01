@@ -174,7 +174,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
 
         # ── Unsupported ─────────────────────────────────────────────────────────
         else:
-            dispatcher.utter_message(text="Unsupported database type. Please select PostgreSQL or MySQL.")
+            dispatcher.utter_message(text="Unsupported database type. Please select PostgreSQL, MySQL, or MongoDB.")
             return {"connection_string": None}
 
     def validate_selected_schemas(
@@ -535,7 +535,7 @@ class ActionSubmitSchemaExplore(Action):
                     rows = cursor.fetchall()
                     objects["functions"] = [f"{r[1]}.{r[0]}" for r in rows]
 
-                elif obj == "Constraints":
+                elif obj == "constraints":
                     cursor.execute(f"""
                         SELECT constraint_name, table_schema 
                         FROM information_schema.table_constraints 
@@ -550,7 +550,7 @@ class ActionSubmitSchemaExplore(Action):
                     rows = cursor.fetchall()
                     objects["indexes"] = [f"{r[1]}.{r[0]}" for r in rows]
 
-                elif obj == "Procedures":
+                elif obj == "procedures":
                     cursor.execute(f"SELECT routine_name, routine_schema FROM information_schema.routines WHERE routine_schema IN {schema_filter} AND routine_type='PROCEDURE';")
                     rows = cursor.fetchall()
                     objects["procedures"] = [f"{r[1]}.{r[0]}" for r in rows]
@@ -624,7 +624,7 @@ class ActionSubmitSchemaExplore(Action):
                     rows = cursor.fetchall()
                     objects["functions"] = [f"{r[1]}.{r[0]}" for r in rows]
                 
-                elif obj == "Indexes":
+                elif obj == "indexes":
                     cursor.execute(f"SELECT index_name, table_schema FROM information_schema.statistics WHERE table_schema IN {schema_filter};")
                     rows = cursor.fetchall()
                     objects["indexes"] = [f"{r[1]}.{r[0]}" for r in rows]
@@ -638,7 +638,7 @@ class ActionSubmitSchemaExplore(Action):
                     rows = cursor.fetchall()
                     objects["constraints"] = [f"{r[1]}.{r[0]}" for r in rows]
                 
-                elif obj == "Procedures":
+                elif obj == "procedures":
                     cursor.execute(f"SELECT routine_name, routine_schema FROM information_schema.routines WHERE routine_schema IN {schema_filter} AND routine_type='PROCEDURE';")
                     rows = cursor.fetchall()
                     objects["procedures"] = [f"{r[1]}.{r[0]}" for r in rows]
@@ -1401,14 +1401,19 @@ class ActionFetchObjectDefinitions(Action):
                         index_only = index_name
                         
                     cursor.execute(f"""
-                        SELECT index_name, index_definition
+                        SELECT DISTINCT index_name, table_name, column_name, non_unique
                         FROM information_schema.statistics
                         WHERE table_schema = %s AND index_name = %s
+                        ORDER BY seq_in_index
                     """, (schema_name, index_only))
 
-                    result = cursor.fetchone()
-                    if result:
-                        name, definition = result
+                    results = cursor.fetchall()
+                    if results:
+                        # Group columns by index for composite indexes
+                        columns = [row[2] for row in results]
+                        table_name = results[0][1]
+                        is_unique = "UNIQUE" if results[0][3] == 0 else ""
+                        definition = f"CREATE {is_unique} INDEX {index_only} ON {table_name} ({', '.join(columns)})"
                         definitions["indexes"].append({"name": index_name, "definition": definition})
                     else:
                         definitions["indexes"].append({"name": index_name, "definition": "-- Definition not available"})
@@ -1542,13 +1547,19 @@ class ActionFetchObjectDefinitions(Action):
                         # Find the specific index
                         for index in collection.list_indexes():
                             if index['name'] == idx_name:
-                                definitions["indexes"].append({
-                                    "name": index_name
-                                })
+                                # Extract index definition
+                                index_def = {
+                                    "name": index_name,
+                                    "keys": dict(index.get('key', {})),
+                                    "unique": index.get('unique', False),
+                                    "sparse": index.get('sparse', False)
+                                }
+                                definitions["indexes"].append(index_def)
                                 break
                         else:
                             definitions["indexes"].append({
-                                "name": index_name
+                                "name": index_name,
+                                "definition": "-- Index not found"
                             })
 
             # Process views

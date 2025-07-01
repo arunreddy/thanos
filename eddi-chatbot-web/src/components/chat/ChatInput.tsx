@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Send } from "lucide-react";
 import Button from "../ui/button";
 
@@ -7,12 +7,22 @@ interface ChatInputProps {
   isLoading: boolean;
 }
 
-export default function ChatInput({
+export interface ChatInputRef {
+  focus: () => void;
+}
+
+const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
   onSendMessage,
   isLoading,
-}: ChatInputProps) {
+}, ref) => {
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      textareaRef.current?.focus();
+    },
+  }));
 
   // Auto-resize textarea
   useEffect(() => {
@@ -72,4 +82,8 @@ export default function ChatInput({
       </Button>
     </form>
   );
-}
+});
+
+ChatInput.displayName = 'ChatInput';
+
+export default ChatInput;
