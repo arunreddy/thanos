@@ -45,6 +45,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
         mysql_pattern    = r"^mysql://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
         mongodb_pattern = r"^mongodb://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
 
+
         # ── PostgreSQL ──────────────────────────────────────────────────────────
         if database_type.lower() == "postgresql":
             if not re.match(postgres_pattern, slot_value, re.IGNORECASE):
@@ -68,6 +69,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
             # if none returned, default to the one you passed
             if not available:
                 dispatcher.utter_message(text=f"Selected schemas: **{target_schema}**")
+
                 return {
                     "connection_string": slot_value,
                     "selected_schemas": [target_schema]
@@ -255,6 +257,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
                 schema_list = ", ".join(available_schemas)
                 invalid_list = ", ".join(invalid_schemas)
                 dispatcher.utter_message(
+
                     text=f"Invalid schema(s): **{invalid_list}**\n\n" +
                          f"Available schemas: {schema_list}\n\n" +
                          f"Please select valid schemas from the list above."
@@ -369,6 +372,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
             "postgresql": {"tables", "views", "functions", "sequences", "indexes", "constraints", "triggers", "materialized_views", "procedures", "schemas"},
             "mysql": {"tables", "views", "functions", "procedures", "triggers", "indexes", "constraints"},
             "mongodb": {"collections", "indexes", "views"}
+
         }
         
         if not database_type or database_type.lower() not in valid_objects:

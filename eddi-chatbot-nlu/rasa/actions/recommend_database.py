@@ -2,6 +2,7 @@ from typing import Any, Text, Dict, List
 from rasa_sdk import Action, Tracker, FormValidationAction
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
+from rasa_sdk.types import DomainDict
 import logging
 import re
 import random
@@ -111,12 +112,14 @@ class ActionRecommendDatabase(Action):
             if data_nature == "Analytics":
                 # Analytics (OLAP) → Available soon
                 dispatcher.utter_message(text="Feature under development, will be available soon.")
+
                 return []
                 
             elif data_nature == "Transactional":
                 if data_structure == "Unstructured":
                     # Unstructured → Available soon
                     dispatcher.utter_message(text="Feature under development, will be available soon.")
+
                     return []
                     
                 elif data_structure == "Structured":
@@ -199,7 +202,7 @@ class ActionRecommendDatabase(Action):
             logger.error(f"Error in action_recommend_database: {e}", exc_info=True)
             dispatcher.utter_message("Sorry, an error occurred while processing your request.")
             return []
-        
+
         
 class ActionRecommendDatabaseCreateTicket(Action):
     def name(self) -> Text:
@@ -291,6 +294,7 @@ class ActionRecommendDatabaseCreateTicket(Action):
 
         dispatcher.utter_message(
             text=f"Your database request for {recommended_database} has been submitted. [Jira ticket]({jira_link}) has been created and assigned to the appropriate approver. You will receive notifications about the status of your request."
+
         )
 
         return []

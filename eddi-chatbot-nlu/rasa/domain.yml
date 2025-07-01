@@ -42,7 +42,7 @@ entities:
   - is_open_source
   - ms_licensing
   - vendor_recommended_db
-  - database_type
+  - database_type 
   - database_size_large
   - hostname
 
@@ -76,7 +76,7 @@ forms:
   explore_schema_form:
     required_slots:
       - connection_string
-      - selected_schemas
+      - selected_schemas 
       - object_types
 
   analyze_query_form:
@@ -347,7 +347,6 @@ slots:
           - deny
           - help
 
-
 responses:
   utter_greet:
     - text: "Hello! How can I help you today?"
@@ -386,7 +385,7 @@ responses:
         4. Explore database schema.
         5. Analyze SQL query performance.
 
-  # — select-database form prompts —
+
   utter_ask_app_architect:
     - text: "Please provide the Application Architect or Experience Owner name."
 
@@ -470,6 +469,7 @@ responses:
 
   utter_contact_dba_team:
     - text: "Require additional review; please contact DBA Team – dl-edsdelivery@citizensbank.com."
+
   
   utter_ask_epic_link:
     - text: "Please provide the Epic/Initiative link."
