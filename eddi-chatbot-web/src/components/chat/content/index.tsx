@@ -10,7 +10,6 @@ import { CustomForm } from "@/types";
 interface ChatContentProps {
   chatId: string ;
   setActiveChatId: (id: string | null, isFirstMessage?: boolean) => void;
-  isNewChat: boolean;
 }
 
 interface Message {
@@ -32,7 +31,6 @@ enum ChatState {
 const ChatContent: React.FC<ChatContentProps> = ({
   chatId,
   setActiveChatId,
-  isNewChat,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatState, setChatState] = useState<ChatState>(ChatState.IDLE);
@@ -66,7 +64,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
       setChatState(ChatState.IDLE);
       setMessages([]);
     }
-  }, [chatId, isNewChat]);
+  }, [chatId]);
 
   useEffect(() => {
     const scrollToBottom = () => {
@@ -76,7 +74,6 @@ const ChatContent: React.FC<ChatContentProps> = ({
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
-
     if (!content.trim()) return;
 
     setHasInteracted(true);
@@ -101,7 +98,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
     const userMessage: Message = {
       id: messageId,
       role: "user",
-      content: processedContent,
+      content: processedContent, // Use the processed content but display what the user typed
       timestamp: new Date().toISOString(),
     };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
@@ -197,7 +194,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
   return (
     <div className="flex flex-col h-full w-full">
-      <TopNav title={chatId ? `${chatId} Conversation` : "New Chat"} />
+      <TopNav title={chatId ? "Conversation" : "New Chat"} />
 
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 bg-background container mx-auto relative">

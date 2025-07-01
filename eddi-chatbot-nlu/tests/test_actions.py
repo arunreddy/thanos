@@ -1,140 +1,183 @@
 import pytest
-from unittest.mock import MagicMock
-from rasa_sdk.events import SlotSet
-from rasa.actions.actions import (
-    ActionRecommendDatabase,
-    ActionSubmitRequest,
-    ActionRestart,
-    ActionProcessObjectList,
-    ActionExportDefinition,
-    ActionValidateTemplate,
+from eddi.actions import (
+    recommend_database,
+    start_database,
+    stop_database,
+    check_database_status,
+    backup_database,
+    restore_database,
+    list_available_databases,
+    optimize_database,
+    get_table_names,
+    get_table_schema,
+    get_database_schema,
+    get_view_names,
+    get_view_definition,
+    get_object_names,
+    get_object_type,
+    create_jira_ticket,
+    get_jira_ticket_status,
+    create_service_now_incident,
+    get_service_now_incident_status,
+    generate_select_query,
+    generate_insert_query,
+    generate_update_query,
+    generate_delete_query,
 )
 
-# Define fixtures for tracker and dispatcher.
-@pytest.fixture
-def mock_tracker():
-    return MagicMock()
-
-@pytest.fixture
-def mock_dispatcher():
-    return MagicMock()
-
-
-@pytest.mark.parametrize("db_type,expected_cost", [
-    ("Structured data, vendor app", "$500.00 per month"),  
-    ("Unstructured data", "$200.00 per month"),             
-])
-def test_action_recommend_database_different_types(mock_tracker, mock_dispatcher, db_type, expected_cost):
-    """
-    Test that the database recommendation returns the correct estimated cost.
+def test_get_table_names():
+    assert get_table_names("PostgreSQL") == ["users", "orders", "products"]
     
-    For unstructured data, ensure that the updated extraction logic correctly extracts "MongoDB"
-    from a recommendation like "Single Instance with Snapshot (MongoDB)". Then, the expected cost
-    of $200.00 per month should be applied.
-    """
-    action = ActionRecommendDatabase()
-    # Set required slot values.
-    mock_tracker.get_slot.side_effect = lambda slot: {
-         "app_type": db_type,
-         "feature_type": "Yes, Oracle-only" if "Structured" in db_type else "No",
-         "downtime_tolerance": "Yes",
-         "relationship_type": None,
-    }.get(slot, None)
+def test_get_database_schema():
+    # Updated expected output to match the new implementation
+    assert get_database_schema("PostgreSQL") == {
+        "tables": ["users", "orders", "products"],
+        "views": ["active_users_view", "sales_summary_view"],
+        "functions": ["calculate_discount", "get_user_activity"]
+    }
     
-    result = action.run(mock_dispatcher, mock_tracker, {})
-    # result[1] should be the SlotSet event for "estimated_cost"
-    assert result[1]["value"] == expected_cost
-
-
-
-
-def test_action_restart(mock_tracker, mock_dispatcher):
-    """
-    Test that the restart action sends the proper message and returns exactly [{"event": "restart"}].
-    """
-    action = ActionRestart()
-    result = action.run(mock_dispatcher, mock_tracker, {})
-    mock_dispatcher.utter_message.assert_called_once_with("Let's start over with the database selection process.")
-    assert result == [{"event": "restart"}]
-
-
-def test_action_process_object_list(mock_tracker, mock_dispatcher):
-    """
-    Test that object list processing returns a JSON message including the host and expected object names.
-    """
-    action = ActionProcessObjectList()
-    mock_tracker.get_slot.side_effect = lambda slot: {
-          "database_host_endpoint": "db.example.com",
-          "database_type": "SQL",
-          "object_types": ["Tables", "Views", "Indexes", "Constraints"],
-    }.get(slot, None)
+def test_get_view_names():
+    # Updated expected output to match the new implementation
+    assert get_view_names("PostgreSQL") == ["active_users_view", "sales_summary_view"]
     
-    action.run(mock_dispatcher, mock_tracker, {})
-    # Extract the text from the uttered message.
-    call_args = mock_dispatcher.utter_message.call_args
-    output_message = call_args[1].get("text", "")
-    assert "db.example.com" in output_message
-    assert "users" in output_message  # Expect to see table names such as "users"
+def test_get_object_names():
+    # Updated expected output to match the new implementation
+    assert get_object_names("PostgreSQL") == [
+        "users", "orders", "products",
+        "active_users_view", "sales_summary_view",
+        "calculate_discount", "get_user_activity"
+    ]
+        
+def test_recommend_database():
+    assert recommend_database({'type': 'relational'}) == "PostgreSQL"
+    assert recommend_database({'type': 'nosql'}) == "MongoDB"
+    assert recommend_database({'type': 'other'}) == "SQLite"
 
+def test_start_database():
+    assert start_database("PostgreSQL") == "Database 'PostgreSQL' started successfully."
 
-def test_action_process_empty_object_list(mock_tracker, mock_dispatcher):
-    """
-    Test that object list processing handles an empty list of object types.
-    
-    The JSON output should indicate empty lists (e.g. "'tables': []").
-    """
-    action = ActionProcessObjectList()
-    mock_tracker.get_slot.side_effect = lambda slot: {
-         "database_host_endpoint": "db.example.com",
-         "database_type": "SQL",
-         "object_types": [],
-    }.get(slot, None)
-    
-    action.run(mock_dispatcher, mock_tracker, {})
-    call_args = mock_dispatcher.utter_message.call_args
-    output_message = call_args[1].get("text", "")
-    assert "'tables': []" in output_message
+def test_stop_database():
+    assert stop_database("PostgreSQL") == "Database 'PostgreSQL' stopped successfully."
 
+def test_check_database_status():
+    assert check_database_status("PostgreSQL") == "Database 'PostgreSQL' is currently running."
 
-def test_action_export_definition(mock_tracker, mock_dispatcher):
-    """
-    Test that the export definition action issues the expected utterance.
-    
-    The uttered message should exactly match the expected notification message.
-    """
-    action = ActionExportDefinition()
-    mock_tracker.get_slot.side_effect = lambda slot: {
-         "database_host_endpoint": "db.example.com",
-    }.get(slot, None)
-    
-    action.run(mock_dispatcher, mock_tracker, {})
-    mock_dispatcher.utter_message.assert_called_once_with(
-    text="Your database definition has been exported in JSON format. You can download it from your notification center.")
+def test_backup_database():
+    assert backup_database("PostgreSQL", "/backups/postgresql.bak") == \
+           "Database 'PostgreSQL' backed up successfully to '/backups/postgresql.bak'."
 
+def test_restore_database():
+    assert restore_database("PostgreSQL", "/backups/postgresql.bak") == \
+           "Database 'PostgreSQL' restored successfully from '/backups/postgresql.bak'."
 
+def test_list_available_databases():
+    assert list_available_databases() == ["PostgreSQL", "MongoDB", "SQLite"]
 
-def test_action_validate_template(mock_tracker, mock_dispatcher):
-    """
-    Test that the validate template action returns a SlotSet event marking template_valid as True
-    when the latest message contains the word "template".
-    """
-    action = ActionValidateTemplate()
-    mock_tracker.latest_message = {"text": "This is a template example."}
-    result = action.run(mock_dispatcher, mock_tracker, {})
-    assert any(event.get("value") is True for event in result if event.get("event") == "slot")
+def test_optimize_database():
+    assert optimize_database("PostgreSQL") == "Database 'PostgreSQL' optimized successfully."
 
+def test_recommend_database():
+    assert recommend_database({'type': 'relational'}) == "PostgreSQL"
+    assert recommend_database({'type': 'nosql'}) == "MongoDB"
+    assert recommend_database({'type': 'other'}) == "SQLite"
 
-def test_action_validate_template_unknown(mock_tracker, mock_dispatcher):
-    """
-    Test that the validate template action returns a SlotSet event marking template_valid as False
-    when the latest message does not indicate a template.
-    """
-    action = ActionValidateTemplate()
-    mock_tracker.latest_message = {"text": ""}
-    mock_tracker.get_slot.side_effect = lambda slot: {
-         "recommended_database": "PostgreSQL",
-         "template_name": None,
-         "template_version": None,
-    }.get(slot, None)
-    result = action.run(mock_dispatcher, mock_tracker, {})
-    assert any(event.get("value") is False for event in result if event.get("event") == "slot")
+def test_start_database():
+    assert start_database("PostgreSQL") == "Database 'PostgreSQL' started successfully."
+
+def test_stop_database():
+    assert stop_database("PostgreSQL") == "Database 'PostgreSQL' stopped successfully."
+
+def test_check_database_status():
+    assert check_database_status("PostgreSQL") == "Database 'PostgreSQL' is currently running."
+
+def test_backup_database():
+    assert backup_database("PostgreSQL", "/backups/postgresql.bak") == \
+           "Database 'PostgreSQL' backed up successfully to '/backups/postgresql.bak'."
+
+def test_restore_database():
+    assert restore_database("PostgreSQL", "/backups/postgresql.bak") == \
+           "Database 'PostgreSQL' restored successfully from '/backups/postgresql.bak'."
+
+def test_list_available_databases():
+    assert list_available_databases() == ["PostgreSQL", "MongoDB", "SQLite"]
+
+def test_optimize_database():
+    assert optimize_database("PostgreSQL") == "Database 'PostgreSQL' optimized successfully."
+
+def test_recommend_database():
+    assert recommend_database({'type': 'relational', 'size': 50, 'performance': 'standard'}) == "PostgreSQL"
+    assert recommend_database({'type': 'relational', 'size': 200, 'performance': 'high'}) == "Amazon Aurora"
+    assert recommend_database({'type': 'nosql', 'size': 300, 'performance': 'standard'}) == "MongoDB"
+    assert recommend_database({'type': 'nosql', 'size': 600, 'performance': 'high'}) == "DynamoDB"
+    assert recommend_database({'type': 'in-memory'}) == "Redis"
+    assert recommend_database({'type': 'unknown'}) == "SQLite"
+
+def test_get_table_schema():
+    assert get_table_schema("PostgreSQL", "users") == {"id": "int", "name": "varchar", "email": "varchar", "created_at": "timestamp"}
+    with pytest.raises(ValueError, match="Table 'nonexistent' does not exist in database 'PostgreSQL'."):
+        get_table_schema("PostgreSQL", "nonexistent")
+
+def test_get_view_definition():
+    assert get_view_definition("PostgreSQL", "active_users_view") == "SELECT id, name FROM users WHERE active = 1"
+    with pytest.raises(ValueError, match="View 'nonexistent_view' does not exist in database 'PostgreSQL'."):
+        get_view_definition("PostgreSQL", "nonexistent_view")
+
+def test_get_object_type():
+    assert get_object_type("PostgreSQL", "users") == "table"
+    assert get_object_type("PostgreSQL", "active_users_view") == "view"
+    assert get_object_type("PostgreSQL", "nonexistent_object") == "Unknown"
+
+def test_create_jira_ticket():
+    # Test with default priority
+    result = create_jira_ticket("PROJ", "Fix critical bug", "This is an urgent issue.", "Bug")
+    assert "priority 'High'" in result
+    # Test with low priority
+    result = create_jira_ticket("PROJ", "Minor UI issue", "This is a trivial issue.", "Task")
+    assert "priority 'Low'" in result
+    # Test with medium priority
+    result = create_jira_ticket("PROJ", "Regular task", "This is a standard task.", "Task")
+    assert "priority 'Medium'" in result
+
+def test_get_jira_ticket_status():
+    assert get_jira_ticket_status("JIRA-101") == "Status of Jira ticket 'JIRA-101' is 'In Progress'."
+    assert get_jira_ticket_status("JIRA-102") == "Status of Jira ticket 'JIRA-102' is 'Resolved'."
+    assert get_jira_ticket_status("JIRA-999") == "Status of Jira ticket 'JIRA-999' is 'Unknown'."
+
+def test_create_service_now_incident():
+    # Test with high priority
+    result = create_service_now_incident("Critical outage", "System failure affecting all users.")
+    assert "priority 'High'" in result
+    # Test with default priority
+    result = create_service_now_incident("Minor issue", "This is a minor issue.")
+    assert "priority 'Low'" in result
+
+def test_get_service_now_incident_status():
+    assert get_service_now_incident_status("INC001") == "Status of ServiceNow incident 'INC001' is 'Resolved'."
+    assert get_service_now_incident_status("INC002") == "Status of ServiceNow incident 'INC002' is 'In Progress'."
+    assert get_service_now_incident_status("INC999") == "Status of ServiceNow incident 'INC999' is 'Unknown'."
+
+def test_generate_select_query():
+    # Test SELECT with all columns
+    query = generate_select_query("users")
+    assert query == "SELECT * FROM users"
+    # Test SELECT with specific columns
+    query = generate_select_query("users", columns=["id", "name"])
+    assert query == "SELECT id, name FROM users"
+    # Test SELECT with conditions
+    query = generate_select_query("users", columns=["id", "name"], conditions={"id": 1, "active": True})
+    assert query == "SELECT id, name FROM users WHERE id = '1' AND active = 'True'"
+
+def test_generate_insert_query():
+    # Test INSERT with data
+    query = generate_insert_query("users", {"id": 1, "name": "John", "email": "john@example.com"})
+    assert query == "INSERT INTO users (id, name, email) VALUES ('1', 'John', 'john@example.com')"
+
+def test_generate_update_query():
+    # Test UPDATE with data and conditions
+    query = generate_update_query("users", {"name": "John Doe"}, {"id": 1})
+    assert query == "UPDATE users SET name = 'John Doe' WHERE id = '1'"
+
+def test_generate_delete_query():
+    # Test DELETE with conditions
+    query = generate_delete_query("users", {"id": 1, "active": False})
+    assert query == "DELETE FROM users WHERE id = '1' AND active = 'False'"

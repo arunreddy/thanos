@@ -10,14 +10,15 @@ export default function Chat() {
   return (
     <div className="bg-background text-foreground w-full h-[100vh] flex divide-x divide-border">
       <SideNav
-        activeChatId={chatId || currentChatId}
+        data-testid="sidenav"
+        activeChatId={chatId || currentChatId || 'unknown'}
         onSelectChat={setCurrentChatId}
       />
       <ChatContent
-        chatId={chatId || currentChatId}
+        data-testid="chat-content"
+        chatId={chatId || currentChatId || 'unknown'}
         setActiveChatId={setCurrentChatId}
-        isNewChat={!chatId}
       />
     </div>
   );
-} 
+}

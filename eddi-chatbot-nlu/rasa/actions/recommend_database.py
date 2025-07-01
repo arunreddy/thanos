@@ -6,6 +6,11 @@ from rasa_sdk.types import DomainDict
 import logging
 import re
 import random
+import os
+import json
+import requests
+from typing import Any, Text, Dict, List
+from rasa_sdk.types import DomainDict
 
 logger = logging.getLogger(__name__)
 
@@ -106,24 +111,26 @@ class ActionRecommendDatabase(Action):
             
             if data_nature == "Analytics":
                 # Analytics (OLAP) → Available soon
-                dispatcher.utter_message(text="Available soon.")
+                dispatcher.utter_message(text="Feature under development, will be available soon.")
+
                 return []
                 
             elif data_nature == "Transactional":
                 if data_structure == "Unstructured":
                     # Unstructured → Available soon
-                    dispatcher.utter_message(text="Available soon.")
+                    dispatcher.utter_message(text="Feature under development, will be available soon.")
+
                     return []
                     
                 elif data_structure == "Structured":
                     if app_type == "Vendor Application":
                         if vendor_recommended_db == "Yes":
                             # Vendor recommends Oracle/Postgres → Contact DBA Team
-                            dispatcher.utter_message(text="Require additional review; please contact DBA Team – DL.")
+                            dispatcher.utter_message(text="Require additional review; please contact DBA Team – dl-edsdelivery@citizensbank.com.")
                             return []
                         elif vendor_recommended_db == "No":
                             # Vendor doesn't recommend → Available soon
-                            dispatcher.utter_message(text="Available soon.")
+                            dispatcher.utter_message(text="Feature under development, will be available soon.")
                             return []
                             
                     elif app_type == "CFG Developed":
@@ -195,8 +202,8 @@ class ActionRecommendDatabase(Action):
             logger.error(f"Error in action_recommend_database: {e}", exc_info=True)
             dispatcher.utter_message("Sorry, an error occurred while processing your request.")
             return []
-        
 
+        
 class ActionRecommendDatabaseCreateTicket(Action):
     def name(self) -> Text:
         return "action_recommend_database_create_ticket"
@@ -206,17 +213,89 @@ class ActionRecommendDatabaseCreateTicket(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         # Retrieve necessary slots
         recommended_database = tracker.get_slot("recommended_database")
-        ticket_id = tracker.get_slot("ticket_id") or f"DB-{random.randint(1000, 9999)}"
-        app_architect = tracker.get_slot("app_architect") or "Not provided"
-        has_sysid = tracker.get_slot("has_sysid") or "Not provided"
+        ticket_id = tracker.get_slot("ticket_id")
         
-        # Updated message to include more details
+        #Retrieve all form information
+        app_architect = tracker.get_slot("app_architect") or "Not provided"
+        is_reviewed = tracker.get_slot("is_reviewed") or "Not specified"
+        epic_link = tracker.get_slot("epic_link") or "Not provided"
+        has_sysid = tracker.get_slot("has_sysid") or "Not specified"
+        data_nature = tracker.get_slot("data_nature") or "Not specified"
+        data_structure = tracker.get_slot("data_structure") or "Not specified"
+        app_type = tracker.get_slot("app_type") or "Not specified"
+        acid_compliance = tracker.get_slot("acid_compliance") or "Not specified"
+        is_open_source = tracker.get_slot("is_open_source") or "Not specified"
+        ms_licensing = tracker.get_slot("ms_licensing") or "Not specified"
+        vendor_recommended_db = tracker.get_slot("vendor_recommended_db") or "Not specified"
+                
+        logger.info("Creating a jira ticket for user request")
+        # logger.info(f"Slots received: recommended_database={recommended_database}, estimated_cost={estimated_cost}, app_type={app_type}, feature_type={feature_type}, relationship_type={relationship_type}, downtime_tolerance={downtime_tolerance}")
+        jira_link = "https://citizensbank-sandbox.atlassian.net/browse/EDE-155854"
+
+        try:
+            payload = json.dumps({
+                    "fields": {
+                    "project":
+                    {
+                        "key": "EDE"
+                    },
+                    "summary": "Database choice analysis",
+                    "description": f"""Database choice analysis for the application
+                        
+                        Application Information:
+                        1. Application Architect/Owner: {app_architect}
+                        2. Architecture Review Status: {is_reviewed}
+                        3. Epic/Initiative Link: {epic_link}
+                        4. SYSD/Business Mapping Available: {has_sysid}   
+                    
+                        Technical Requirements:
+                        1. What is the nature of data you intend to store? {data_nature}
+                        2. How do you define your data? {data_structure}
+                        3. Is it a Vendor Application (COTS) or CFG developed? {app_type}
+                        4. Does your application need strict ACID SQL Compliance? {acid_compliance}
+                        5. Is your Application Open source? {is_open_source}
+                        6. Does your Application have Microsoft licensing dependency? {ms_licensing}
+                        7. Does Vendor recommend any Database types? {vendor_recommended_db}
+                        
+                        Recommendation:
+                        {recommended_database}
+                        
+                    """,
+                    "issuetype": {
+                        "name": "Story"
+                    }
+                }
+            })
+            auth = (os.environ["EDDI_JIRA_USER"], os.environ["EDDI_JIRA_API_TOKEN"])
+            
+
+            response = requests.post("http://citizensbank-sandbox.atlassian.net/rest/api/2/issue",
+                                    headers={
+                                        "content-type":"application/json"
+                                    },
+                                    auth=auth,
+                                    data=payload)
+            
+            if response.status_code != 201:
+                error_message = response.json().get("errors", response.text)
+                logger.error(f"Failed to create Jira ticket. Status code: {response.status_code}, Error: {error_message}")
+                dispatcher.utter_message(
+                    text="Sorry, there was an issue creating the Jira ticket. Please try again later or contact support."
+                )
+                return []
+            
+            data = response.json()
+            ticket_id = data["key"]
+            jira_link = f"https://citizensbank-sandbox.atlassian.net/browse/{ticket_id}"
+            logger.info(f"Jira ticket created: {ticket_id}")
+            
+        except Exception as e:
+            logger.error(f"Error creating Jira ticket: {e}", exc_info=True)
+
         dispatcher.utter_message(
-            text=f"Your database request for **{recommended_database}** has been submitted. "
-                 f"Jira ticket **{ticket_id}** has been created and assigned to the appropriate approver. "
-                 f"The ticket includes:\n"
-                 f"- Application owner: {app_architect}\n"
-                 f"- SYSID/Business Mapping: {has_sysid}\n"
-                 f"You will receive notifications about the status of your request."
+            text=f"Your database request for {recommended_database} has been submitted. [Jira ticket]({jira_link}) has been created and assigned to the appropriate approver. You will receive notifications about the status of your request."
+
         )
+
         return []
+

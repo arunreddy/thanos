@@ -6,7 +6,6 @@ import uuid
 import logging
 from typing import Any, Dict, List, Text
 from urllib.parse import urlparse
-
 from rasa_sdk import Action, FormValidationAction, Tracker
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
@@ -222,6 +221,11 @@ class ActionSubmitQueryAnalysis(Action):
         tracker: Tracker,
         domain: DomainDict,
     ) -> List[Dict[Text, Any]]:
+        user_role = tracker.get_slot("user_role")
+        if user_role != "EDDI_CHATBOT_DBA":
+            dispatcher.utter_message(text="You do not have permission to analyze queries. Please contact your administrator.")
+            return []
+
         """Execute SQL query analysis and provide the execution plan."""
         database_type = tracker.get_slot("database_type")
         connection_string = tracker.get_slot("connection_string")

@@ -43,7 +43,8 @@ class ValidateExploreSchemaForm(FormValidationAction):
         # connection-string patterns
         postgres_pattern = r"^postgres(?:ql)?://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
         mysql_pattern    = r"^mysql://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
-        mongodb_pattern = r"^mongodb://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"        
+        mongodb_pattern = r"^mongodb://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
+
 
         # ── PostgreSQL ──────────────────────────────────────────────────────────
         if database_type.lower() == "postgresql":
@@ -67,7 +68,8 @@ class ValidateExploreSchemaForm(FormValidationAction):
 
             # if none returned, default to the one you passed
             if not available:
-                dispatcher.utter_message(text=f"✅ Selected schemas: **{target_schema}**")
+                dispatcher.utter_message(text=f"Selected schemas: **{target_schema}**")
+
                 return {
                     "connection_string": slot_value,
                     "selected_schemas": [target_schema]
@@ -77,7 +79,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
             schema_list = ", ".join(available)
             dispatcher.utter_message(text=(
                 f"**Available schemas in your {database_type} database:**\n\n"
-                f"📋 {schema_list}\n\n"
+                f"{schema_list}\n\n"
                 "Please select which schemas you want to explore "
                 "(separate multiple schemas with commas or spaces):"
             ))
@@ -120,7 +122,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
 
             # if none returned, default to the one you passed
             if not available:
-                dispatcher.utter_message(text=f"✅ Selected schemas: **{target_schema}**")
+                dispatcher.utter_message(text=f"Selected schemas: **{target_schema}**")
                 return {
                     "connection_string": slot_value,
                     "selected_schemas": [target_schema]
@@ -172,7 +174,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
 
         # ── Unsupported ─────────────────────────────────────────────────────────
         else:
-            dispatcher.utter_message(text="Unsupported database type. Please select PostgreSQL or MySQL or MongoDB.")
+            dispatcher.utter_message(text="Unsupported database type. Please select PostgreSQL or MySQL.")
             return {"connection_string": None}
 
     def validate_selected_schemas(
@@ -255,15 +257,16 @@ class ValidateExploreSchemaForm(FormValidationAction):
                 schema_list = ", ".join(available_schemas)
                 invalid_list = ", ".join(invalid_schemas)
                 dispatcher.utter_message(
-                    text=f"❌ Invalid schema(s): **{invalid_list}**\n\n" +
-                         f"✅ Available schemas: {schema_list}\n\n" +
+
+                    text=f"Invalid schema(s): **{invalid_list}**\n\n" +
+                         f"Available schemas: {schema_list}\n\n" +
                          f"Please select valid schemas from the list above."
                 )
                 return {"selected_schemas": None}
 
             if valid_schemas:
                 selected_list = ", ".join(valid_schemas)
-                dispatcher.utter_message(text=f"✅ Selected schemas: **{selected_list}**")
+                dispatcher.utter_message(text=f"Selected schemas: **{selected_list}**")
                 return {"selected_schemas": valid_schemas}
 
             return {"selected_schemas": None}
@@ -368,7 +371,8 @@ class ValidateExploreSchemaForm(FormValidationAction):
         valid_objects = {
             "postgresql": {"tables", "views", "functions", "sequences", "indexes", "constraints", "triggers", "materialized_views", "procedures", "schemas"},
             "mysql": {"tables", "views", "functions", "procedures", "triggers", "indexes", "constraints"},
-            "mongodb": {"collections", "indexes", "views", "functions"}
+            "mongodb": {"collections", "indexes", "views"}
+
         }
         
         if not database_type or database_type.lower() not in valid_objects:

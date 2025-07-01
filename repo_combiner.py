@@ -89,9 +89,10 @@ class RepoCombinerSplitter:
                     # Read content
                     content = self.read_file_content(file_path, metadata)
                     
-                    # Write to combined file
+                    # Write to combined file (normalize path separators for cross-platform compatibility)
+                    normalized_path = file_path.replace('\\', '/')
                     out.write(f"{self.delimiter}\n")
-                    out.write(f"{self.file_marker.format(path=file_path)}\n")
+                    out.write(f"{self.file_marker.format(path=normalized_path)}\n")
                     out.write(f"{self.metadata_marker}\n")
                     out.write(f"{json.dumps(metadata, indent=2)}\n")
                     out.write(f"{self.content_marker}\n")
@@ -282,9 +283,10 @@ class RepoCombinerSplitter:
                     # Read content
                     content = self.read_file_content(file_path, metadata)
                     
-                    # Write to combined file
+                    # Write to combined file (normalize path separators for cross-platform compatibility)
+                    normalized_path = file_path.replace('\\', '/')
                     out.write(f"{self.delimiter}\n")
-                    out.write(f"{self.file_marker.format(path=file_path)}\n")
+                    out.write(f"{self.file_marker.format(path=normalized_path)}\n")
                     out.write(f"{self.metadata_marker}\n")
                     out.write(f"{json.dumps(metadata, indent=2)}\n")
                     out.write(f"{self.content_marker}\n")
@@ -316,6 +318,8 @@ class RepoCombinerSplitter:
             # Look for file marker
             if line.startswith("### FILE:"):
                 file_path = line[len("### FILE:"):].strip()
+                # Normalize path separators for current OS
+                file_path = file_path.replace('\\', os.sep).replace('/', os.sep)
                 metadata = {}
                 content_lines = []
                 

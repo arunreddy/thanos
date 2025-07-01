@@ -21,7 +21,7 @@ nlu:
       - sup
       - hiya
       - hey bot
-    
+
   - intent: goodbye
     examples: |
       - bye

@@ -1,209 +1,247 @@
 ################################################################################
 # Combined Repository Files
-# Generated: 2025-06-25T18:17:20.161515
-# Total Files: 62
+# Generated: 2025-06-25T18:21:10.995951
+# Total Files: 60
 # Compression: Enabled
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/components.json
+### FILE: eddi-chatbot-web/src\App.test.tsx
 ### METADATA:
 {
-  "size": 441,
-  "modified": 1744146831.6021385,
-  "created": 1744146831.6021385,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 1430,
+  "modified": 1746768298.2406168,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "33f89ecc8e5a3c2265a6bc35a9552c412fce57668a565aaeb783220d5aa2da61"
+  "checksum": "593e601e8b9baf6ba72e64fae3d93b9388a86851d4f3d3b87eeea8fd601018e1"
 }
 ### CONTENT:
-eJxdkL1uwzAMhPc8hSF0bKU9U4GunbvTMl2zkSVDlJEYQd491I8Do5vvvuP5oPup69Qb2wlnUOdOTSktfDZmJc0TDNZrG2ZTuf7j4NV7vuC0Ocx5j9ePLcRLtSNbMUdwjEUnvolOcW0SyF3JD+LdRYtjgx/pNxftTFdLJy6VOcOcAxytEY43nY3GemD8Ci7EknCQ8HD1A5Ggd8iHDUKWiCPlXUqJ8SjLwJE08XHYvASPPpV/f5qDbjVrItego95UuTP6fyUPukNJv852bwrh0srq52sZyXt8Ux8hbpm71dKA6vR4AtYTfw0=
+eJydVEtv2zAMvudXELlIAWzrniVGl3bACmw7dAV2Vi021mZLhizHC4L891F+dVmXoslFsiV+D0qkdFlZ5+EADo1CF0GdOUQDR3h2tgR247H22mzjQj856fbCocw8+zDTI1AhQfQTRhBCI8DfFWY07/REstNh6wX0mvUn/cfKln8Tb5xta3QPtvHoJq5OP3bd4iniY1UNMYmgb9qYCQFfbfYLfI6Q5bpQkFkKNmh8PdvppKRNzm7Ey6q4zaVnEfAFrFPghxlQgs+yKfxyWFspvQMlvYy7JNR6nhFkngYg3I5EK0Fh6ey4WJCN80rfsL1CLDbY9oKEv0gzx6ISn2m4UDXg5mkAXid3h17qAtUVsrEasL3+yHSRD9n4XBR2q82FBjrMPP0SpjOKY/1zFgpwipmEgk5mTe2HFvuhfT7U9Bp4o5fwEEo66cZPBZYEjkJDhhgKYYJR8a/hcJzoAFptlG2TXNfeun1SNXX+3UuP/HCMgD2Se6jkFslER0M+A8qhb5wZfJB0kGmdrCp0y3/brYMcKT8A6qJwHpz1wBrGyptOGKj0BRVlr3aSOoHhVeZ8Fc5KpFOeS0qT8GzQ7UD9Q8L7BynZot/sQ2L3irOxCdhikXi7wXvzmOOdzZpweHykCFz0deq9v8pT590t/8f7O433hTVYf9N3H3nedOeYhj+k7M5K
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/eslint.config.js
+### FILE: eddi-chatbot-web/src\App.tsx
 ### METADATA:
 {
-  "size": 734,
-  "modified": 1743734661.4861927,
-  "created": 1743734661.4861927,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 950,
+  "modified": 1748962151.318085,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "dc00c7db700d03834d04a172ea709593ae5ef1bc750eb55dfc521a60d9e1baa0"
+  "checksum": "8d4fc82469d71a029c0f6ea026c513fd5be378b3dd28024fd959c714e28be48c"
 }
 ### CONTENT:
-eJx9UT1vgzAQ3fkVt7mNjBNlZKpUVepWqUOXKIMDB3FibGQfSqIo/70GQwJV1AGw733c8U7VjXUEBw+lszWwN/RaGVoePEtUxCptd1KPhOF2Rx3KnD6tPY6EaJA2uq2USXs43Xf4XPKNpUO//0fkIuMuIx9Zg4QuDfrcqYbSWGdJgueeWWApW/1QiNyaUlUvCcAVVGVs8M1gwwrliW3hxjsgPAB4JjRFBx78oPLCYW7rOtSx4CCE+GM7I2x571MqHVssFsuFuJLn5M83NqBamqqVFX41pKwJvNg8tM9r+YPOh2oG69V6xQdgSD0bD2Ln7Mmji/gtfmJ6Ezs2TT+brIrPCWPS2Ww1M2/X9j80OocUHm7PchC94HmfpTX6ksZdpUHRWIOGugk3Az8oTtIZxu/3K0it7ek9xEXS0EcvzoBci+OIANvJyOH1mvwCQyntyg==
+eJyNUstugzAQvPsrVlySSK18LyRq1B5aqeqh/QILloAENnVstRLi37vGQHkkpBwAzc4My3jyslLaQA0fyho83/knNJBqVcJGo4jNvXaY3oQs9+ynTBhPCB55rAiUKM2ZOzzoSS9YVJdIGeHcDSfMZzQiLzBZVfSkYLzIO35f24VGA/VNnXJ5iSisyXjhpmNbeULCuhTmxn74lwelh18215gcyWwIbyL7xNhqbNMlIUutjE2uJByraruDmjEAjcZqCVt69VfkD+UwAD0ElTDZPuABYIEl+e/raLICPzRj1ZquC4oUpFrRSApzKYObupiI/MHdX5O5wW21O/uxqm3Vv1T0TVWWQiZz+VC1hU3EW5frefuajPx8q5ZG8wR8Y2a/33Vsou5WaM98F7KGMfxpO5ZgKmxhXF9C9gvXiip/
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/package.json
+### FILE: eddi-chatbot-web/src\AppContext.tsx
 ### METADATA:
 {
-  "size": 1806,
-  "modified": 1746037555.5935283,
-  "created": 1746037555.5935283,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 4239,
+  "modified": 1746768015.332571,
+  "created": 1746759170.3490329,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "41ed4ebbe854b75dea73edb656b5cf9d54ff916301b56a652d3d07cc013cdcb9"
+  "checksum": "63f6653debe0f61572f11ed7fddd7aecad244a6e23b767b3f65edf65b0b4a419"
 }
 ### CONTENT:
-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
+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
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/server.js
+### FILE: eddi-chatbot-web/src\Loading.tsx
 ### METADATA:
 {
-  "size": 666,
-  "modified": 1746037485.2878892,
-  "created": 1746037571.319097,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 161,
+  "modified": 1746751199.2482345,
+  "created": 1746751095.11482,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "cc4a620a206e26ac88a545a94b9291312fb92816825d53db9ea3f359664736c7"
+  "checksum": "60ad82cd9d87c8462be39344f2e19cf2bc67b8c8c5124196b9cef14eef719fe3"
 }
 ### CONTENT:
-eJx1UrFuwyAQ3f0VN1QCVwmJ1DFqt2aq1ChN54TaZwcJgws4iprk3wsYO+7QDe7eu/fegWhabRzguTVoLVRGN0DSjawy0bcvUAmJn9u3nd5wd4RbAnZGTkGlMIo3OAPP1vKEI671pDuw0E2cL7RK/UnlDqsGO1VwkhVaWQf7fRKB50GO/vFGezZr0HHm/eX5KlF523pSykZ9OVss4FXxL4lQ/4h26ivzYNZZpJMazRPnA43PZh13ogBuLTo74smiL5DZoMR6IE07oWOCGZBSWDcQ8mH8WhsopEDl5laUCEZ3Tqga5mCjsFAlntnRNRIqD+VSRgj2Jmp0lDx6eS/4HV8ih+cXuGQQzsyiKtd+X//buY8nwdEtH3e/ed/u/AZbo4uQC9WJxdL1Ck/L5XIV9aWfgYqGhvcwaocJWiKTuqaHuEADplMqBPPfID74wyWwbode9RcF3+HY
+eJw9jrEOwiAYhHee4jbaQRy6SWExcXLyDUihLQnlN39pYmJ8d9Eat2+4u+/icicuuAU3FIxMCyR/WGohBsprwZWcj3k67Rl1OcOgaWEsngLgUDbOaCoC/dwheiPTXjnEuiDtbwCJppiVUv1x7mzNt1q8qiU8vg98GN2W/jr9BllEL1o=
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/App.test.tsx
+### FILE: eddi-chatbot-web/src\auth.ts
 ### METADATA:
 {
-  "size": 2131,
-  "modified": 1746054797.539975,
-  "created": 1746054797.539975,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 640,
+  "modified": 1746752133.9124784,
+  "created": 1746070009.7844489,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "3506127df16b850423e450090a6e695b71424cc1b22defccc2f8cc0cc8f00fb1"
+  "checksum": "b8cf5ddc44736d6379da22adc56e872de2ad976b2aceae9a0633d709a26bf3bd"
 }
 ### CONTENT:
-eJyllcGO2jAQhu88xYhLggSx2t4ooC27lYrU9rBdqWdvPEvcJnbkTKAI8e4dOyFbFiFBesABZ/75v7FmjC5K6wj24NAodGOoUodo4AAvzhYQ3RFWpM16kutnJ91OOJQpRR8H+ihUyBL9jGPwoWPAPyWm/NzoLslG+1evovOsv/j3RNni38RLZ7cVukdbE7ouV/CfuLB5qvhUlm1MIvg7vxgIAd9s+hsoQ0gznStILQcbNFQNNjop+GUc3YnXXXGfSYrGEI9gvoB4PwAu8EXWOU3bvZnSG1CS5CQUoebDlCXDhRfC/THRTHDYYnAYjRjjstN33PYwmxjcNoasv8kzw7wUX3i50dXrhgsv7Gf3gCR1jqqH7US12sb/mOkmDllTJnK71uZGgKAZLr76xwXHY//HkW/ALqYz8j6pNRW1I/ZTU9b29BziWk/h0bd0EtbPORYsHvuB9DEcEomIm38O+0OXDmCrjbLbJNMVWbdLyrrKfpAkjPeHMURPTA+lXCNDhDTM6VUOqXam5WBrb7N1sizRTd+OW5AcuD4Icx1HjaqCY9t1xwvc94I7srE6qRvOao5n/pTEoqtwygWyOGodob0/4uYeStZIy52vZ6Xi6Nj70WiUkF3iyjxl+GDT2p9Z3BCPLiC/4fWpxNSvK9UfPGR59/7D1fS3koeJOyX3M9Gf2Kuvog2BPWi7+Tyn5vO2RSHNfxx4SFORdHR1Ed39cWs1zdCflhHug/74zRV0DXkTeTWx0o4zVc3/nwCyYSL7IJ7RtVdNblNJ2pqklJQZWWCDFjfT2zHx5y+bQa51
+eJyFkUFzmzAQhe/8Ct24JJBxLh08PdhYUzNx3Y7Bh06nQxZpKRqEpCLhdNrkv0cydtOeeoEV+/Zpv0fEtLKO5LuC7qu62JD3hMR3Ghac3z919n7Rf1lv4a57Fy+jWVqU5ZEezrrOOWOzNGXCiV+obAOq53hKdO/AjHgS+JQwPaQaJtctUo4tTNL9cfr0UK3qipZVsf9Qb4pytd7RbVV9LvMtzR/CDS1Ii1f5elXS/eoj9Q0xGD26ZEAHCapTElr18bAjz88k9v5p+qYWismJoyVuBCGF+k6sBNtdTA90UxxoXvnpwhs/XpF48+PWo9yyDlyjXWIWiWYm+Zv0jBbIUgZSNsD6x2UU4c+wGrmwkt8RIVpwlp0rQpgUqFzBs7fIb84NYe2EY3aJd/42IhcjMnccRfbPpnPbMm3QZuRr7N9K8PiGxGbUrZAYShw8byh023purIExtDb+Nk+bnmHmQ5lwPnNhoZG4DQHkHbI++88PCmMv4QHGXPEasKhg8MbX/C+ql2X0Ci7DwVQ=
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/App.tsx
+### FILE: eddi-chatbot-web/src\components\Changelog.tsx
 ### METADATA:
 {
-  "size": 715,
-  "modified": 1746052044.7719223,
-  "created": 1746052044.7719223,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 1295,
+  "modified": 1746476238.5310714,
+  "created": 1746476016.221012,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "394b3b61c2d626019640e186d5a070e0b236c658eb7a9bc1d68b0e529743a8aa"
+  "checksum": "bba390bc9c1e4665f02a5d888883e9fcf6a4cf752c43eaa31e95f2720e7d2b16"
 }
 ### CONTENT:
-eJyFks9qwzAMxu9+CpFLW+jwfUnLynZYYfSwNzCJ0hj8D1fpBiHvPrtesrS0WcBJLH0/WXyy1M56gg4+bUt4WqfvGg7iLI+CEHqovdWw8ChKevIx6xc5k4l7bQQlQfbCSxuCBg2deIxng+gdlbsnakKcx+SV8g1JSIXVLDGIsmkjB/x61EtIjdIPe5TmnlC01HAVsxmrW1OStAZ2zi1X0DEG4JFab2AZfuNTJMu2v9shAE5Qs8m4CUcCKtSh9qYrhgb5tg/rAVMGEX+O7311C8+T0ZkpcfH8XyKcZbUWprpFxyHMlkheTdBk7SwzlY+XjOxgmEenRInXNQr+Z/UqZz1j+H0ZZYW1aBXFIeXsB9pE5J4=
+eJx1VMuO4jAQvPMVLS6AhCEElh3xkvZx3uNeRnMwcZNY4zxkO0MQyr9vJ3EgJFoOIXF1l6urnIyCNDEWfkU8CVGlIRxhOoPjCe4jgAYLWuw3t5zwd0KgxqvfF2oj02QHE2/hLVaTuVsX3CIt+p6/ZiuPeU/kgtzmGs0O3ic/hEABGoM0jjERwKs+fuYGJ3NwaKCpAQmyaAyqZ8VHw1jS9WM/oqtGIk5gWi8fhPyCQHFj/vAYj+PHGIzGslwmqCFjW4h5wa5sUyiIC8Zzm45PTughWnUJLBaW+VR3oX52TpWA+My249PDvMMyWrXNLUdPxTlkoeY39s2jOfTnrn1+8zzQaZ7QwEyFJGzjyB0PMWVdHgL9DgjwkwRcQRqwEYKSlFt6gTyrYjDAydrWduC1qzatK83NWIx3z12W2WP8JWk/jf4zSKilgJCT0I6M+8tZWcQ8m04xsfo2B0mjFfXJmnZU16yfeDvea7zsWXWNJCX/YtR3Mqpyp2OWibhIr8zEcE61oFibv6be91qnO4tbz3sxr8p6PciaqOuoDcayjdvv9QH8bV4AuNeDLtz7UAKDg8l4MmBtBTSqnkubSpMjqVIrD8uqvydzGa17K7nqblElz4Q0QX0GmEyMFAjPXd6GG68HZkA7THtmmiTdE2Uphkk6NUq6OEVRnu6ug0ZRsr/FbFb2RstVt8Ydv2F5B3jczvajkj4BWGSptiDwwnPV+artR/8AwxRrKA==
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/Chat.tsx
+### FILE: eddi-chatbot-web/src\components\Chat.tsx
 ### METADATA:
 {
-  "size": 669,
-  "modified": 1746049831.0293128,
-  "created": 1746049831.0293128,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 731,
+  "modified": 1746067286.6760082,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "4f13eda24ac71ac817fb6d33edf8379c89c1a62fa1f18dd91872ff02a2698cd3"
+  "checksum": "9983c0b9854fabd8a35ea184c59b75189abb855084458eb4ee8e059e4f6222ae"
 }
 ### CONTENT:
-eJyNkU9vwjAMxe98Co8LIK2UnaGTpp52QZM4TjuE1KURbTI5SalU+t3n/qHANKTdHOfl/Z4dVXwbclCDt/ghSBQWGkjJFDAjFNIFZLxDmq0nqlfGmXCx0Q61G3TLUHIvlH3zqtypBLeivFdZbmpRXlUduTUductlmBlztOFwwdoJVp04wVT4nMFeS6eM7tLMF1BPAJhvW7sW856wW3Sdab5Y3yo8ESeNO+EzWHTxbefytPdmOACh86RhziXAJlElyFxYuxUFRtP9IdgLeTzwpnQCDisXpIZwOJ+C1Oc5ZMHny2pVZl+Q5lgBW/AigrHYG0qQpq8dgBHD7oYjAP+EKrHPF9XDiOfz/SjNKDd6hznKrh/Vvwe86MIRd/Opo4f8L4zt3+7iPeIBKLvFUx/qSf6VZRPyQtqS997AD7wV2Kg=
+eJydUstqwzAQvOcrFl+cQBWn58SF4lMvoZBj6UGR1rGJLRU9nICTf+/aVuykFAq9rUajndlZlfWXNg5a8BbfueG1hSvkRtcQG+TCMaO9QxOvZ+XAzAruMq0cKhd4y0QQlogBnJi7UuKWN48sS6DizcTqlbumo+5ymRRaH20SLog7w3NPlphzX5GwV8KVWvVu5gtoZwCkb7t2ncybpG7pNNN8sb5neGPIadYTn8Ciy+6R29OhN4kDGHTeKJhTCbCRZQOi4tZueY1ptD+wPRfHAyWlJDg8O5Zrg+F8YrmvKijYx/Nq1RSfkFd4BmpBQbCx2Gsj0UQvvQBJhOzCEUByx5lD60qZRiHDaLylPZUNDu7TNgRwuTwO2gGxV0elTyq+jm+12mGFoiel7c8sbrxkdHa3/9/ddfIsfIbJoviXObLz+jDbH/42CeXZlbS26zcEE+zx
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/ChatNew.tsx
+### FILE: eddi-chatbot-web/src\components\ChatNew.tsx
 ### METADATA:
 {
-  "size": 3894,
-  "modified": 1746049566.3121905,
-  "created": 1746049566.3121905,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 5001,
+  "modified": 1746774274.2277007,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "b1a9f6b6e242bb2a495a878becb402f4c4088784f6b76225072e52e15467b45d"
+  "checksum": "947087a8aee5abaf7344f27060de0c58821983c5382dd9374aeb0d10ec84c9c4"
 }
 ### CONTENT:
-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
+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
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/auth/login.tsx
+### FILE: eddi-chatbot-web/src\components\Home.tsx
 ### METADATA:
 {
-  "size": 1915,
-  "modified": 1746047609.9458528,
-  "created": 1746047609.9458528,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 1113,
+  "modified": 1746767879.452138,
+  "created": 1746767684.568238,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "b678966431cea92b2dd311eee4745383e044e9f1194ed335e2b5744d22190d86"
+  "checksum": "9d766911c89d0bddccedde179c359fcda76992369e08e7ffddab7561032f3a10"
 }
 ### CONTENT:
-eJyNVUuP2zYQvvtXDHSxFwitrLtIU6/toEgKNECQHgoUKIoeaGokscuHSlKxnYX/e4eSbFHePfQiifP4NK9vKHVjXYBnaD3+HnhAOEPprIa5Qy7C/HE2E9b4AF9sJQ1sYXEH2x08zwB6+V/Sf7G8kKZ6Ax7D58vpb7K9YC5KrjzePZLT1a/mplB4QeX+ZESCDROsRXBt7w4Q3GmwAMhz+O0pcOBtqNEEKXiQ1oAiUAEH26oCKgs1OuwczkAGooYFOmfd3RUmBmQVLjvxYt7HVHKpsFjP30Bv/ThAlNJwpcYYJnGOeZIpPc9Dyg5D6wwsOsVGc8IXinv/lWvcZqXCI8iA2jNBaaCDf1ofZHm6HLU0rGZeOEQD+4rtuXiqnG1Nke2GMDaF/JZiNuw9aH5kB+Y1HFjZKhU9BXcF+JoX9sBUBR0GFvFzb11Bv+pfrH9d0Qm/Rh71yS8CHsM1wj17l1iTvdQVJGcqlBPbLBcyyO9oPKMm2WVjqmxqxVXYZr98+vQZfvZe+sBNuLFIIjiw+3dQx4c+MhoCG+N4mNjnk6Dq+xcJrI4KSmsCpUzj0olK6/BS3mkom7y+nwA2L/Co3N1bt4EKO0KBDux+UiKAP23riG0SiQon4sDwF4rHUSEUnKK+4IHvuUcwiIVfpn/Pm6RBed+hUTKq9m0I1iSe1nxUUjxtnxMWnhN9IT3f0/hvn6/sTtWTFlxGq3FScyJnbb+hW4+C/Ke3fUWGc1qTrvAaC9lqaE7sB2iO7OE6lZr64bjxMrKaCaus8+QiWr+2bVDSIDPW4CByFCRbpYdLRInIliURlswuGa5tw2kmT+zHt1mSIXeSM8X3qLZZvw8OMtTdthnN0maOhYIPEFdIFT+lWS6Xc1jD/AZkfk4a17dnNxtFHkW3yZJC0/i8nzLsBeMfYhu6uUtKeDNym3r12sh2jfCo5WssiKxaZbuvNH/wK6rmA83a6gb2/xPhJiCAPyR1GOKobzjUDktaEw7/bdEHxoVA77MX4NNhi7m6OA+vTEe2iyHDx25PbXK+69hVYOj2OxTkoEnX3RzLaU4pveKRCp7ybWjSdQOP+k0eV3z8pruA7oAZHrtbtsCSt2q4Sx//A9KpRw8=
+eJx1UsFu2zAMvecrCGOH9qA46bJuaJNgBTpgAYZh2FAUO7WyLdsaZNGgpMZBkH+vJDetm2Q62BT9TD4+Ptm0SBa2cPNr9XD3+wfsoCRsIPmaKpmlvJXJ9WgkuogqRMmdslA6nVuJGr5jI87OYTsCf3LUxoLCSuo7UrCAxw/bl6q7lDtbp/Hbo68X4CSsIw1n8RLOvJBPkCtuzE/eiEVSKtFBeLAcFUgrGsNyoa0g+OeMleVmf62ZyUkIDVnFKuKF9GlmkWVxlpDasOlkAj4V44sQi86yEklUhE4XyfKVxykuEd13O0BGtGwqMJQvklQUhXzwc+K41VUCXNlF8u32dgU3xkhjubbJsO6azb5A0zEvD0KTsUvIkAo/Uv/q6c4mkwTSE23r6RHHWaegRD9+hqoIFWfJ8l6o3C/Kjw/vqczTenqibHtUVVW9XpHOZ69eoJos/6IjkF4UpWTlxQG+r+w5EBjBGyWMiRDi0TJmPE/bEz051CTKxXZvn92QQ9t5YdoN+9gv2G+aXe5XuK69MyDuUBRQ45Ogq1fUp4Airo2Mdi0c8RBEA/RQU/MC12HAEnNnrtBZJbVgGrV4SZHUFbsYXlqSDafNMIUtz6Xd+I6QOzJIrEX5H7uE80dWGlb6WIiUHzgx9VY8SJWIwfYDhXhmUDkvRIbWesvPenFMM9ibl+wEmfeOAK8JTMbTAwp9w7efB6TOr0e7Z5RITIY=
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/ChatInput.test.tsx
+### FILE: eddi-chatbot-web/src\components\Loading.tsx
 ### METADATA:
 {
-  "size": 3329,
-  "modified": 1744744458.7634132,
-  "created": 1744744458.7634132,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 115,
+  "modified": 1746071011.3466291,
+  "created": 1746071003.9268603,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "20e348882d1df8e35d422f6daa8c2c7cd505cd2e854369811ef214d8e1c4c369"
+  "checksum": "5d7beca2f722d69b1801e82876253d038292737a08b65c598f6ceab735f2b773"
 }
 ### CONTENT:
-eJztVk1P20AQvfMr5mZHDeZOm6oiIIHaqlVB7XltT+It6x1rd51gRfnvnfVHjAmhUL6kikMSZzJv5s2bZ29kXpBxsAKDOkUzBpsYRD2GmTR4skDtYA0zQzkEnxxaJ/V8X8nYCFMdGBSJC97vya5GioyWMY7Bp44BrwpM+HMhN0UW0v/Ug7ar/ubv+ynlfc40E+5MF6Vra0QHmwgn7XVdw6BPnBJDNbMPxhCOYPIRVnsACWnrIKfk8ps+53m/orVijjBhhtFMhyOuBhDjjHh2kWRhD4VtWOQjU4XCeCDAuoH7ecKgkdOCrOkInYLlCMSlc6QHpKCVPvzQ06frfSarrdZrkPYLiZR1m6xmQlmOHHysWQDUb430YbPNaI7uqPquRIIZKe51gVfM8aIqECoqDeStEGSYpmIgMwYqnCQNcQWuKrgTSGdBi7xO02Ueo4miKBiNIkdHeKYvMjympMxZ9bClcguLH6R4U60Ou7EDMZtsnhlSaUWsMIVlhroVl8OYF656AVUbA7V0JrB7rsH4TbAZ9bgd4AFTqobS047nTPnY6Zp0x1YS/CS4AXgus21bfLe6m5SO419X4O9R2xPUnRiJksnli/nrVSR94PLrt80ZESWZ0HPcCD3mw4AvGH3IVwuhSjyE4BSVIliSUWnAB8L69rtEk7t1lzc7+pV0oEGhLd392k/FAo94oqlQXPOXdFk44LPbMB75008QBsE9HHOiHRpYcgNiS5xncub+b+M8oRP6KpdYHdNSD8pwjKG1vqyo9cp+9qFakE2NV3NCSsgqkWsO+muOqD3wruP95oTnc4I/1O5rhOYxMzTDHcfGtd1vmeUOG9R/TDpt37Z/c/uM+LetP37LvoB//QEWjlCp
+eJxLzs8rLlHwyU9MycxLV7BV0NBUsLVTqOZSUChKLSktylPQADIVFGwyjBUyU2zVcyAKdTOT8/PU7aDa9PT0bPQzjO2AKjWtuWqtubhSKwryi0oUUlLTEktz4MZbAwDnOyDX
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/ChatInput.tsx
+### FILE: eddi-chatbot-web/src\components\SecureRoute.tsx
+### METADATA:
+{
+  "size": 425,
+  "modified": 1746763786.1118405,
+  "created": 1746070981.3783307,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
+  "is_binary": false,
+  "compressed": true,
+  "encoding": "utf-8",
+  "checksum": "8c43f456efef2f11261051afd52230933d37a948d53b3ab071f8ca9f8106636a"
+}
+### CONTENT:
+eJxtkMFqwzAQRO/6imkusaFBH+DYJPRaUugfGHvjCmytK69CQPjfq7RynZQeNfN2NLtKmWFkJwh489KTYMbZ8YCto7qRnWMv5HYtD9tiQV+5bo3tEnfQDUfdkpVJJ2tlA/xEx3F8YSt0XdMPehXv6VN9MV0t9G+NCCq6fpMN20nwTp/eOGqPXj5QIstRVghKIfnBTDcrVjNNDG2f+59+c4QfemV5cZsyZ2QJyUN8A47EO4v9srOuiqjPC/z054Mcj2O/6wiXG91zZ+zmPiNx2T4dX1exyPwF78uFbg==
+### END_FILE
+################################################################################
+
+################################################################################
+### FILE: eddi-chatbot-web/src\components\auth\login.tsx
+### METADATA:
+{
+  "size": 1694,
+  "modified": 1746767824.3168924,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
+  "is_binary": false,
+  "compressed": true,
+  "encoding": "utf-8",
+  "checksum": "69f1d2429ff800f302495cc612d7d39e822488b578d9f3aa5c3a78a9be3ae7a8"
+}
+### CONTENT:
+eJyNVU1v2zAMvedXEMYO7UFxmw5blyZZi3XABhTdMKCHnVrZomOt+jAkuUkW5L+Pdr7kpMN2skjRJPXeoyR1ZV2AJdx8//r48OMOVlA4qyG5TpXMUl7J5KrXy63xAe7sVBoYw8kpjCew7AGs/arxPzhFW09vlptEq5TXoUzbvSdKAeAw1M7ACS0BRppTrlxx7++5xnFSKJyDDKg9y9EEdPCr9kEWi62ppWEl87lDNJBNWcbz56mztRHJpE1JSYV8iXNW7BI0n7MZ8xpmrKiVav7MuRPgSy7sjKkptDlQNMvMOkGl1h+2seKmdqWoWIm82Y7qBZyHXbsZexdFU7zU08gE8C4fJykKIR8JJduvzDTpBHAVxsnn29uvcOO99IGb0A2ISs/YxQD0nBHotqk9iCPTTh/l+VHPg7mCwppAR1YCWldhHW7h7fYwSsvzTsLqKB/B3X51HQjYfSrQgZ13UAH4aWtHmpNohFoA31ahfhwhoGDR7AseeMY9gkEUvh9XT6uIk3RNSuPp7b0Hsmil1lVXlyneabB0WIyXW5Gv/sYACatyUnO3gNK+oBvuHemHszUeGztGpIVdo5C1hmrBLqCas/OznSg10eG48TJIa1hulXWe/slrP7R1UNIgM9bgxuWkmbJBbGxbily2KDwS5yCk55lCMbQVz2VYsPdnBwJ0kjPFM1TjZD38MxlK+PYceBzY5fMgsEMVj6kiViYRSR7z5owxpKSWyy4zRwP+thnoVmYRZAcKG5WD1xTaIu9Ry9dEv56hyT3JDb6gqj6StAYHaf9f9wcNAXyi2jwP0J0s8HXVXscBuQYeYJS5dEJ6XGswoTtTBTsUitEQCFSSZLa4JurkbzQ+4+a5n1udHLXV1WWDkmuUk0z+kakhbD2Hmw5z7HchiIdvx+ne3HC6u5/3+6O0eQCa9elVb0XvA87bkwsseK02b83VH9FCAvU=
+### END_FILE
+################################################################################
+
+################################################################################
+### FILE: eddi-chatbot-web/src\components\chat\ChatInput.tsx
 ### METADATA:
 {
   "size": 1996,
-  "modified": 1746041832.484704,
-  "created": 1746041832.484704,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -215,204 +253,90 @@ eJydVduO2zYQffdXTIQikAFLRlIsAtiWi7TZYoMmRbCbtyJAaGlkE6FIgRdf6ujfO6Ju3M0CLeoHmZrL
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/ChatMessage.tsx
+### FILE: eddi-chatbot-web/src\components\chat\ChatMessage.tsx
 ### METADATA:
 {
-  "size": 7806,
-  "modified": 1747720412.6389046,
-  "created": 1747720412.6389046,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 9686,
+  "modified": 1748924164.4753058,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "3b4b6c2966d45b315c318e6a8125b62d8e674d5adefa6380d65178d895179944"
+  "checksum": "14e94356751058187fab182031fb0b28d5c84fb28e2acfc01f7f63ef95b0673e"
 }
 ### CONTENT:
-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
+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
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/ChatNew.tsx
+### FILE: eddi-chatbot-web/src\components\chat\ChatNew.tsx
 ### METADATA:
 {
-  "size": 3634,
-  "modified": 1746042189.0135078,
-  "created": 1746042189.0135078,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 3629,
+  "modified": 1746067225.4874995,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "7a5478507a5fef384197043a684c9ddc01350f2189869a0dde95e841c7163315"
+  "checksum": "a197d603da2d267eb0c356f477f1230ada5198f16f390c2e03551c534ae07f5c"
 }
 ### CONTENT:
-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
+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
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/content/index.test.tsx
+### FILE: eddi-chatbot-web/src\components\chat\content\index.tsx
 ### METADATA:
 {
-  "size": 11266,
-  "modified": 1745977465.377246,
-  "created": 1745977465.377246,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 8259,
+  "modified": 1748924117.254067,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "93f406033355a16499f4abf5f41fdfa0de07ef17f4ce3a53270b744300ee8be1"
+  "checksum": "81c301965e0fddaa1f2837e97b1ba80e61a364bf61df409b7a2951c1c7e2c758"
 }
 ### CONTENT:
-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
+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
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/content/index.tsx
+### FILE: eddi-chatbot-web/src\components\chat\sidenav\index.tsx
 ### METADATA:
 {
-  "size": 8255,
-  "modified": 1747720683.5470226,
-  "created": 1747720683.5470226,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 13728,
+  "modified": 1746768350.2862926,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "c333dccd959020bb4a97a3cfccb9451061aa75200841b9b1e0d4036055c619e0"
+  "checksum": "b4f3e14503738ae4455f0a7448ff328df3d91521adcd0802839a111f1523c066"
 }
 ### CONTENT:
-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
+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
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/sidenav/dialog-handler.test.tsx
-### METADATA:
-{
-  "size": 2717,
-  "modified": 1744222249.5048053,
-  "created": 1744222249.5048053,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
-  "is_binary": false,
-  "compressed": true,
-  "encoding": "utf-8",
-  "checksum": "0ed24dd7a0efbe50692d7012a1be03db13cb68bcfff59a6716bd951ed8833b95"
-}
-### CONTENT:
-eJydVktv20YQvvtXDHgIKICi4qtcuY3lFjXQxkEj5BLksOKOrG1Wuyq5pC0o/O+dfZBcSkKQGLAlLXce33zzotjtdWngCCUqjmUGVVEiqgw2osTfG1QmA1YYaGFT6h0kvxmsjFBPUynWJSsPsxLpOrm5Ep0hjmRCrDEDK5oBvuyxoO9GZLDGjSazrNj2BhthxQYD5x7+pfOU690g81FwfM+aYCGfCYL+EmN4QrPUqsGyYkZoVfXe8nzm/8j4jO0FKV3NZvC3Lr6C2SK8+/AAm1oVTuuqEfmObtJztQzSCSxuIT1ewZm3OcWab1Q6yeiSo0SD8X103U4mJwDuamO0gkJTKIrYP8VQi9naiYwhcNywWpo5nUCyNcoMtFpKUXzNoNgKyUub04Qzw6aOX57MXX4eOLRzYOrgbZEpgF+8h87C4hh+tBDpL45B/ds3SBQ+T4stM9OArb11hgCOnXMr5oC13kWIwspd5OFeMKmfBh7OkkFEcCczJsLrOR6GuPXefapH+l5umXrCOOijQ0TOl0zKsdTzlpArRI4chHLAbNROoURTl8rZhl8DcxQYF82IpiSg7BiJOGn7Rx3j/QMY2yikrnDqLXUcx8J9pjwToxjevBmd0w2TFU4G37eRnaX1EzgcwEW58meK0R8mMAdVS3lDpzbr6adqN5SzURZixi1JtwMN3uCg/icyGkWv1V4JI/G1yvdueO19m77OxB9am59H7zugm51p0o240AfLrg/6ardVW9CwMWC74lF9pDlTGMqxgUU3YG5OZN7j86kASQxDOU2jhiCRQiIr30lpu7Ly5gDSs+HKKheda89/sELjRVtv3tZwmoQ4RpVJn1xiCaRRgR0fK33vpiUY7crK958vexAkY8uTEwWsOqgCYrRDmDbCikL8fATB55Bck7zxNZG46K8TaL98Jxa7b3Ibch+Rlg3yT0zW+KgKTHsvPkAIu7MfASF3fQPRghQNWo0H6uXrpL/QUdYWx9M8tpFcyFwnFI6dxCx0Y4DDnpkw1mt6zlN3+yOR5yVWtFSqz2+/5I2N3pPWdn7syLRjJ+w4CEOMkueGIh/GiM+OFwsbbhGA+PeNfEM7/O7wl90QK3yxBeNtFhHGJFTg9+PrX1yofAlcGnudnEfwCUuxOURFZrHHoP3FogNKvN0dVm71pd1sD2b9m07qH05yo+/wQa22eK+LekeA0hFxdtIG43VF7ztuu1zqjwiMa4CewEuILm2KV9EWufoR1nxrxjQEdP/VWB7OGZvkSpvLFHlP9v9/MdtXtA==
-### END_FILE
-################################################################################
-
-################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/sidenav/handle-delete-confirm-impl.test.tsx
-### METADATA:
-{
-  "size": 8928,
-  "modified": 1744222249.5050085,
-  "created": 1744222249.5050085,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
-  "is_binary": false,
-  "compressed": true,
-  "encoding": "utf-8",
-  "checksum": "0fe0437acb2ace0260355caf1315253e09e82a8041126b840de5a53d187e2a02"
-}
-### CONTENT:
-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
-### END_FILE
-################################################################################
-
-################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/sidenav/handle-delete-confirm.test.tsx
-### METADATA:
-{
-  "size": 8977,
-  "modified": 1744222249.5052054,
-  "created": 1744222249.5052054,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
-  "is_binary": false,
-  "compressed": true,
-  "encoding": "utf-8",
-  "checksum": "8591077e92f70ef0300691da5be1e411ca8b384a27f6c78e8cbddaabc49a58a1"
-}
-### CONTENT:
-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
-### END_FILE
-################################################################################
-
-################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/sidenav/index-helpers.test.tsx
-### METADATA:
-{
-  "size": 1703,
-  "modified": 1744222249.5053048,
-  "created": 1744222249.5053048,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
-  "is_binary": false,
-  "compressed": true,
-  "encoding": "utf-8",
-  "checksum": "f65f4582e68fa5f6a872573fbe3ac5490ff76270dcdaa9fd84a1e97d42539d26"
-}
-### CONTENT:
-eJylVVGL2zAMfu+vEHlyIKRsjztusOvtaF822BX2OLxEXcwcO9hOemH0v092mrRN0ruOQdMGWdL3SZ/kirLSxsEfyNFmRvzEBBxalwC+VJjRbyPgADujS4ga4Y+iu4U4Bi0AfnjTmqtc4iNKdLjSaidMmfRnnzInGtzkK11W3Air1XC0Ne2Ku6xIFj1CuhQqxxeCWPR8WPQscvzCG1ijrNDAU60opVY2SoDFcP8x8PD5WHSNDRTBZkHVUlJtZeXaBMgGDZcifNd4mRBguYQtpYO9cEUIBGYLXcscDLraKNhxaTEOvl232DV85sPjOHX6AVkXRiVOQAIvsM4I9es/wKLobaiubvqMYJypb0V5N8CEoDuKOnRYZ2JM5YdMG0OZZUtv3kiybB6vNr9ABTwkWRXcbXIo/chQzK3cpww89QSm/N8AFhZysduhQeVuVGcO+/0l9rxEc+D/MIIzuN3kzwDPqdZv5rA3ts4ytDasDBqjDWTcho3htlXZWLrnqoWgtLJaYhoiwpm3uN7uve7pgklt1X5V7GglksE/itNSZ783ZSWxpJZzv/TsCHQYd6wn6Gn1TdoWRu8J4axJHf7R+RvaWjpy4Hsu3OWddNaeobUXYePRH7xOxcWp0o7c1rzBB0S14lJizsbUT/0cEz8NdMc7eL7KekrnLGYi/CznMd/vdF2w4AwQPXFBJnCa/i/8ZQAZjeeHKDmed+lSrlr22eN25M8KJiJOGwRXIJDqQ20deBD86MKG0fTPX+b3Llc=
-### END_FILE
-################################################################################
-
-################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/sidenav/index.test.tsx
-### METADATA:
-{
-  "size": 36764,
-  "modified": 1744744458.7646987,
-  "created": 1744744458.7646987,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
-  "is_binary": false,
-  "compressed": true,
-  "encoding": "utf-8",
-  "checksum": "a6e4f2f0191a8148643a2831618830a44683a2299c676d378c408005f0829133"
-}
-### CONTENT:
-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
-### END_FILE
-################################################################################
-
-################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/sidenav/index.tsx
-### METADATA:
-{
-  "size": 11445,
-  "modified": 1746049560.1838722,
-  "created": 1746049560.1838722,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
-  "is_binary": false,
-  "compressed": true,
-  "encoding": "utf-8",
-  "checksum": "b871e149a645aa88d6088ffb827b0868e1fa256b7efabeb6afddfb21e0e6527d"
-}
-### CONTENT:
-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
-### END_FILE
-################################################################################
-
-################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/sidenav/test-helpers.test.ts
+### FILE: eddi-chatbot-web/src\components\chat\sidenav\test-helpers.test.ts
 ### METADATA:
 {
   "size": 1991,
-  "modified": 1744222249.505861,
-  "created": 1744222249.505861,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -424,14 +348,14 @@ eJytVV1r2zAUfc+vuPhJBtdhe1zpoE07kqfBFtjj0OybWUyWjCQnNSP/fVeyndQfKSkrJLEinatzdI4k
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/sidenav/test-helpers.ts
+### FILE: eddi-chatbot-web/src\components\chat\sidenav\test-helpers.ts
 ### METADATA:
 {
   "size": 723,
-  "modified": 1744222249.5059674,
-  "created": 1744222249.5059674,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -443,14 +367,14 @@ eJyN0T1vgzAQBuCdX/E2E0hRsyclUkVTJVuG7JWLj2LV2Ohs8qE2/70GkgbRDF3AHPfx6DybYU26JkbR
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/sidenav/utility-functions.test.tsx
+### FILE: eddi-chatbot-web/src\components\chat\sidenav\utility-functions.test.tsx
 ### METADATA:
 {
   "size": 1463,
-  "modified": 1744222249.5060742,
-  "created": 1744222249.5060742,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -462,14 +386,14 @@ eJyVVE2L2zAQvedXDLqsDMahPXbZQjfbZXNpoZvSY1HlCRYrS0aSnTVL/nsl2U7ijy3pwbaYjzfvzYws
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/topnav/index.test.tsx
+### FILE: eddi-chatbot-web/src\components\chat\topnav\index.test.tsx
 ### METADATA:
 {
   "size": 1038,
-  "modified": 1744146831.60434,
-  "created": 1744146831.60434,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -481,14 +405,14 @@ eJylUk1rwkAUvPsrHl42gkkuPVUtRVtoL1KK0POaPHXLZjfsvviB5L/3rdGoLZRKDy64mZk3M/tUUVpH
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/chat/topnav/index.tsx
+### FILE: eddi-chatbot-web/src\components\chat\topnav\index.tsx
 ### METADATA:
 {
   "size": 394,
-  "modified": 1744146831.6044052,
-  "created": 1744146831.6044052,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -500,33 +424,33 @@ eJxVkM1uwjAQhO9+ipFPcAiRUE8Q0kpIPaKq5QWMWRNXjh3ZG5KK8u41fxK9jbS738yObbsQGduGWvoa
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/help/Help.tsx
+### FILE: eddi-chatbot-web/src\components\help\Help.tsx
 ### METADATA:
 {
-  "size": 1895,
-  "modified": 1746043492.591127,
-  "created": 1746043492.591127,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 1628,
+  "modified": 1746476182.2014258,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "3ccb5646aeca8d897cfab379c74f7061df85a81f0811157b69245d78d18a2bbc"
+  "checksum": "66970d0e8159b1ca01fb2d8afdde3d78d28a0f6bb10d68da0a09e93a6e573287"
 }
 ### CONTENT:
-eJyVVd9v2jAQfuevOPFSkGoIXdd1tCBNTNMe9kPqHqap6oNJDmIRx5ntlCDE/76zk5SQFtrlAZLz5+/uvruzhcyUtnCHPLSw0ErCmXbvZzcdUS5t4ZtIV7BrrjKtcouaRUoSsCNS+ljwEOErJtlMScnTCLYdgLB8H4OxWqTLGzJFaEItMitUujfvOp1QpcZ6gnEZzuDLDCbQ68NkWnE5QLz3YMZNf/cPhL4nHHi0e568d92u7nllPoig+ytWawM2FsZzg3pE/Shw3fXo3fkRxjBBro9Qztya40QIc60xtS544jXcIV5hTsn3kVAt19YAB4L8D2PELZ9zgycVqEFAm/gSpYtaeYh5hR4LLrMEzUn6CgR/c9QCDWxUDiFPgZtVRU+/D9RMABptrlPoefNtJB4hTLgxP7jEia8ko9wtFylqyNgVBVywNbssEpAF47lV3WkVyG08au61WFh2QbgF7WdzlUQg5+yqO3VtBD+rwt8O41FNUPO0gpgv2VLzDXsfkGx6Na6/r4MAaDTSCCOWLCm4y8pBxUNMWZOHFi8aiwC/MSFdEazy3fO5rsn3fU0+GSOM5akdwJ9Kw5wQDr5QSaLWNFB1cYwj8tPpxnstbOxxZmMsyvE+qGH2pNiQUp12juS91CKCJae8GlFvmyM5kDzr9UIZnZPfCAs/vb1Ghp5yhZvJ1q/vWrKuY2HxUNQPJKpTsiGsiXmk1sxImCsdURuUfyX+Iqir0jBeBcGB0M9zWyRYADmXhhk3Zy34i00wT3Jko2DfBd7wkQy+1fzXdb28N7kdWcHeQbZhozqvsimlShVIfSBw/Qy3pOugKu2uHV1ZuNMhuxzZ6AVqz9wY2zewPzO1DP3+7k09JS27LuUK0XVqc1j8zWPVpDt0h+KzUfZiUmUhdof2+KTml7WpjX3X6oy78vShwZnF3DZmxAXTGpOD1z5dY3R+YeGvzQgXPE/KC+2m8w8+HS4z
+eJyNVU1v4jAQvedXjHIpSDWEttvt0oK06mq1h/2QuofVqurBJCaxGtuR7TRBiP++YycpISxVOUAyfn4z8/w8cFEobeGB0djCWisBZ9o9n90GvFnawncun2HXXyValZZpBAVc4sOaxgy+sby4V0JQmcA2AIib5zkYq7lMbzGUMBNrXliu5D68C4JYSWM9wbwpZfL1HhYwGsNi2XI5QLbPYOb9fI9PiH5EHHi0+7xmD6duW3jexg9KCH9nqjJgM+a5Qb0w/cJZFXrw7vwUo2bGUm1PkD40qw1vXGrNpIU4o9a1gRkMdcA2B34/oYwAmtlSSxj58F3CXyDOqTE/qWCL0FVHcLelXDINBbkGQWtSkas6B1ETWloVLttq7rJZf69ltSUXiFvjfrJSeQJiRa7DpRMQfrUt302zWUfQ8QyKWKUk1XRDPkSQUP08795vogjQEDJhCclTLO6qTdDyIFPR58HFi94iwB+Wo7gMrPKSfaGWrqhh8INKmjLh5PtsDEdVpZ3AX1VCTCWUiHDwtcpzVaGVuhMyjsj70pm64jbzOLMxlon5vqhp8arYFFtdBif6TjVPIKXYV6/qbd+ME0GL0SgWyTnmTVjtfTvqdegpn9lmsfXru4GsVcYtOxT1I4rqlOwJazKaqIoYASulE7RB89PgL6LuVHrB6yg6EPq4t3XOasDkwpDG0ofw/5pglZeMzKK9C3zgEwa81fzbTbe8D7kdRU0uodiQWddXY0qhpAKhDwR+FRplnbQnuxsW15zb2xW7FsnsFHPv6r6D/Sg0CIzHu3dZSlhy06gVM2fU/l3x49aqRTiVOImObrLXEg8WMjet5m9KftWFhtjLgTEemuGD9+Ye51TvirhiBrfk4HGM8xvHF6v9f0XC1rTMm0l+G/wDOCXfQw==
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/help/HelpDetailed.tsx
+### FILE: eddi-chatbot-web/src\components\help\HelpDetailed.tsx
 ### METADATA:
 {
   "size": 1911,
-  "modified": 1746043747.434787,
-  "created": 1746043747.434787,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -538,33 +462,33 @@ eJyVVU1v4jAQvfMrRlwKUs1H22W7tCCtqFZ72A+pe1itqh5MMhCLOM7aTglC/PcdO0kJaaHdHCCZeX6e
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/layout/themeProvider/index.test.tsx
+### FILE: eddi-chatbot-web/src\components\layout\themeProvider\index.test.tsx
 ### METADATA:
 {
-  "size": 2892,
-  "modified": 1744222249.5062284,
-  "created": 1744222249.5062284,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 3049,
+  "modified": 1746067217.5506554,
+  "created": 1746063471.96553,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "5641c7a70af81666e14b7735ba69db68d8ed067da26ed836ed682acc00d64929"
+  "checksum": "040200a6ee046796dc34f362ad25d89a3a8ed8509c993f4531b6f9144138bf85"
 }
 ### CONTENT:
-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
+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
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/layout/themeProvider/index.tsx
+### FILE: eddi-chatbot-web/src\components\layout\themeProvider\index.tsx
 ### METADATA:
 {
   "size": 998,
-  "modified": 1744222242.768325,
-  "created": 1744222242.768325,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -576,14 +500,14 @@ eJxtUsFu2zAMvfsrCJ9kwMjuTe1LkQG7FMOa29CDJtGxMNsqJDpp4erfJ8lWHGe9GCJNvvf4SNW/aUPw
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/ui/button/Button.test.tsx
+### FILE: eddi-chatbot-web/src\components\ui\button\Button.test.tsx
 ### METADATA:
 {
   "size": 3772,
-  "modified": 1744222249.5063808,
-  "created": 1744222249.5063808,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -595,14 +519,14 @@ eJzNV82O2zYQvu9TDAQUkQHT3u0PsLtZG4WdAM0lly7aQ5ADLY1tphKpkpSzjrGP0FvvfcU+Qoek/vzv
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/ui/button/index.tsx
+### FILE: eddi-chatbot-web/src\components\ui\button\index.tsx
 ### METADATA:
 {
   "size": 1848,
-  "modified": 1744146831.6047914,
-  "created": 1744146831.6047914,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -614,14 +538,14 @@ eJydVduK2zAQffdXDGZZGlgl2V5gN7elLYU+tEtZSl+Wwir22FGxJSPJaVKv/726+ZJunhqIrZkjjc5o
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/ui/dialog.test.tsx
+### FILE: eddi-chatbot-web/src\components\ui\dialog.test.tsx
 ### METADATA:
 {
   "size": 6063,
-  "modified": 1744146831.604946,
-  "created": 1744146831.604946,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -633,14 +557,14 @@ eJzFWEtv2zgQvvtXEAYWUgDLDhboJZsY3SQt2sPuAovcih5okZKZSqRB0U68Rf77Dl+SqEq23CTNoQ8O
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/ui/dialog.tsx
+### FILE: eddi-chatbot-web/src\components\ui\dialog.tsx
 ### METADATA:
 {
   "size": 3799,
-  "modified": 1744146831.6050093,
-  "created": 1744146831.6050093,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -652,14 +576,14 @@ eJy9V9+L2zgQfs9fIQxtsyVKcku3x4VsKLQcdy/tUvpwEEJRLNlRK0tGkrPJLvnfO/qR2Dk7m5YsfTHS
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/ui/input.test.tsx
+### FILE: eddi-chatbot-web/src\components\ui\input.test.tsx
 ### METADATA:
 {
   "size": 2604,
-  "modified": 1744146831.605068,
-  "created": 1744146831.605068,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -671,14 +595,14 @@ eJy1Vk2P2zgMvedXELnIAWK7KLaHZutBO7MFuof20B4Xe1BsOlGrSF5JdiYI8t9LyXas7Ewz0wI9xDYl
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/ui/input.tsx
+### FILE: eddi-chatbot-web/src\components\ui\input.tsx
 ### METADATA:
 {
   "size": 967,
-  "modified": 1744146831.6051226,
-  "created": 1744146831.6051226,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -690,14 +614,14 @@ eJx9U02P2yAQvftXjHxKqhC7Tauq0Wa1Uk+9VFWvqz1gM07QYkB8JI4i//diIIkjrXrBw3tvZp4H4L1W
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/ui/skeleton.test.tsx
+### FILE: eddi-chatbot-web/src\components\ui\skeleton.test.tsx
 ### METADATA:
 {
   "size": 2579,
-  "modified": 1744744458.7651367,
-  "created": 1744744458.7651367,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -709,14 +633,14 @@ eJzNVU1v2zAMvfdXELnYAeIkTVvs0KQY2g1YL7ust2EHxWJirbYcSHLaoOh/H2U5jr+aOsWA7RBFUsjH
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/ui/skeleton.tsx
+### FILE: eddi-chatbot-web/src\components\ui\skeleton.tsx
 ### METADATA:
 {
   "size": 382,
-  "modified": 1744744458.7652447,
-  "created": 1744744458.7652447,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -728,14 +652,14 @@ eJxVUMtKxEAQvM9XNDklsEm8CZuHiA88qIj6A5NMZxmcR5jpWRZC/t0xG7MKDV1dNFVdLfVoHcEEvYEZ
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/ui/themeSwitcher.tsx/index.test.tsx
+### FILE: eddi-chatbot-web/src\components\ui\themeSwitcher.tsx\index.test.tsx
 ### METADATA:
 {
   "size": 3490,
-  "modified": 1744744458.7666469,
-  "created": 1744744458.7666469,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -747,14 +671,14 @@ eJztV8tu00AU3ecrLgtkW3IcAbtCKtQAAgkQohUsUBcT+6YeOvaYmXFSC/XfufOIE4cmrXioLJCSOPbc
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/components/ui/themeSwitcher.tsx/index.tsx
+### FILE: eddi-chatbot-web/src\components\ui\themeSwitcher.tsx\index.tsx
 ### METADATA:
 {
   "size": 3557,
-  "modified": 1744744458.7668219,
-  "created": 1744744458.7668219,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -766,14 +690,14 @@ eJzVV1tr20gUfs+vOBWllsHyJd2W4FhelqTdLaQXmr6VQsbSyB4izZiZkeNU6L/vmdHFI8WEdAksFcGS
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/hooks/useChat.ts
+### FILE: eddi-chatbot-web/src\hooks\useChat.ts
 ### METADATA:
 {
   "size": 606,
-  "modified": 1745981514.7796688,
-  "created": 1745981514.7796688,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -785,52 +709,52 @@ eJx1kDFrwzAQhXf/iisULIPb7E7sJVOWDM1YClHtcyJQpCKd2oLr/15JdozdpIsQ0vfeu3fi8qENQQfO
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/lib/api.test.ts
+### FILE: eddi-chatbot-web/src\lib\api.test.ts
 ### METADATA:
 {
-  "size": 5620,
-  "modified": 1744146831.6057198,
-  "created": 1744146831.6057198,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 5921,
+  "modified": 1746108823.2508683,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "d51c636cd87772b05dbc849220ec99ff1f62c28b2722e39e961d558af3590acb"
+  "checksum": "f95b43ac29a058fa01449736dd910b5be701e6ca7dfa0873e1d987f2216d70e8"
 }
 ### CONTENT:
-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
+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
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/lib/api.ts
+### FILE: eddi-chatbot-web/src\lib\api.ts
 ### METADATA:
 {
-  "size": 1849,
-  "modified": 1747719005.2149909,
-  "created": 1747719005.2149909,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 1864,
+  "modified": 1746775057.5993044,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "1b950a7638b590e2fc4acd85e65c8abf0358f2d406aab1f7807015656ef15b33"
+  "checksum": "95c99001b445f975256be72d1bb3f452b2e8c0565e97c2942ae16b3ecd21662c"
 }
 ### CONTENT:
-eJytlFFv2jAQx9/5FFcLqUFiSR8nENNYh1ambq0K2x7BTQzxGuzMdspYmu++s50Ao4Np2p4QufP9f/e/s/kql8pACR+Y1nTJ7ti3gmnT3f3XuRSadeEypeaKayPVBipYKLkC8joym5xp0m9Fkf0kDBNJpFUcZfw+ojkPjW6x704ixjIGhrfj2ae7axgAd8rhihkaMvEYfh5PR7Mm/PQEJDUm70VRJmOapVKb3suLiwuUslrvmAEjH5jwIC5ngmhIbMNea8nM1OUMIOjA4BWUNgbAFxBYbrmANReJXMPZYACkEAlbcMES0mkyARQzhRK/CIRYd2zYKiA0jtGlmQMhnb4/U/mf+qAosswFqgZcMMVjWDATp7AoRGy4FMhhUqCFSaXiP6j91KJ6I+JdhjvwBdOGmBUUKuuBNoqLZRdkbjN0D+rhjQU32HNZ2T4Atn6Y2ozGlwCRMe6DKaMJUxrDgq3hyv8L7HkAcukma15M0TXSA0LzPOOx44y+ailI1+WFYVizhHU5+73yMojhjLfKWzBodEPNTHA+3HfgvAvzN4wqpqBdumPVHEu5c9UOXNUbiuR0TbFz51Qwb5f1MlXtEu2q5l0oDyg99XNUy3nW1A3lQ6c+6QWZUlJt1bZp1oegE6IrqO73rbYPIMEl5zgxMhRQiAch16IuI+O4UAp3zrNUHU8AYFKFi2lnMbKJgUsPfSF3PY6XciY5h+olPGDstyq3i/ZG2wupW80dPdg5VMfJP6I5biBBQg3tOS9W/nVodhAreo9OjWS7vMS+DFGM6hEqkGYu+BKkMkGTbm8m09qPe5lsevB+cvMx9Ep8sXEYnb1xHXSJXRy+Xq7j3/eo8cWqs/f6i/fanvFk1+fp1mXGwkwuAzLBqhjcJmOTjrq/wz3qiSX6R1OOdotXf3+iOvDsf0Lat0OTvxAIdt6dUJofUYraJU/cpT+ql7CMGfbfJZ/Z/3Z0PZqOyM7gn7CxX78=
+eJytVEtPGzEQvudXDBYSGynsovaWKFUpRS0VLQhS9Ugc74S4bOzF9pKGsP+9Y3vzaCipqvYUZefxPWbGclpq42ABn9FafotXaEutLEINY6OnwN5mbl6iZb1WlvlPyqHKM2tEVshRxkuZOutD+CM0ElTs4Pjy7Obr1Tn0gU2cK7tZVmjBi4m2rvv66OiIuu3Kt1SQj+4Pc3w4FBPuRtql5atUizIV0slHVHbE1V0q9JS1PPgHdOD0HapIOoBdO21IkA9HkFt0g5DTh6QN/Tew8DEAOYbEa9RjmEmV6xns9YlIpXIcS4U5ay8zAQy6yqhfAFLqe+ZwmjAuBJl4E4iwdi/W1PGnKVRVUYRA3WuIKzRSwBidmMC4UsJJrYiHmwCv3EQb+cj9pxa3cyXWGaHgG6UdU1ZSmaIL1hmpbjugS59hu3CF9xVad6akI82L2usAWPnhGjOWviREmeIxOEGeo7EUVjiDj/Ff4usB2EnYAnc4INdYFxgvy0KKwDP7brVinZCXpmnDJW3a+e91hCEawXiPvCIGS9zUoksOjjcdOOjA8B1ygwb2F6GsHlKrUFeviZvlAveBzzgpD04lw/1Fs2T1/oLsqocdWGyxjKyfU/U895Z9U33XbiojIBqjzQptleZ9SNopuULocd8a+wBydFzSxNixgkrdKT1TTRstRGUM7VzkUrcjAwA3MbSYfhanPjEJ6WlsBE9Pu1oFk4JDzRJucey16rCLJ3Rp/hJta3mcWztH6DT5BzInDCTJuePd4MU0Ph7LHaSO0aNdI1ktL/OvSObvPCMEtpzLFGn4OZl0eXE9aPwY6XzehU/XF1/SiCTH80CjvTGuLZWkYvtxC4p/r9HS69Zkb+gTG7JvZL7WuVu6LjAt9G3CrqkrBVfJJDKw7q3pvuiJZ/SPpryolk5/c6I2idz/RGnTDsv+AiBZe7cDafgCUra/kHk4+hfxcizQ4X+HfGb/+9Pz08EpWxv8E/e0Y9A=
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/lib/coverage-utils.test.ts
+### FILE: eddi-chatbot-web/src\lib\coverage-utils.test.ts
 ### METADATA:
 {
   "size": 12038,
-  "modified": 1744222249.5066435,
-  "created": 1744222249.5066435,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -842,14 +766,14 @@ eJzdWltz47YVfvevwPDF1Iws2d6nauu0u9tNk8xkveN1mwePZwcmIQsxRTAAaFv16L/34EaCJEjKWrtJ
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/lib/coverage-utils.ts
+### FILE: eddi-chatbot-web/src\lib\coverage-utils.ts
 ### METADATA:
 {
   "size": 2523,
-  "modified": 1744222249.5067968,
-  "created": 1744222249.5067968,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -861,14 +785,14 @@ eJyNVttu20YQfddXjBcpQBoqpcdGsRw4Rdr4wYCROshDHNRrcmRtRe2yu0vLisx/7+yFF1mK0QdR5OjM
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/lib/utils.test.ts
+### FILE: eddi-chatbot-web/src\lib\utils.test.ts
 ### METADATA:
 {
   "size": 773,
-  "modified": 1744146831.6061068,
-  "created": 1744146831.6061068,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -880,14 +804,14 @@ eJydUstuwjAQvPMVc8JBSiit2lNEpfYbeqt6MPEGVnLsyHZoEOLf6wTCqyqVODhydmZ3ZkfmqrYuYAtF
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/lib/utils.ts
+### FILE: eddi-chatbot-web/src\lib\utils.ts
 ### METADATA:
 {
   "size": 166,
-  "modified": 1744146831.6061606,
-  "created": 1744146831.6061606,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -899,52 +823,33 @@ eJxNjTEKAjEQRfs5xZAqAc0BbK1tbcQixKwMJJOQTNiVZe8uURZt/3v8R6nkKriij205oLxKwHN0rV1d
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/main.test.tsx
+### FILE: eddi-chatbot-web/src\main.tsx
 ### METADATA:
 {
-  "size": 2788,
-  "modified": 1746054808.1457622,
-  "created": 1746054808.1457622,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 532,
+  "modified": 1746762639.3472652,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "e79c5f04f2422f0095618954c7ddc8ec26852d0300434f44553027dc7e349cd0"
+  "checksum": "6e67a61e0a7d368d73b18353869ea1e24df6ac4cc63242d9b17d56db3da397af"
 }
 ### CONTENT:
-eJydVl1v6jgQfedXzPaFRKLhHVqk295KrbTdrmi1+2ycofjexI4cA4sq/vuO7RDbBPV+SBVge+bMGc+ZcUXdKG3gA0psuRYrnIAwE8D/GuT0vRMTWOFaaXxgfANHWGtVw3gnDLZmPB+Jk/ur0YKbZ1Vib6SR8cSG047BpVImtbkuVT3llUCZmN9ptW9RL9XWoD7z0G7TOgaPL03T2RRT+h1DvW2wxr+12okygiqmXJGFpLjttGIHwpya2JIgRtMpPCrRGqgV/96CUfTXjHaisOtsmEA+D4eeR7rzo5Cx9SDXCWQ53C4g+xhBej8z2gO+EVWpUcJxBmE1g6XFKdznX65CHoQwAG5KsYOSGXZtSyrK26uVx+3iXi0+TkDHmykZL8gtHx1zIjo6iSYb10zInp5lV6G/siXK0tJbotlq+XZo8MbQh1qTtoq1XMwj2/teIJ/Zk0OQZBYiAlCtXsmt8bVyW4EC3HqELJ/3JyFgf3q6YNAd8QjBJW19uwphmQVN527rqW4qKqc0zAglszRI7shHPL++PLuNUvGtdSpWqjwUQkrUj2/PfxKpsauPLYsmgKuFL8HY0jh6OGGsUCw/UucGgVEb7IXZQKNVQ6T3mnaEfIegPCoUaw+Sw9nlPRPbyOwsVdLyxRw9yFBHFPZqYZvSwnreg+tLGvMyeizrSLeXlOs66brp4C4ql7QbVeHJDwgmS5p4yEnvYIXsjtmeCQN+hNjGdQqPfP9BLdaHeKjtWQucVRWWvgC2YoA+Geflp+q5KAqjHtkO7xDlvfP+l5xPSfbKeEfz4KHuDk8llZxcx7nPaEDK62FAyMqDK62JRCgztEZvOTUbnnP0qv+cnzcv1Oobfd0rqpqQJLbsozsHsN07i96HSX9iBdrOfgIColn2M9anoMmEnCQGvxD7d+IHDonCJwOjX+Txu1wCH2rIC6fHfLA52DrbSJbRov957NWZzCqzsVUB1FppEOukS0C0IGm5VltZJs+JU/cSa7XDYV99Mj7HoTe66SZbVWHhw9Nr3mjc2ciSHnnfAdbEgNLiXUhWPTjD29Rx3hsGrOh5SSOGAWH/ebDZw35D0yzuTLmtqguv0oWB+CI5Jo8edJgS9+DIZuNlfKXhPrvpexzOC7NhNAWNwbox9qkgot0I8dWKJ0MaO2SX/WBU/dGHp4HyZmE/IxpK3hp66tO7vnj7ScFOmnO5/g+RXWth
+eJxtkMFOwzAMhu99ipBTeyB+gFVIDO3AAQkNXmBKDERq6srxoBPi3TF0o6nozfnyxf6dmAZiMZ/mSTh6eaCA5su8MCVjGQ9e7KaKF8crEdwTydK5DpTAdxH7QrcOYh9wdD7nmd4Ow/mlA62d5LGc8PyGCR+Z3mNA/hviwJMavfbP0B1OdBSQ0ixbbJk+MvJepaLFlJN/YWlrhpVxSu+oFxzlHLCaV68D+WPSKO4VZdfhT7k93Yfast7a5qpxjLo415Ux7fytN3pUsNhwYkoXoS9UeRFvphM3UHiwIraw0rWFfwFaKEM2m+obVpKuUQ==
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/main.tsx
-### METADATA:
-{
-  "size": 442,
-  "modified": 1746054814.9022837,
-  "created": 1746054814.9022837,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
-  "is_binary": false,
-  "compressed": true,
-  "encoding": "utf-8",
-  "checksum": "eb5260843a9410696964689b03b8236e0fbdecf1ac20a166b3311b99a22f5787"
-}
-### CONTENT:
-eJxtkMFOwzAMhu95ipBTeyB+gFVITOLAAQltvMCUGIjU1JXjsU2Id8dlbE0FN+fP59+/nfJILPbTboVTkCeKaL/sK1O2jnEXxK1MujBBFcENkSyZ20gZQp9wqHDnIQ0Rjz6UMqv34/jb6UFrL+VYT3h5x4zPTB8pIl+HeAikxKD+BfrdifYCUpO1xZrpUJA3ClUW55z8I05xtcOYeZ8mUthn9fdvKA89TuX69Bgbx/rr2pvWM+o23Bhru/lWd/pUYRH7rKm6SHJRVZ9uAFcK/sE6+OPYQT21XZlvJdySrQ==
-### END_FILE
-################################################################################
-
-################################################################################
-### FILE: eddi-chatbot-web/src/setupTests.ts
+### FILE: eddi-chatbot-web/src\setupTests.ts
 ### METADATA:
 {
   "size": 199,
-  "modified": 1743734661.4891713,
-  "created": 1743734661.4891713,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -956,14 +861,14 @@ eJx1zkEKwjAQheF9TvF2UaHmAN3oUWIy2hHTlMkoFfHuRmoQFy4Hvv8xnKYsCrtTKsrjqbvwQbzc3bne
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/test/setup.test.ts
+### FILE: eddi-chatbot-web/src\test\setup.test.ts
 ### METADATA:
 {
   "size": 1338,
-  "modified": 1744146831.606563,
-  "created": 1744146831.606563,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -975,14 +880,14 @@ eJytk8GO0zAQhu99irnZkbppTwhRlcMCEgc40Rfw2pONheMJtpMSVvvuOHHdNrvdghYOUaTR9/8z/u3R
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/test/setup.ts
+### FILE: eddi-chatbot-web/src\test\setup.ts
 ### METADATA:
 {
   "size": 613,
-  "modified": 1744146831.6066506,
-  "created": 1744146831.6066506,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -994,14 +899,14 @@ eJyNUstOwzAQvOcr9hZHStt7EYhLD0hUcOAHtvam3eJH2DipStV/x2lKKBIUTpbnsbMam10dJEJ+H6mJ
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/types/index.ts
+### FILE: eddi-chatbot-web/src\types\index.ts
 ### METADATA:
 {
   "size": 601,
-  "modified": 1747718461.0945346,
-  "created": 1747718461.0945346,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1747868834.101857,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -1013,14 +918,14 @@ eJyFkcFOwzAQRO/5ilXO/YKC6AEJceHSK0KRG2+Lke0Nu2vaCPrvOA4qSVXK0bPrN+MxHjpiBRcVeWta
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/src/vite-env.d.ts
+### FILE: eddi-chatbot-web/src\vite-env.d.ts
 ### METADATA:
 {
   "size": 38,
-  "modified": 1743734661.489471,
-  "created": 1743734661.489471,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1746061036.0,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -1032,14 +937,71 @@ eJzT19dXsClKTUstSs1LTlUoqSxILbZVKsssSdVPzslMzStRUtC34wIA9lQMbA==
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/tailwind.config.test.ts
+### FILE: eddi-chatbot-web\components.json
+### METADATA:
+{
+  "size": 441,
+  "modified": 1744744460.0,
+  "created": 1744744460.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
+  "is_binary": false,
+  "compressed": true,
+  "encoding": "utf-8",
+  "checksum": "33f89ecc8e5a3c2265a6bc35a9552c412fce57668a565aaeb783220d5aa2da61"
+}
+### CONTENT:
+eJxdkL1uwzAMhPc8hSF0bKU9U4GunbvTMl2zkSVDlJEYQd491I8Do5vvvuP5oPup69Qb2wlnUOdOTSktfDZmJc0TDNZrG2ZTuf7j4NV7vuC0Ocx5j9ePLcRLtSNbMUdwjEUnvolOcW0SyF3JD+LdRYtjgx/pNxftTFdLJy6VOcOcAxytEY43nY3GemD8Ci7EknCQ8HD1A5Ggd8iHDUKWiCPlXUqJ8SjLwJE08XHYvASPPpV/f5qDbjVrItego95UuTP6fyUPukNJv852bwrh0srq52sZyXt8Ux8hbpm71dKA6vR4AtYTfw0=
+### END_FILE
+################################################################################
+
+################################################################################
+### FILE: eddi-chatbot-web\eslint.config.js
+### METADATA:
+{
+  "size": 734,
+  "modified": 1744744460.0,
+  "created": 1744744460.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
+  "is_binary": false,
+  "compressed": true,
+  "encoding": "utf-8",
+  "checksum": "dc00c7db700d03834d04a172ea709593ae5ef1bc750eb55dfc521a60d9e1baa0"
+}
+### CONTENT:
+eJx9UT1vgzAQ3fkVt7mNjBNlZKpUVepWqUOXKIMDB3FibGQfSqIo/70GQwJV1AGw733c8U7VjXUEBw+lszWwN/RaGVoePEtUxCptd1KPhOF2Rx3KnD6tPY6EaJA2uq2USXs43Xf4XPKNpUO//0fkIuMuIx9Zg4QuDfrcqYbSWGdJgueeWWApW/1QiNyaUlUvCcAVVGVs8M1gwwrliW3hxjsgPAB4JjRFBx78oPLCYW7rOtSx4CCE+GM7I2x571MqHVssFsuFuJLn5M83NqBamqqVFX41pKwJvNg8tM9r+YPOh2oG69V6xQdgSD0bD2Ln7Mmji/gtfmJ6Ezs2TT+brIrPCWPS2Ww1M2/X9j80OocUHm7PchC94HmfpTX6ksZdpUHRWIOGugk3Az8oTtIZxu/3K0it7ek9xEXS0EcvzoBci+OIANvJyOH1mvwCQyntyg==
+### END_FILE
+################################################################################
+
+################################################################################
+### FILE: eddi-chatbot-web\package.json
+### METADATA:
+{
+  "size": 2019,
+  "modified": 1746484916.2482693,
+  "created": 1746061036.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
+  "is_binary": false,
+  "compressed": true,
+  "encoding": "utf-8",
+  "checksum": "eb8467fe51f466b9f25d5eee39d8a725cfcd4cb38e0f51b8a99265bb76c4af1d"
+}
+### CONTENT:
+eJyNVcFu4jAQvfcrIg49rR0CgUKlSj2s9idWW8kkQzANdmQ7AVTtfvuOHTtxulCtKlXJvJcZz7w35uMhSWaCnWD2nMyKAzM7acgZdrNvFmgU75ixmFEtuFAHSnMpLH1O8a8nmmvjMpxk2dbQx3SheGM0hj/wFQMldJbTcdMzMLRreV3aoNFFQnbJ42Ni4aSPe1LNhbEc0PYpoSHeKOg4nEPOJLx72IA2AdMmUa1ICCkkNsAqiEnPQ/AeGx8VNFIZUC81BvFdtqZpzQ9ewwtNAy+1oKdSLvZyWob/V4GjluJugfBALStk14Yp16qQJSQaFHKQMEP0t5OihAZECaLgEOnxqljJL6TlqQJWGFJyVsvK5nnLaEbXIf2rYbw+c1EWWqdF7bp4y5GxuMlw+v5DKWqmNemY4kwUQFhrDlJxc3XMOX2i2cjUFxdd4PdjVJ5QXx28hyfcePPZ/tCkZC/0UHZA4OK+csAqBvYKTa/ISZoh44Jux/MeJfYUjrGgy8GMbcFLIG5i/uyr+XLMOwLZNq7nRyxPdzGFioNy8BNdjRVjdEgwYYTpE+yod/HbMs5vzoQJfrJDKvwsUBm6GeST74al9h/RvBJckDMvKzC+0nI+loqoY6drlG9+g2FFJkft02T2togs2X2/7cp+zVP/HUoSTffV7g4XFan5TjF1TY/4PgxlTdfRST9TI2WQ9kXOFjeIQAfCs3NMm41svOq0q9u7Y4tKZPkn2C5iD6N78riWg++ZJIanXhnr2/U66rSp2wqFGjPl2FM+YWkzXBek21jSMs6E6khcjj2/eNehQDldDHivww0ReoDEJyAHKd/Dli2+pmJJXMmDXx7c1m1gV7XcsVoHjeZjnqMO01hM4o3UJlh6c2slAji5i9yU3a+Txf6s8Cq5gZFoAEjYjlWHG26Nva7iqDfFZM4H1jTXoGb2hB2vxzUYPvLuB9FxJcXJm6/vO1zzYNrG/iDYln66GEZpqlWROrUdgRp38SfJL1vk4ffDX0I9Kk4=
+### END_FILE
+################################################################################
+
+################################################################################
+### FILE: eddi-chatbot-web\tailwind.config.test.ts
 ### METADATA:
 {
   "size": 1322,
-  "modified": 1744146831.6068149,
-  "created": 1744146831.6068149,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1744744460.0,
+  "created": 1744744460.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -1051,14 +1013,14 @@ eJyNlMFy2jAQhu88hXqyYYzpnZJMm9AH6OTGcBD2GpTYkrsrJzAM796VJdcmeGgPtkbSv7v/fpKtqtqg
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/tailwind.config.ts
+### FILE: eddi-chatbot-web\tailwind.config.ts
 ### METADATA:
 {
   "size": 805,
-  "modified": 1744146831.6068683,
-  "created": 1744146831.6068683,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1744744460.0,
+  "created": 1744744460.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -1070,14 +1032,14 @@ eJyNkj1PwzAQhvf8ilMmqPKxt2JAQCfYYEIMbnxp3cZxZDuQKsp/5+wkTVoBJUNs3z33vif70hQsE8WX
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/tsconfig.app.json
+### FILE: eddi-chatbot-web\tsconfig.app.json
 ### METADATA:
 {
   "size": 748,
-  "modified": 1744146831.6069658,
-  "created": 1744146831.6069658,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1744744460.0,
+  "created": 1744744460.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -1089,14 +1051,14 @@ eJxtUslOwzAQvecrohwrSBBHToguUqWyiMIJVcixJ82AY0eeiaiE+HfGWYACp5Fne2/e83uSppn2TYsW
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/tsconfig.json
+### FILE: eddi-chatbot-web\tsconfig.json
 ### METADATA:
 {
   "size": 217,
-  "modified": 1744146831.6070614,
-  "created": 1744146831.6070614,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1744744460.0,
+  "created": 1744744460.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -1108,14 +1070,14 @@ eJx9jrEOQiEMRXe+ouloXni7k3/g5GTegFgU8wRS2Aj/boFBJ5M2aW9vzm1VAFLo/E4Zj3Ddlr4yOWIK
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/tsconfig.node.json
+### FILE: eddi-chatbot-web\tsconfig.node.json
 ### METADATA:
 {
   "size": 593,
-  "modified": 1743734661.489885,
-  "created": 1743734661.489885,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "modified": 1744744460.0,
+  "created": 1744744460.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
@@ -1127,40 +1089,40 @@ eJxtUctuwjAQvOcrohwRSip66xEKEhJ9qLSnClWJvUlWOHZkrwsS4t+7xklVRK8zszM7u6ckTTNhuh4V
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/vite.config.ts
+### FILE: eddi-chatbot-web\vite.config.ts
 ### METADATA:
 {
-  "size": 512,
-  "modified": 1746037436.2515657,
-  "created": 1746037436.2515657,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 526,
+  "modified": 1746069762.490833,
+  "created": 1744744460.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "01b309d65c4a2d95e5fbfb4be85a6905ddde356445c2ec380ff3458d00ac3af1"
+  "checksum": "d19e124f548011aad795d9b1bd1ef6dd0153fba1fb26cd39483cff2c4f3b799e"
 }
 ### CONTENT:
-eJxVkMtugzAQRfd8xcgrkGiI1B3ZREr3+YCqilwYwrR+yR7TVlH+vcEQARs/7j0zd2zSznqGG7TYkcGTNR1d4Q6dtxrEQIzikNEEeZQNz85xtL5C5VS8knlJ1kKyJPVDpm1CePIrqdq2dZL7mRqPDyPD3+Q8ZpJR8Wa2/JYBTKmhhvcUnBflOjIvPsoH9BlJtTWMPICN/Ea+BtFSYFEmDbXjv/NssI84ycFG36CWbi16q1R0Z8dkx9ypaWrrIi93AC1NlOrUR/M9cvdyduZD2tIS0A/on6Xje2t43e/3E9fbwEt+KvAYrBrwWSEVydUk4ijq9JW7mcsvl5a8kRpLELsq+EYU2xnuxSH7B/a0ncg=
+eJxVkMFugzAMhu88hZUTSKwg7UYvlbp7H2Caqgzc4i0kUeKwTVXffSRQFS6J7e+3/Sc0WOMYbtDhhTQejb7QFe5wcWYAMRKj2Gc0ixzKlhdyiOjLV1aFK+mXhJ5KlqR+SHet9w/9qlRtx1rJ/aKK4QQy/E1k8iSD4o23/JYBzFt9A+9pcV6U65V58VFOok/psQGxq0TKAqmugdgNYAK/kZtgR54TBsDB8t9pAewCzmVvgmtxkHZddEapYE+WyUQX89A01gZ+5gCD1EGqYx/0d9Tdy4UsQbrS4dGN6B6t8fUNvNZ1Pet64/m5PzU49EaN+OiQiuTKiTiIJn3sbtHl53NHTssBy/gl3rWi2Hq4F/vsH8UooNQ=
 ### END_FILE
 ################################################################################
 
 ################################################################################
-### FILE: eddi-chatbot-web/vitest.config.ts
+### FILE: eddi-chatbot-web\vitest.config.ts
 ### METADATA:
 {
-  "size": 289,
-  "modified": 1744146831.6072464,
-  "created": 1744146831.6072464,
-  "permissions": "-rw-r--r--",
-  "mode": 33188,
+  "size": 552,
+  "modified": 1744749441.8333366,
+  "created": 1744744460.0,
+  "permissions": "-rw-rw-rw-",
+  "mode": 33206,
   "is_binary": false,
   "compressed": true,
   "encoding": "utf-8",
-  "checksum": "e595d14d9a915f051601e8475d83d053c08da5e49b3cb8d2cb25f1d9c0ff42bd"
+  "checksum": "02b480e90fb4764cdf0d81e9e0c6f251f219e929ad3e63c31921f9cdcbc386b3"
 }
 ### CONTENT:
-eJxVjssKwjAQRff9itmNgrT7diMIfoE7kRLbqY7kUTJpEaT/bpLWhZswufdwZtiMzgf4QE8DWzo5O/ADFhi8M4AzB5JQdTnFpuCVHlV4bkQaY1HQOzfRoiYd/my7TwGQPDWkCeCh3V1pqSH4iQ45Ijuzd9aQjRS+pHcG10YoTOOZNUX+imUlvqtydolGKYPgLYFLejyJ0zP99ijNSn4fADxinU8vN27Xtj17qwwdYDXjfl26bMpl33wBuTha7g==
+eJxdkcFqhDAQhu8+xdxmdxG9FvdSKPQJ9raUJdXRpsREklEE8d2bRF3rXpIw/58vM39k2xnLMEFFtdT0YXQtG5ihtqYFHCST47yMVbwmcnF3gn9WRzh6IaExKp4iesUH2mlKAAKngHACaJT5FsoVwLanNJZID9Ia3ZL2Lvx1lWlxURxx331KRd5/xyx3tsxj7eaJLmOHX4uxNANZ0dD2CkBnzSArsp44vK04AKlL1VcUaIF1ueSXbGKXshvnjeUbGjfXWgDY7WGY/U56dMTEgu1VOHb9Ii5JZ0vS//VnR5ZCwmGaOzKNjCmg8kNvPc9hi4slZ9TwDEIoKdyeCr5jEX8wW32nx6OSVouWPDEGjOcjcj5f/wC+DqF9
 ### END_FILE
 ################################################################################
 
