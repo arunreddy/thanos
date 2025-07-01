@@ -1,0 +1,67 @@
+{
+    "metadata": {
+        "query": "SELECT first_name, last_name, email FROM employees WHERE department_id = 1;",
+        "timestamp": "c9522313-3271-4f39-9bbf-ef93a42018c2",
+        "connection_endpoint": "sample-employee-postgres:5432"
+    },
+    "execution_plan": {
+        "json": [
+            {
+                "Plan": {
+                    "Node Type": "Seq Scan",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Relation Name": "employees",
+                    "Schema": "public",
+                    "Alias": "employees",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 1.5,
+                    "Plan Rows": 14,
+                    "Plan Width": 37,
+                    "Actual Startup Time": 0.344,
+                    "Actual Total Time": 0.348,
+                    "Actual Rows": 14,
+                    "Actual Loops": 1,
+                    "Output": [
+                        "first_name",
+                        "last_name",
+                        "email"
+                    ],
+                    "Filter": "(employees.department_id = 1)",
+                    "Rows Removed by Filter": 26,
+                    "Shared Hit Blocks": 0,
+                    "Shared Read Blocks": 1,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                },
+                "Planning": {
+                    "Shared Hit Blocks": 167,
+                    "Shared Read Blocks": 1,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                },
+                "Planning Time": 0.626,
+                "Triggers": [],
+                "Execution Time": 0.384
+            }
+        ],
+        "text": "Seq Scan on public.employees  (cost=0.00..1.50 rows=14 width=37) (actual time=0.007..0.010 rows=14 loops=1)\n  Output: first_name, last_name, email\n  Filter: (employees.department_id = 1)\n  Rows Removed by Filter: 26\n  Buffers: shared hit=1\nPlanning Time: 0.035 ms\nExecution Time: 0.015 ms"
+    },
+    "analyzed": true,
+    "cost": 1.5,
+    "rows": 14,
+    "execution_time": 0.384,
+    "planning_time": 0.626
+}

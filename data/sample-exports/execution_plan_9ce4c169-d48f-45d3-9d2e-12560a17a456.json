@@ -1,0 +1,21 @@
+{
+    "metadata": {
+        "query": "db.employees.find({\"department_id\": 1});",
+        "timestamp": "f73f6cc4-46ab-4b5c-a105-8d347931b48d",
+        "connection_endpoint": "sample-employee-mongo:27017"
+    },
+    "execution_plan": {
+        "query": "db.employees.find({\"department_id\": 1});",
+        "collection": "employees",
+        "operation": "find({\"department_id\": 1});",
+        "stats": {
+            "collection_size": 6232,
+            "document_count": 17,
+            "avg_doc_size": 366,
+            "index_count": 11
+        }
+    },
+    "analyzed": true,
+    "database": "employee_sample",
+    "note": "MongoDB query analysis - collection statistics provided"
+}

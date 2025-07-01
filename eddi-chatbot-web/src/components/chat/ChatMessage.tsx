@@ -5,6 +5,58 @@ import { motion } from "framer-motion";
 import { CustomForm } from "@/types";
 import { useState } from "react";
 import { API_URL } from "@/lib/api";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { maskSensitiveInfo, containsSensitiveInfo } from "@/utils/maskSensitiveInfo";
+import { Copy, Check } from "lucide-react";
+
+// JSON formatting utility
+const formatJSON = (text: string): string => {
+  try {
+    const parsed = JSON.parse(text);
+    return JSON.stringify(parsed, null, 2);
+  } catch {
+    return text;
+  }
+};
+
+const isValidJSON = (text: string): boolean => {
+  try {
+    JSON.parse(text);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// Copy button component
+const CopyButton = ({ text }: { text: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="absolute top-2 right-2 p-1.5 rounded bg-muted/50 hover:bg-muted transition-colors opacity-0 group-hover:opacity-100"
+      title="Copy to clipboard"
+    >
+      {copied ? (
+        <Check className="w-3 h-3 text-green-600" />
+      ) : (
+        <Copy className="w-3 h-3 text-muted-foreground" />
+      )}
+    </button>
+  );
+};
 interface Button {
   title: string;
   payload: string;
@@ -28,6 +80,29 @@ export default function ChatMessage({
   onButtonClick,
 }: ChatMessageProps) {
   const isUser = role === "user";
+  const hasSensitiveInfo = containsSensitiveInfo(content);
+  
+  // Initialize showSensitive from session storage or default to false
+  const [showSensitive, setShowSensitive] = useState(() => {
+    if (!hasSensitiveInfo) return false;
+    try {
+      const stored = sessionStorage.getItem('showSensitiveInfo');
+      return stored === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  // Update session storage when preference changes
+  const toggleSensitive = () => {
+    const newValue = !showSensitive;
+    setShowSensitive(newValue);
+    try {
+      sessionStorage.setItem('showSensitiveInfo', newValue.toString());
+    } catch {
+      // Ignore storage errors
+    }
+  };
 
   // Animation variants
   const containerVariants = {
@@ -62,7 +137,7 @@ export default function ChatMessage({
     },
   };
 
-  const formatContent = (role:string, text: string) => {
+  const formatContent = (role: string, text: string) => {
     // Format the content to replace new lines with <br />
     var formattedText = text;
 
@@ -74,37 +149,48 @@ export default function ChatMessage({
     console.log("Formatted Text: ", formattedText);
 
     if (role == "assistant" && formattedText.includes("{")) {
-      const [_, json] = formattedText.split("{");
-      const jsonString = "{" + json;
-      const parsedJson = JSON.parse(jsonString);
-      // extract the value of the first key
-      const firstKey = Object.keys(parsedJson)[0];
-      const firstValue = parsedJson[firstKey];
-      formattedText = `${firstValue}`;
+      try {
+        const [_, json] = formattedText.split("{");
+        const jsonString = "{" + json;
+        const parsedJson = JSON.parse(jsonString);
+        // extract the value of the first key
+        const firstKey = Object.keys(parsedJson)[0];
+        const firstValue = parsedJson[firstKey];
+        formattedText = `${firstValue}`;
+      } catch (error) {
+        console.error("Failed to parse JSON from message content:", error);
+        // Keep the original formatted text if JSON parsing fails
+      }
     } 
 
-    // Replace a url with a clickable link
-    // const urlRegex = /(https?:\/\/[^\s]+)/g;
-    // formattedText = formattedText.replace(urlRegex, (url) => {
-    //   return `<a href="${url}" target="_blank" class="text-blue-500 hover:underline">${url}</a>`;
-    // });
-
-    // Replace markdown-like links [text](url) with clickable HTML links, allowing optional whitespace or newlines inside the URL
-    const markdownLinkRegex = /\[([^\]]+)\]\s*\((https?:\/\/[^\)]+)\)/g;
-    formattedText = formattedText.replace(markdownLinkRegex, (_, text, url) => {
-      const cleanedUrl = url.trim(); // Remove any leading or trailing whitespace/newlines
-      return `<a href="${cleanedUrl}" target="_blank" class="text-blue-500 hover:underline">${text}</a>`;
+    // Format JSON content for better readability
+    formattedText = formattedText.replace(/```json\n([\s\S]*?)\n```/g, (match, jsonContent) => {
+      if (isValidJSON(jsonContent.trim())) {
+        const formatted = formatJSON(jsonContent.trim());
+        return `\`\`\`json\n${formatted}\n\`\`\``;
+      }
+      return match;
     });
 
-    // Replace new lines with <br />
-    formattedText = formattedText.replace(/\n/g, "<br />");
-    // Replace multiple spaces with a single space
-    formattedText = formattedText.replace(/\s+/g, " ");
-    // Replace multiple new lines with a single new line
-    formattedText = formattedText.replace(/\n+/g, "\n");
+    // Also format standalone JSON blocks (without language specification)
+    formattedText = formattedText.replace(/```\n([\s\S]*?)\n```/g, (match, content) => {
+      const trimmed = content.trim();
+      if (isValidJSON(trimmed)) {
+        const formatted = formatJSON(trimmed);
+        return `\`\`\`json\n${formatted}\n\`\`\``;
+      }
+      return match;
+    });
+
+    // Apply sensitive information masking unless user explicitly wants to see it
+    if (hasSensitiveInfo && !showSensitive) {
+      formattedText = maskSensitiveInfo(formattedText);
+    }
+
+    // ReactMarkdown will handle markdown formatting, so we preserve the original formatting
+    // Don't replace whitespace as it's needed for markdown structure
 
     return formattedText;
-
   }
 
   // Ensure consistent animation by using a memo for the variants
@@ -141,10 +227,65 @@ export default function ChatMessage({
         }
       `}
       >
-        <div
-          className="whitespace-pre-wrap"
-          dangerouslySetInnerHTML={{ __html: formatContent(role, content) }}
-        ></div>
+        <div className="whitespace-pre-wrap prose prose-sm max-w-none dark:prose-invert">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              code: ({ node, inline, className, children, ...props }) => {
+                const match = /language-(\w+)/.exec(className || '');
+                const codeContent = String(children).replace(/\n$/, '');
+                
+                return !inline && match ? (
+                  <div className="relative group">
+                    <pre className="bg-muted p-3 rounded-lg overflow-x-auto border">
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    </pre>
+                    <CopyButton text={codeContent} />
+                  </div>
+                ) : (
+                  <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                    {children}
+                  </code>
+                );
+              },
+              a: ({ href, children }) => (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  {children}
+                </a>
+              ),
+            }}
+          >
+            {formatContent(role, content)}
+          </ReactMarkdown>
+        </div>
+
+        {hasSensitiveInfo && (
+          <motion.div
+            className="mt-3 flex items-center gap-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <button
+              onClick={toggleSensitive}
+              className="text-xs font-medium text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border hover:border-primary/50 hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              {showSensitive ? "🙈 Hide" : "👁️ Show"} sensitive info
+            </button>
+            {!showSensitive && (
+              <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-md border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                🛡️ Credentials masked for security
+              </span>
+            )}
+          </motion.div>
+        )}
 
         {buttons && buttons.length > 0 && (
           <motion.div
