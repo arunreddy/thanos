@@ -59,61 +59,6 @@ rules:
       - intent: restart
       - action: action_restart
 
-#  - rule: Analyze SQL queries on ask
-#    steps:
-#      - intent: analyze_query
-#      - action: utter_welcome_sql_query_analysis
-#      - action: slot_reset
-#      - action: utter_ask_db_environment
-#      - intent: provide_db_environment
-#      - action: validate_db_environment
-#      - action: utter_ask_db_host_endpoint
-#      - intent: provide_db_host_endpoint
-#      - action: validate_db_host_endpoint
-#      - action: utter_ask_db_type
-#      - intent: provide_db_type
-#      - action: utter_ask_query_output_format
-#      - intent: provide_output_format
-#      - action: utter_ask_sql_query
-#      - intent: provide_sql_query
-#      - action: action_validate_sql
-#      - action: action_analyze_query
-#      - action: utter_provide_execution_plan
-
-  # ─── query analyzer start ───
-  - rule: Initialize analyze query form
-    steps:
-      - intent: analyze_query
-      - action: analyze_query_form
-      - active_loop: analyze_query_form
-
-  # ─── query analyzer submit ───
-  - rule: Submit analyze query form
-    condition:
-      - active_loop: analyze_query_form
-      - slot_was_set:
-          - db_environment
-          - db_host_endpoint
-          - db_type
-          - output_format
-          - sql_query
-    steps:
-      - action: analyze_query_form
-      - active_loop: null
-      - action: action_analyze_query
-      - action: utter_provide_execution_plan
-      - intent: provide_db_host_endpoint
-      - action: validate_db_host_endpoint
-      - action: utter_ask_db_type
-      - intent: provide_db_type
-      - action: utter_ask_query_output_format
-      - intent: provide_output_format
-      - action: utter_ask_sql_query
-      - intent: provide_sql_query
-      - action: action_validate_sql
-      - action: action_analyze_query
-      - action: utter_provide_execution_plan
-
   - rule: Interrupt with help and resume flow
     condition:
       - active_loop: null
@@ -129,29 +74,29 @@ rules:
       - action: utter_help_website
 
 # ——— recommend database form ———
-#   - rule: Activate recommend database form
-#     steps:
-#       - intent: recommend_database
-#       - action: recommend_database_form
-#       - active_loop: recommend_database_form
+  # - rule: Activate recommend database form
+  #   steps:
+  #     - intent: recommend_database
+  #     - action: recommend_database_form
+  #     - active_loop: recommend_database_form
 
-#   - rule: Handle confirmation of database selection
-#     condition:
-#       - active_loop: null
-#     steps:
-#       - intent: confirm_database_selection
-#       - action: action_recommend_database_create_ticket
+  # - rule: Handle confirmation of database selection
+  #   condition:
+  #     - active_loop: null
+  #   steps:
+  #     - intent: confirm_database_selection
+  #     - action: action_recommend_database_create_ticket
 
-#   - rule: Submit select database form
-#     condition:
-#       - active_loop: recommend_database_form
-#       - slot_was_set:
-#           - downtime_tolerance
-#     steps:
-#       - action: recommend_database_form
-#       - active_loop: null
-#       - action: action_recommend_database
-#       - action: utter_database_selection_confirmation
+  # - rule: Submit select database form
+  #   condition:
+  #     - active_loop: recommend_database_form
+  #     - slot_was_set:
+  #         - downtime_tolerance
+  #   steps:
+  #     - action: recommend_database_form
+  #     - active_loop: null
+  #     - action: action_recommend_database
+  #     - action: utter_database_selection_confirmation
 
   # ——— recommend database form ———
   - rule: Activate recommend database form
@@ -330,6 +275,7 @@ rules:
       - intent: deny
       - action: utter_database_creation_cancelled  # or create your own “cancelled delete” utter
 
+
   # Schema Explorer Rules
   - rule: database support notice for exploring schema
     steps:
@@ -425,7 +371,7 @@ rules:
     condition:
       - active_loop: null
       - slot_was_set:
-          - connection_string
+          - connection_string  
           - sql_query
     steps:
       - intent: affirm
@@ -435,8 +381,67 @@ rules:
     condition:
       - active_loop: null
       - slot_was_set:
-          - connection_string
+          - connection_string 
           - sql_query
     steps:
       - intent: deny
       - action: utter_query_analysis_cancelled
+
+# ——— patch information flow ———
+  - rule: Activate patch information flow
+    steps:
+      - intent: get_patch_information
+      - action: action_ask_hostname
+      - action: action_listen
+
+  - rule: Handle hostname provided directly
+    steps:
+      - intent: inform_hostname
+      - action: action_confirm_hostname
+      - action: action_listen
+
+  - rule: Handle hostname confirmation
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - action: action_confirm_hostname
+      - action: action_listen
+
+  - rule: Handle affirm for patch information
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - intent: affirm
+      - action: action_get_patch_information
+
+  - rule: Handle deny for patch information (reset hostname)
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - intent: deny
+      - action: action_reset_patch_form
+      - action: action_ask_hostname
+      - action: action_listen
+
+  - rule: Handle help during patch flow
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - hostname
+    steps:
+      - intent: help
+      - action: action_back_to_main_menu
+      - action: utter_help
+      - action: action_listen
+
+  - rule: Handle help during patch flow (no hostname set)
+    steps:
+      - intent: help
+      - action: utter_help
+      - action: action_listen

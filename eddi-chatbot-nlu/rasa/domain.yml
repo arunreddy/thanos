@@ -23,6 +23,8 @@ intents:
   - analyze_query
   - affirm_query_analyzer
   - inform
+  - get_patch_information
+  - inform_hostname
 
 entities:
   - database_name
@@ -42,6 +44,7 @@ entities:
   - vendor_recommended_db
   - database_type
   - database_size_large
+  - hostname
 
 forms:
   recommend_database_form:
@@ -158,8 +161,6 @@ slots:
       - type: from_entity
         entity: vendor_recommended_db
 
-
-
   ticket_id:
     type: text
     influence_conversation: false
@@ -257,7 +258,7 @@ slots:
         conditions:
           - active_loop: explore_schema_form
             requested_slot: connection_string
-      # Add this new mapping for analyze_query_form
+      # new mapping for analyze_query_form
       - type: from_text
         conditions:
           - active_loop: analyze_query_form
@@ -298,17 +299,17 @@ slots:
     type: any
     influence_conversation: false
     mappings: []
-
+  
   filtered_objects:
     type: any
     influence_conversation: false
     mappings: []
-
+  
   object_definitions:
     type: any
     influence_conversation: false
     mappings: []
-
+  
   object_definitions_url:
     type: text
     influence_conversation: false
@@ -332,33 +333,20 @@ slots:
     influence_conversation: false
     mappings: []
 
-  db_type:
+  hostname:
     type: text
-    influence_conversation: true
     mappings:
       - type: from_entity
-        entity: db_type
+        entity: hostname
+      - type: from_text
+        conditions:
+          - active_loop: null
+            requested_slot: hostname
+        not_intent:
+          - affirm
+          - deny
+          - help
 
-  output_format:
-    type: text
-    influence_conversation: true
-    mappings:
-      - type: from_entity
-        entity: output_format
-
-  db_type:
-    type: text
-    influence_conversation: true
-    mappings:
-      - type: from_entity
-        entity: db_type
-
-  output_format:
-    type: text
-    influence_conversation: true
-    mappings:
-      - type: from_entity
-        entity: output_format
 
 responses:
   utter_greet:
@@ -486,7 +474,6 @@ responses:
   utter_ask_epic_link:
     - text: "Please provide the Epic/Initiative link."
 
-
   # — create-database form prompts —
   utter_ask_database_name:
     - text: "Could you please provide the name of the database."
@@ -545,51 +532,6 @@ responses:
   utter_oos:
     - text: "I'm sorry, I don't understand that request or it's outside the scope of what I can do. I'm primarily designed to help with database-related tasks and activities. Try the help menu (Type '/help')"
 
-  # — analyze-query utterances —
-  utter_welcome_sql_query_analysis:
-    - text: "Welcome to the SQL query analysis tool. I'll help you analyze whatever queries you have! If you need assistance at any time, feel free to contact the DB Ops team at DL-EnterpriseDataServicesDatabaseAWS@Citizensbank.com."
-
-  utter_ask_db_environment:
-    - text: "First off, what's the database environment you're working within?"
-      buttons:
-        - title: "Dev (P2)"
-          payload: '/db_environment{{"db_environment": "Dev"}}'
-        - title: "QA (P1)"
-          payload: '/db_environment{{"db_environment": "QA"}}'
-        - title: "Prod (P0)"
-          payload: '/db_environment{{"db_environment": "Prod"}}'
-
-  utter_ask_db_host_endpoint:
-    - text: "Next, what is your database host endpoint?"
-
-  utter_invalid_db_host_endpoint:
-    - text: "Sorry, the database host endpoint format provided is invalid. Please re-enter a valid endpoint that follows the format [cfg-shared-p-2-abc-application-us-east-1-dev-standalone-postgres.letterstring.us-east-1.rds.amazonaws.com:9999]."
-
-  utter_ask_query_output_format:
-    - text: "Alright, how would you like the analysis to be output?"
-      buttons:
-        - title: "JSON"
-          payload: '/output_format{{"output_format": "JSON"}}'
-        - title: "Graphical"
-          payload: '/output_format{{"output_format": "Graphical"}}'
-
-
-
-  utter_ask_sql_query:
-    - text: "OK, now please provide the SQL query you would like to analyze. Include the full query, including any JOINs or WHERE clauses."
-
-  utter_invalid_sql:
-    - text: "I'm sorry, but the SQL syntax provided is invalid. Please re-enter a valid query."
-
-  utter_starting_analysis:
-    - text: "Alright, I'll start analyzing your query now. Please hold on for a moment."
-
-  utter_execution_plan:
-    - text: "Awesome, I was able to analyze your query and set up an execution plan! Here's the link to your plan:\n\n{formatted_plan}"
-
-  utter_failed_execution_plan:
-    - text: "I'm sorry, but I couldn't ultimately resolve your query. Please check the SQL syntax and try again."
-
   utter_database_selection_confirmation:
     - text: "Would you like to proceed with this recommendation?"
       buttons:
@@ -639,14 +581,14 @@ responses:
   utter_postgresql_support_schema:
     - text: |
         Which database type would you like to explore?  
-        We support **PostgreSQL** and **MySQL**.
+        We support **PostgreSQL**, **MySQL**, and **MongoDB**.
       buttons:
         - title: "PostgreSQL"
           payload: '/affirm_schema{{"database_type":"PostgreSQL"}}'
         - title: "MySQL"
           payload: '/affirm_schema{{"database_type":"MySQL"}}'
         - title: "MongoDB"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_schema{{"database_type":"MongoDB"}}'
         - title: "Oracle"
           payload: "/unsupported_db_type"
 
@@ -656,6 +598,7 @@ responses:
         
         **PostgreSQL:** `postgres://username:password@host:port/database_name`
         **MySQL:** `mysql://username:password@host:port/database_name`
+        **MongoDB:** `mongodb://username:password@host:port/database_name`
 
   utter_invalid_connection_string:
     - text: "That doesn’t look like a valid PostgreSQL connection string. Please try again in the correct format."
@@ -698,14 +641,14 @@ responses:
   utter_postgresql_support_query_analyzer:
     - text: |
         Which database type would you like to analyze?  
-        We support **PostgreSQL** and **MySQL**.
+        We support **PostgreSQL**, **MySQL**, and **MongoDB**.
       buttons:
         - title: "PostgreSQL"
           payload: '/affirm_query_analyzer{{"database_type":"PostgreSQL"}}'
         - title: "MySQL"
           payload: '/affirm_query_analyzer{{"database_type":"MySQL"}}'
         - title: "MongoDB"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_query_analyzer{{"database_type":"MongoDB"}}'
         - title: "SQL Server"
           payload: "/unsupported_db_type"
         - title: "DB2"
@@ -732,40 +675,47 @@ responses:
         - title: "Help"
           payload: "/help"
 
+#patch-information
+  utter_ask_hostname:
+    - text: "Please provide the hostname for which you want patch information."
+
+  utter_confirm_hostname:
+    - text: "I'll look up patch information for hostname: **{hostname}**. Is this correct?"
+      buttons:
+        - title: "Yes, proceed"
+          payload: "/affirm"
+        - title: "No, change hostname"
+          payload: "/deny"
+
+  utter_patch_information_not_found:
+    - text: "No patch information found for hostname: **{hostname}**"
+
+  utter_patch_information_error:
+    - text: "Sorry, I encountered an error while querying the patch database. Please try again later."
+
+  utter_patch_information_success:
+    - text: "Here's the patch information for **{hostname}**:"
+
 actions:
-  - utter_greet
-  - utter_goodbye
-  - utter_welcome_database_selection
-  - utter_ask_app_type
-  - utter_ask_features
-  - utter_ask_relationship_needs
-  - utter_ask_downtime_tolerance
-  - utter_confirm_database_choice
-  - utter_request_submitted
-  - utter_welcome_sql_query_analysis
-  - utter_ask_db_environment
-  - utter_ask_db_host_endpoint
-  - utter_invalid_sql
-  - utter_invalid_db_host_endpoint
-  - utter_execution_plan
-  - utter_failed_execution_plan
-  - utter_ask_query_output_format
-  - utter_ask_sql_query
-  - utter_starting_analysis
   - action_recommend_database
   - action_recommend_database_create_ticket
   - action_submit_database
   - action_submit_delete_database
   - action_restart
   - validate_create_database_form
-  - validate_explore_schema_form
-  - action_fetch_available_objects
+  - validate_explore_schema_form     
+  - action_fetch_available_objects  
   - action_submit_schema_explore
   - action_fetch_object_definitions
   - utter_ask_for_schema_selection
   - validate_analyze_query_form
   - action_submit_query_analysis
   - validate_recommend_database_form
+  - action_ask_hostname
+  - action_confirm_hostname
+  - action_get_patch_information
+  - action_reset_patch_form
+  - action_back_to_main_menu
 
 session_config:
   session_expiration_time: 60

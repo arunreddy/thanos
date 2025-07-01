@@ -43,6 +43,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
         # connection-string patterns
         postgres_pattern = r"^postgres(?:ql)?://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
         mysql_pattern    = r"^mysql://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
+        mongodb_pattern = r"^mongodb://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
 
         # ── PostgreSQL ──────────────────────────────────────────────────────────
         if database_type.lower() == "postgresql":
@@ -134,6 +135,40 @@ class ValidateExploreSchemaForm(FormValidationAction):
                 "(separate multiple schemas with commas or spaces):"
             ))
             return {"connection_string": slot_value}
+
+        # ── MongoDB ──────────────────────────────────────────────────────────
+        elif database_type.lower() == "mongodb":
+            if not re.match(mongodb_pattern, slot_value, re.IGNORECASE):
+                dispatcher.utter_message(text=(
+                    "Invalid MongoDB connection string format. "
+                    "Please use: mongodb://username:password@host:port/database_name"
+                ))
+                return {"connection_string": None}
+
+            # test connection
+            try:
+                from pymongo import MongoClient
+                client = MongoClient(slot_value)
+                client.admin.command('ping')
+                client.close()
+            except ImportError:
+                dispatcher.utter_message(text=(
+                    "pymongo library required. Install with:\n"
+                    "pip install pymongo"
+                ))
+                return {"connection_string": None}
+            except Exception as e:
+                dispatcher.utter_message(text=f"Could not connect to MongoDB database: {e}")
+                return {"connection_string": None}
+
+            # For MongoDB, we'll work with the single database specified in connection string
+            parsed = urlparse(slot_value)
+            target_db = parsed.path.lstrip("/")
+            dispatcher.utter_message(text=f"✅ Selected database: **{target_db}**")
+            return {
+                "connection_string": slot_value,
+                "selected_schemas": [target_db]
+            }
 
         # ── Unsupported ─────────────────────────────────────────────────────────
         else:
@@ -246,6 +281,8 @@ class ValidateExploreSchemaForm(FormValidationAction):
             return self._fetch_postgresql_schemas(conn_str)
         elif database_type.lower() == "mysql":
             return self._fetch_mysql_schemas(conn_str)
+        elif database_type.lower() == "mongodb":
+            return self._fetch_mongodb_schemas(conn_str)
         else:
             print(f"DEBUG: Unsupported database type: {database_type}")
             return []
@@ -304,6 +341,17 @@ class ValidateExploreSchemaForm(FormValidationAction):
         except ImportError:
             raise Exception("mysql-connector-python library required")
 
+    def _fetch_mongodb_schemas(self, conn_str: str) -> List[str]:
+        """Fetch MongoDB database name."""
+        try:
+            from pymongo import MongoClient
+            parsed = urlparse(conn_str)
+            target_db = parsed.path.lstrip("/")
+            return [target_db]
+        except ImportError:
+            raise Exception("pymongo library required for MongoDB")
+
+
     def validate_object_types(
         self,
         slot_value: Any,
@@ -319,7 +367,8 @@ class ValidateExploreSchemaForm(FormValidationAction):
         # Define valid object types for each database
         valid_objects = {
             "postgresql": {"tables", "views", "functions", "sequences", "indexes", "constraints", "triggers", "materialized_views", "procedures", "schemas"},
-            "mysql": {"tables", "views", "functions", "procedures", "triggers", "indexes", "constraints"}
+            "mysql": {"tables", "views", "functions", "procedures", "triggers", "indexes", "constraints"},
+            "mongodb": {"collections", "indexes", "views"}
         }
         
         if not database_type or database_type.lower() not in valid_objects:
@@ -410,6 +459,9 @@ class ActionSubmitSchemaExplore(Action):
                 elif database_type.lower() == "mysql":
                     parsed = urlparse(conn_str)
                     host_port = f"{parsed.hostname}:{parsed.port}"
+                elif database_type.lower() == "mongodb":
+                    parsed = urlparse(conn_str)
+                    host_port = f"{parsed.hostname}:{parsed.port}"
             except Exception:
                 host_port = "unknown"
                 
@@ -431,6 +483,8 @@ class ActionSubmitSchemaExplore(Action):
                 schema_data["objects"] = self._fetch_postgresql_objects(conn_str, object_types, selected_schemas)
             elif database_type.lower() == "mysql":
                 schema_data["objects"] = self._fetch_mysql_objects(conn_str, object_types, selected_schemas)
+            elif database_type.lower() == "mongodb":
+                schema_data["objects"] = self._fetch_mongodb_objects(conn_str, object_types, selected_schemas)
             else:
                 dispatcher.utter_message(text="Unsupported database type.")
                 return events
@@ -599,6 +653,49 @@ class ActionSubmitSchemaExplore(Action):
             
         return objects
 
+    def _fetch_mongodb_objects(self, conn_str: str, object_types: List[str], selected_schemas: List[str]) -> Dict[str, List[str]]:
+        """Fetch MongoDB objects from selected database."""
+        try:
+            from pymongo import MongoClient
+        except ImportError:
+            raise Exception("pymongo library required for MongoDB")
+            
+        client = MongoClient(conn_str)
+        parsed = urlparse(conn_str)
+        db_name = parsed.path.lstrip("/")
+        db = client[db_name]
+        
+        objects = {}
+        
+        try:
+            for obj in object_types:
+                if obj == "collections":
+                    collections = db.list_collection_names()
+                    objects["collections"] = [f"{db_name}.{col}" for col in collections]
+                
+                elif obj == "indexes":
+                    all_indexes = []
+                    for collection_name in db.list_collection_names():
+                        collection = db[collection_name]
+                        indexes = collection.list_indexes()
+                        for index in indexes:
+                            all_indexes.append(f"{db_name}.{collection_name}.{index['name']}")
+                    objects["indexes"] = all_indexes
+                
+                elif obj == "views":
+                    # MongoDB views are collections with viewOn property
+                    views = []
+                    for collection_name in db.list_collection_names():
+                        collection_info = db.get_collection(collection_name).options()
+                        if 'viewOn' in collection_info:
+                            views.append(f"{db_name}.{collection_name}")
+                    objects["views"] = views
+                    
+        finally:
+            client.close()
+            
+        return objects
+
 class ActionFetchAvailableObjects(Action):
     def name(self) -> Text:
         return "action_fetch_available_objects"
@@ -695,6 +792,8 @@ class ActionFetchObjectDefinitions(Action):
                 definitions["definitions"] = self._get_postgresql_definitions(conn_str, selected_objects, selected_schemas)
             elif database_type.lower() == "mysql":
                 definitions["definitions"] = self._get_mysql_definitions(conn_str, selected_objects, selected_schemas)
+            elif database_type.lower() == "mongodb":
+                definitions["definitions"] = self._get_mongodb_definitions(conn_str, selected_objects, selected_schemas)
             else:
                 dispatcher.utter_message(text="Unsupported database type for detailed definitions.")
                 return events
@@ -1390,3 +1489,108 @@ class ActionFetchObjectDefinitions(Action):
             conn.close()
             
         return definitions
+
+    def _get_mongodb_definitions(self, conn_str: str, selected_objects: Dict[str, List[str]], selected_schemas: List[str]) -> Dict[str, List[Dict]]:
+        """Get detailed MongoDB object definitions."""
+        try:
+            from pymongo import MongoClient
+        except ImportError:
+            raise Exception("pymongo library required for MongoDB")
+            
+        client = MongoClient(conn_str)
+        parsed = urlparse(conn_str)
+        db_name = parsed.path.lstrip("/")
+        db = client[db_name]
+        
+        definitions = {}
+        
+        try:
+            # Process collections
+            if "collections" in selected_objects and selected_objects["collections"]:
+                definitions["collections"] = []
+                for collection_name in selected_objects["collections"]:
+                    # Remove db prefix if present
+                    col_name = collection_name.split(".")[-1]
+                    collection = db[col_name]
+                    
+                    # Get sample document structure
+                    sample_doc = collection.find_one()
+                    schema_info = {}
+                    if sample_doc:
+                        schema_info = self._analyze_document_structure(sample_doc)
+                    
+                    definitions["collections"].append({
+                        "name": collection_name,
+                        "document_count": collection.count_documents({}),
+                        "sample_schema": schema_info,
+                    })
+            
+            # Process indexes
+            if "indexes" in selected_objects and selected_objects["indexes"]:
+                definitions["indexes"] = []
+                for index_name in selected_objects["indexes"]:
+                    parts = index_name.split(".")
+                    if len(parts) >= 3:
+                        col_name = parts[-2]
+                        idx_name = parts[-1]
+                        collection = db[col_name]
+                        
+                        # Find the specific index
+                        for index in collection.list_indexes():
+                            if index['name'] == idx_name:
+                                definitions["indexes"].append({
+                                    "name": index_name
+                                })
+                                break
+                        else:
+                            definitions["indexes"].append({
+                                "name": index_name
+                            })
+
+            # Process views
+            if "views" in selected_objects and selected_objects["views"]:
+                definitions["views"] = []
+                for view_name in selected_objects["views"]:
+                    parts = view_name.split(".")
+                    if len(parts) >= 2:
+                        col_name = parts[-1]
+                        collection = db[col_name]
+                        
+                        # Get view definition
+                        try:
+                            view_info = collection.options()
+                            definitions["views"].append({
+                                "name": view_name,
+                                "definition": f"View on {col_name}: {view_info}"
+                            })
+                        except Exception as e:
+                            definitions["views"].append({
+                                "name": view_name,
+                                "definition": f"-- View definition not available: {str(e)}"
+                            })
+                    else:
+                        definitions["views"].append({
+                            "name": view_name,
+                            "definition": "-- Invalid view name format"
+                        })
+            
+        finally:
+            client.close()
+            
+        return definitions
+
+    def _analyze_document_structure(self, doc: dict, max_depth: int = 2) -> dict:
+        """Analyze MongoDB document structure to show field types."""
+        if max_depth <= 0:
+            return {"...": "nested structure truncated"}
+        
+        schema = {}
+        for key, value in doc.items():
+            if isinstance(value, dict):
+                schema[key] = self._analyze_document_structure(value, max_depth - 1)
+            elif isinstance(value, list) and value:
+                schema[key] = f"Array of {type(value[0]).__name__}"
+            else:
+                schema[key] = type(value).__name__
+        
+        return schema
