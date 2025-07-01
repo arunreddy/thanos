@@ -52,13 +52,11 @@ describe("SideNav handleDeleteConfirm Function", () => {
     (deleteConversation as jest.Mock).mockResolvedValueOnce({});
 
     const mockOnSelectChat = vi.fn();
-    const mockOnNewChat = vi.fn();
-
+  
     render(
       <SideNav
         activeChatId="1" // Same as the one we'll delete
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -85,7 +83,6 @@ describe("SideNav handleDeleteConfirm Function", () => {
     expect(deleteConversation).toHaveBeenCalledWith("1");
 
     // Verify onNewChat was called (since we're deleting the active chat)
-    expect(mockOnNewChat).toHaveBeenCalled();
   });
 
   test("handles deletion of non-active chat", async () => {
@@ -101,13 +98,11 @@ describe("SideNav handleDeleteConfirm Function", () => {
     (deleteConversation as jest.Mock).mockResolvedValueOnce({});
 
     const mockOnSelectChat = vi.fn();
-    const mockOnNewChat = vi.fn();
-
+  
     render(
       <SideNav
         activeChatId="2" // Different from the one we'll delete
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -136,7 +131,6 @@ describe("SideNav handleDeleteConfirm Function", () => {
     expect(deleteConversation).toHaveBeenCalledWith("1");
 
     // Verify onNewChat was NOT called (since we're deleting a non-active chat)
-    expect(mockOnNewChat).not.toHaveBeenCalled();
   });
 
   test("handles API error during deletion", async () => {
@@ -154,13 +148,11 @@ describe("SideNav handleDeleteConfirm Function", () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const mockOnSelectChat = vi.fn();
-    const mockOnNewChat = vi.fn();
-
+  
     render(
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 

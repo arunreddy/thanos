@@ -1,0 +1,264 @@
+{
+    "conversation_id": "c6cd3212-44ee-44ba-8c7d-a27040c1a619",
+    "messages": [
+        {
+            "role": "user",
+            "content": "help",
+            "timestamp": "2025-07-01T03:42:45.686738",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "I can help you:\n• Recommend a database  \n• Create a new database  \n• Delete an existing database  \n• Explore database schema\n• Analyze SQL Queries\n\nWhat would you like to do?\n",
+            "buttons": [
+                {
+                    "title": "Recommend a Database",
+                    "payload": "/recommend_database"
+                },
+                {
+                    "title": "Create Database",
+                    "payload": "/create_database"
+                },
+                {
+                    "title": "Delete Database",
+                    "payload": "/delete_database"
+                },
+                {
+                    "title": "Schema Explorer",
+                    "payload": "/explore_schema"
+                },
+                {
+                    "title": "Query Analyzer",
+                    "payload": "/analyze_query"
+                }
+            ],
+            "custom": {},
+            "timestamp": "2025-07-01T03:42:45.686738"
+        },
+        {
+            "role": "user",
+            "content": "/explore_schema",
+            "timestamp": "2025-07-01T03:42:48.194151",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "Which database type would you like to explore?  \nWe support **PostgreSQL**, **MySQL**, and **MongoDB**.\n",
+            "buttons": [
+                {
+                    "title": "PostgreSQL",
+                    "payload": "/affirm_schema{\"database_type\":\"PostgreSQL\"}"
+                },
+                {
+                    "title": "MySQL",
+                    "payload": "/affirm_schema{\"database_type\":\"MySQL\"}"
+                },
+                {
+                    "title": "MongoDB",
+                    "payload": "/affirm_schema{\"database_type\":\"MongoDB\"}"
+                },
+                {
+                    "title": "Oracle",
+                    "payload": "/unsupported_db_type"
+                }
+            ],
+            "custom": {},
+            "timestamp": "2025-07-01T03:42:48.194151"
+        },
+        {
+            "role": "user",
+            "content": "/affirm_schema{\"database_type\":\"MongoDB\"}",
+            "timestamp": "2025-07-01T03:42:50.206175",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "Please provide the connection string in the appropriate format: **PostgreSQL:** `postgres://username:password@host:port/database_name`\n**MySQL:** `mysql://username:password@host:port/database_name`\n**MongoDB:** `mongodb://username:password@host:port/database_name`",
+            "buttons": [],
+            "custom": {},
+            "timestamp": "2025-07-01T03:42:50.206175"
+        },
+        {
+            "role": "user",
+            "content": "mongodb://mongo_admin:mongo_pass@sample-employee-mongo:27017/employee_sample?authSource=admin",
+            "timestamp": "2025-07-01T03:42:53.366330",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "✅ Selected database: **employee_sample** Which object types would you like to explore? (e.g., tables, views, functions, sequences)",
+            "buttons": [],
+            "custom": {},
+            "timestamp": "2025-07-01T03:42:53.366330"
+        },
+        {
+            "role": "user",
+            "content": "employee_sample",
+            "timestamp": "2025-07-01T03:43:01.427731",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "Please choose valid MongoDB object types: collections, indexes, views. Separate multiple types with spaces or commas. Which object types would you like to explore? (e.g., tables, views, functions, sequences)",
+            "buttons": [],
+            "custom": {},
+            "timestamp": "2025-07-01T03:43:01.427731"
+        },
+        {
+            "role": "user",
+            "content": "collections, indexes",
+            "timestamp": "2025-07-01T03:43:14.935048",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "You're about to explore schema for:\n- Database type: MongoDB  \n- Connection string: `mongodb://mongo_admin:mongo_pass@sample-employee-mongo:27017/employee_sample?authSource=admin`  \n- Selected schemas: `['employee_sample']`\n- Object types: `['collections', 'indexes']`  \n\nWould you like to proceed?\n",
+            "buttons": [
+                {
+                    "title": "Yes",
+                    "payload": "/affirm"
+                },
+                {
+                    "title": "No",
+                    "payload": "/deny"
+                }
+            ],
+            "custom": {},
+            "timestamp": "2025-07-01T03:43:14.935048"
+        },
+        {
+            "role": "user",
+            "content": "/affirm",
+            "timestamp": "2025-07-01T03:43:18.850930",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "Select the objects for which you want detailed definitions",
+            "buttons": [],
+            "custom": {
+                "text": "Select the objects for which you want detailed definitions:",
+                "form_type": "multiselect",
+                "objects": {
+                    "collections": [
+                        "employee_sample.employees",
+                        "employee_sample.departments",
+                        "employee_sample.positions",
+                        "employee_sample.projects"
+                    ],
+                    "indexes": [
+                        "employee_sample.employees._id_",
+                        "employee_sample.employees.employee_number_1",
+                        "employee_sample.employees.email_1",
+                        "employee_sample.employees.department.id_1",
+                        "employee_sample.employees.position.id_1",
+                        "employee_sample.employees.manager.id_1",
+                        "employee_sample.employees.hire_date_1",
+                        "employee_sample.employees.last_name_1_first_name_1",
+                        "employee_sample.employees.is_active_1",
+                        "employee_sample.employees.department.id_1_is_active_1",
+                        "employee_sample.employees.position.id_1_salary_1",
+                        "employee_sample.departments._id_",
+                        "employee_sample.departments.name_1",
+                        "employee_sample.departments.manager_id_1",
+                        "employee_sample.positions._id_",
+                        "employee_sample.positions.title_1",
+                        "employee_sample.positions.salary_min_1_salary_max_1",
+                        "employee_sample.projects._id_",
+                        "employee_sample.projects.name_1",
+                        "employee_sample.projects.status_1",
+                        "employee_sample.projects.start_date_1_end_date_1",
+                        "employee_sample.projects.team_members.employee_id_1"
+                    ]
+                }
+            },
+            "timestamp": "2025-07-01T03:43:18.850930"
+        },
+        {
+            "role": "user",
+            "content": "{\"objects\":{\"collections\":[\"employee_sample.employees\",\"employee_sample.departments\"],\"indexes\":[\"employee_sample.employees.position.id_1\",\"employee_sample.employees.last_name_1_first_name_1\",\"employee_sample.departments.manager_id_1\"]}}",
+            "timestamp": "2025-07-01T03:43:30.153104",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "Download file",
+            "buttons": [],
+            "custom": {
+                "text": "Please download the definitions from the link below",
+                "form_type": "download",
+                "file_name": "mongodb_definitions_8b7078e5.json",
+                "objects": {
+                    "database_type": "MongoDB",
+                    "database_host_endpoint": "sample-employee-mongo:27017",
+                    "definitions": {
+                        "collections": [
+                            {
+                                "name": "employee_sample.employees",
+                                "document_count": 17,
+                                "sample_schema": {
+                                    "_id": "int",
+                                    "employee_number": "str",
+                                    "first_name": "str",
+                                    "last_name": "str",
+                                    "email": "str",
+                                    "phone": "str",
+                                    "hire_date": "datetime",
+                                    "salary": "int",
+                                    "is_active": "bool",
+                                    "position": {
+                                        "id": "int",
+                                        "title": "str"
+                                    },
+                                    "department": {
+                                        "id": "int",
+                                        "name": "str"
+                                    },
+                                    "manager": "NoneType",
+                                    "created_at": "datetime",
+                                    "updated_at": "datetime"
+                                }
+                            },
+                            {
+                                "name": "employee_sample.departments",
+                                "document_count": 8,
+                                "sample_schema": {
+                                    "_id": "int",
+                                    "name": "str",
+                                    "description": "str",
+                                    "manager_id": "int",
+                                    "created_at": "datetime",
+                                    "updated_at": "datetime"
+                                }
+                            }
+                        ],
+                        "indexes": [
+                            {
+                                "name": "employee_sample.employees.position.id_1",
+                                "definition": "-- Index not found"
+                            },
+                            {
+                                "name": "employee_sample.employees.last_name_1_first_name_1",
+                                "keys": {
+                                    "last_name": 1,
+                                    "first_name": 1
+                                },
+                                "unique": false,
+                                "sparse": false
+                            },
+                            {
+                                "name": "employee_sample.departments.manager_id_1",
+                                "keys": {
+                                    "manager_id": 1
+                                },
+                                "unique": false,
+                                "sparse": false
+                            }
+                        ]
+                    }
+                }
+            },
+            "timestamp": "2025-07-01T03:43:30.153104"
+        }
+    ]
+}

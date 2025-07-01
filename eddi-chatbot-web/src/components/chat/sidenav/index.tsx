@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Plus, Trash2 } from "lucide-react";
 import { Link } from "react-router";
 
-import Button from "../../ui/button";
+import { Button } from "../../ui/button";
 import { deleteConversation, getConversations } from "../../../lib/api";
 import { Chat } from "../../../types";
 import { _checkIdExists } from "./test-helpers";

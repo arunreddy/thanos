@@ -8,7 +8,12 @@ import { API_URL } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { maskSensitiveInfo, containsSensitiveInfo } from "@/utils/maskSensitiveInfo";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, BarChart3, Database } from "lucide-react";
+import ExecutionPlanVisualization from "../ExecutionPlanVisualization";
+import SchemaDefinitionsVisualization from "../SchemaDefinitionsVisualization";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 // JSON formatting utility
 const formatJSON = (text: string): string => {
@@ -44,9 +49,11 @@ const CopyButton = ({ text }: { text: string }) => {
   };
 
   return (
-    <button
+    <Button
       onClick={handleCopy}
-      className="absolute top-2 right-2 p-1.5 rounded bg-muted/50 hover:bg-muted transition-colors opacity-0 group-hover:opacity-100"
+      size="icon"
+      variant="ghost"
+      className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 hover:bg-muted/50"
       title="Copy to clipboard"
     >
       {copied ? (
@@ -54,7 +61,7 @@ const CopyButton = ({ text }: { text: string }) => {
       ) : (
         <Copy className="w-3 h-3 text-muted-foreground" />
       )}
-    </button>
+    </Button>
   );
 };
 interface Button {
@@ -81,6 +88,16 @@ export default function ChatMessage({
 }: ChatMessageProps) {
   const isUser = role === "user";
   const hasSensitiveInfo = containsSensitiveInfo(content);
+  
+  // Check if this is an execution plan by looking for execution plan structure in objects
+  const isExecutionPlan = customForm?.objects && 
+    (customForm.objects.metadata || customForm.objects.execution_plan || 
+     (customForm.objects.analyzed !== undefined && customForm.objects.cost !== undefined));
+  
+  // Check if this is schema definitions by looking for definitions structure
+  const isSchemaDefinitions = customForm?.objects && 
+    customForm.objects.definitions && 
+    customForm.objects.database_type;
   
   // Initialize showSensitive from session storage or default to false
   const [showSensitive, setShowSensitive] = useState(() => {
@@ -139,7 +156,7 @@ export default function ChatMessage({
 
   const formatContent = (role: string, text: string) => {
     // Format the content to replace new lines with <br />
-    var formattedText = text;
+    let formattedText = text;
 
     // /inform_database_version{"database_version":"postgresql15"}
     if(text.startsWith("/")){
@@ -150,7 +167,7 @@ export default function ChatMessage({
 
     if (role == "assistant" && formattedText.includes("{")) {
       try {
-        const [_, json] = formattedText.split("{");
+        const [, json] = formattedText.split("{");
         const jsonString = "{" + json;
         const parsedJson = JSON.parse(jsonString);
         // extract the value of the first key
@@ -231,9 +248,10 @@ export default function ChatMessage({
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              code: ({ node, inline, className, children, ...props }) => {
+              code: ({ className, children, ...props }: React.ComponentProps<'code'> & { inline?: boolean }) => {
                 const match = /language-(\w+)/.exec(className || '');
                 const codeContent = String(children).replace(/\n$/, '');
+                const inline = props.inline;
                 
                 return !inline && match ? (
                   <div className="relative group">
@@ -273,16 +291,18 @@ export default function ChatMessage({
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <button
+            <Button
               onClick={toggleSensitive}
-              className="text-xs font-medium text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border hover:border-primary/50 hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/50"
+              variant="outline"
+              size="sm"
+              className="text-xs"
             >
               {showSensitive ? "🙈 Hide" : "👁️ Show"} sensitive info
-            </button>
+            </Button>
             {!showSensitive && (
-              <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-md border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+              <Badge variant="secondary" className="text-xs bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
                 🛡️ Credentials masked for security
-              </span>
+              </Badge>
             )}
           </motion.div>
         )}
@@ -305,14 +325,15 @@ export default function ChatMessage({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + index * 0.1 }}
               >
-                <button
-                  className="text-left hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded px-1 cursor-pointer"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-left justify-start h-auto p-1 font-normal"
                   onClick={() => onButtonClick && onButtonClick(button.payload)}
-                  role="button"
                   aria-label={button.title}
                 >
                   {index + 1}. {button.title}
-                </button>{" "}
+                </Button>{" "}
               </motion.div>
             ))}
           </motion.div>
@@ -320,19 +341,124 @@ export default function ChatMessage({
 
         {customForm && customForm.form_type === "multiselect" ? (
           <MultiSelectForm customForm={customForm} onButtonClick={onButtonClick} />
+        ) : customForm && customForm.form_type === "download" && isSchemaDefinitions ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="text-sm text-muted-foreground mb-3">
+              {customForm.text}
+            </div>
+            <div className="flex gap-3">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Database className="w-4 h-4" />
+                    📋 View Schema Definitions
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[98vw] w-full max-h-[98vh] overflow-hidden p-0">
+                  <div className="h-[98vh] overflow-y-auto">
+                    <SchemaDefinitionsVisualization
+                      data={customForm.objects as any}
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Button
+                variant="secondary"
+                className="gap-2"
+                asChild
+              >
+                <a
+                  href={`${API_URL}/download/${customForm.file_name}`}
+                  download={customForm.file_name}
+                  target="_blank"
+                >
+                  📥 Download JSON
+                </a>
+              </Button>
+            </div>
+          </motion.div>
+        ) : customForm && customForm.form_type === "download" && isExecutionPlan ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="text-sm text-muted-foreground mb-3">
+              {customForm.text}
+            </div>
+            <div className="flex gap-3">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    📊 View Execution Plan
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-6xl w-full max-h-[90vh] overflow-auto p-0">
+                  <ExecutionPlanVisualization
+                    data={customForm.objects as any}
+                  />
+                </DialogContent>
+              </Dialog>
+              <Button
+                variant="secondary"
+                className="gap-2"
+                asChild
+              >
+                <a
+                  href={`${API_URL}/download/${customForm.file_name}`}
+                  download={customForm.file_name}
+                  target="_blank"
+                >
+                  📥 Download JSON
+                </a>
+              </Button>
+            </div>
+          </motion.div>
         ) : customForm && customForm.form_type === "download" ? (
           <motion.div>
             <div className="text-sm text-muted-foreground mb-1">
               {customForm.text}
             </div>
-            <a
-              href={`${API_URL}/download/${customForm.file_name}`}
-              download={customForm.file_name}
-              className="inline-block mt-2 px-4 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90"
-              target="_blank"
+            <Button
+              className="mt-2"
+              asChild
             >
-              Download {customForm.file_name}
-            </a>
+              <a
+                href={`${API_URL}/download/${customForm.file_name}`}
+                download={customForm.file_name}
+                target="_blank"
+              >
+                Download {customForm.file_name}
+              </a>
+            </Button>
+          </motion.div>
+        ) : customForm && customForm.form_type === "execution_plan" ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="text-sm text-muted-foreground mb-2">
+              {customForm.text}
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="mt-2 gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  📊 View Execution Plan
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-6xl w-full max-h-[90vh] overflow-auto p-0">
+                <ExecutionPlanVisualization
+                  data={customForm.objects as any}
+                />
+              </DialogContent>
+            </Dialog>
           </motion.div>
         ) : customForm ? (
           <motion.div>
@@ -369,6 +495,7 @@ export default function ChatMessage({
           <User className="w-6 h-6 mt-2 text-muted-foreground" />
         </motion.div>
       )}
+
     </motion.div>
   );
 }
@@ -430,12 +557,12 @@ function MultiSelectForm({ customForm, onButtonClick }: { customForm: CustomForm
           </div>
         </div>
       ))}
-      <button
-        className="mt-2 px-4 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+      <Button
+        className="mt-2"
         onClick={handleSave}
       >
         Save
-      </button>
+      </Button>
     </motion.div>
   );
 }

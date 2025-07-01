@@ -230,9 +230,7 @@ class ActionSubmitQueryAnalysis(Action):
         database_type = tracker.get_slot("database_type")
         connection_string = tracker.get_slot("connection_string")
         sql_query = tracker.get_slot("sql_query")
-        
-        dispatcher.utter_message(text="Request in Progress... Please wait while we analyze your query.")
-        
+                
         try:
             # Analyze query based on database type
             if database_type.lower() == "postgresql":

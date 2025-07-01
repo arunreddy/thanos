@@ -1,0 +1,340 @@
+{
+    "conversation_id": "bb362e85-2af9-4370-819c-b878f5fdfb2a",
+    "messages": [
+        {
+            "role": "user",
+            "content": "help",
+            "timestamp": "2025-07-01T03:40:04.074566",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "Sorry, I'm having trouble processing your request.",
+            "buttons": [],
+            "custom": {},
+            "timestamp": "2025-07-01T03:40:04.074566"
+        },
+        {
+            "role": "user",
+            "content": "help",
+            "timestamp": "2025-07-01T03:40:25.998103",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "I can help you:\n• Recommend a database  \n• Create a new database  \n• Delete an existing database  \n• Explore database schema\n• Analyze SQL Queries\n\nWhat would you like to do?\n",
+            "buttons": [
+                {
+                    "title": "Recommend a Database",
+                    "payload": "/recommend_database"
+                },
+                {
+                    "title": "Create Database",
+                    "payload": "/create_database"
+                },
+                {
+                    "title": "Delete Database",
+                    "payload": "/delete_database"
+                },
+                {
+                    "title": "Schema Explorer",
+                    "payload": "/explore_schema"
+                },
+                {
+                    "title": "Query Analyzer",
+                    "payload": "/analyze_query"
+                }
+            ],
+            "custom": {},
+            "timestamp": "2025-07-01T03:40:25.998103"
+        },
+        {
+            "role": "user",
+            "content": "/explore_schema",
+            "timestamp": "2025-07-01T03:40:29.083430",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "Which database type would you like to explore?  \nWe support **PostgreSQL**, **MySQL**, and **MongoDB**.\n",
+            "buttons": [
+                {
+                    "title": "PostgreSQL",
+                    "payload": "/affirm_schema{\"database_type\":\"PostgreSQL\"}"
+                },
+                {
+                    "title": "MySQL",
+                    "payload": "/affirm_schema{\"database_type\":\"MySQL\"}"
+                },
+                {
+                    "title": "MongoDB",
+                    "payload": "/affirm_schema{\"database_type\":\"MongoDB\"}"
+                },
+                {
+                    "title": "Oracle",
+                    "payload": "/unsupported_db_type"
+                }
+            ],
+            "custom": {},
+            "timestamp": "2025-07-01T03:40:29.083430"
+        },
+        {
+            "role": "user",
+            "content": "/affirm_schema{\"database_type\":\"MySQL\"}",
+            "timestamp": "2025-07-01T03:40:32.275241",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "Please provide the connection string in the appropriate format: **PostgreSQL:** `postgres://username:password@host:port/database_name`\n**MySQL:** `mysql://username:password@host:port/database_name`\n**MongoDB:** `mongodb://username:password@host:port/database_name`",
+            "buttons": [],
+            "custom": {},
+            "timestamp": "2025-07-01T03:40:32.275241"
+        },
+        {
+            "role": "user",
+            "content": "mysql://employee_user:employee_pass@sample-employee-mysql:3306/employee_sample",
+            "timestamp": "2025-07-01T03:40:54.726010",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "**Available schemas in your MySQL database:** employee_sample Please select which schemas you want to explore (separate multiple schemas with commas or spaces): ",
+            "buttons": [],
+            "custom": {},
+            "timestamp": "2025-07-01T03:40:54.726010"
+        },
+        {
+            "role": "user",
+            "content": "employee_sample",
+            "timestamp": "2025-07-01T03:41:06.570017",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "Selected schemas: **employee_sample** Which object types would you like to explore? (e.g., tables, views, functions, sequences)",
+            "buttons": [],
+            "custom": {},
+            "timestamp": "2025-07-01T03:41:06.570017"
+        },
+        {
+            "role": "user",
+            "content": "tables, views",
+            "timestamp": "2025-07-01T03:41:17.493101",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "You're about to explore schema for:\n- Database type: MySQL  \n- Connection string: `mysql://employee_user:employee_pass@sample-employee-mysql:3306/employee_sample`  \n- Selected schemas: `['employee_sample']`\n- Object types: `['tables', 'views']`  \n\nWould you like to proceed?\n",
+            "buttons": [
+                {
+                    "title": "Yes",
+                    "payload": "/affirm"
+                },
+                {
+                    "title": "No",
+                    "payload": "/deny"
+                }
+            ],
+            "custom": {},
+            "timestamp": "2025-07-01T03:41:17.493101"
+        },
+        {
+            "role": "user",
+            "content": "/affirm",
+            "timestamp": "2025-07-01T03:41:21.688876",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "Select the objects for which you want detailed definitions",
+            "buttons": [],
+            "custom": {
+                "text": "Select the objects for which you want detailed definitions:",
+                "form_type": "multiselect",
+                "objects": {
+                    "tables": [
+                        "employee_sample.departments",
+                        "employee_sample.employee_projects",
+                        "employee_sample.employees",
+                        "employee_sample.positions",
+                        "employee_sample.projects"
+                    ],
+                    "views": [
+                        "employee_sample.employee_details"
+                    ]
+                }
+            },
+            "timestamp": "2025-07-01T03:41:21.688876"
+        },
+        {
+            "role": "user",
+            "content": "{\"objects\":{\"tables\":[\"employee_sample.departments\",\"employee_sample.projects\",\"employee_sample.positions\"],\"views\":[\"employee_sample.employee_details\"]}}",
+            "timestamp": "2025-07-01T03:41:26.974183",
+            "user_id": "anonymous"
+        },
+        {
+            "role": "assistant",
+            "content": "Download file",
+            "buttons": [],
+            "custom": {
+                "text": "Please download the definitions from the link below",
+                "form_type": "download",
+                "file_name": "mysql_definitions_38d675c1.json",
+                "objects": {
+                    "database_type": "MySQL",
+                    "database_host_endpoint": "sample-employee-mysql:3306",
+                    "definitions": {
+                        "tables": [
+                            {
+                                "name": "employee_sample.departments",
+                                "columns": [
+                                    {
+                                        "name": "id",
+                                        "type": "int",
+                                        "nullable": false,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "name",
+                                        "type": "varchar(100)",
+                                        "nullable": false,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "description",
+                                        "type": "text(65535)",
+                                        "nullable": true,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "manager_id",
+                                        "type": "int",
+                                        "nullable": true,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "created_at",
+                                        "type": "timestamp",
+                                        "nullable": true,
+                                        "default": "CURRENT_TIMESTAMP"
+                                    },
+                                    {
+                                        "name": "updated_at",
+                                        "type": "timestamp",
+                                        "nullable": true,
+                                        "default": "CURRENT_TIMESTAMP"
+                                    }
+                                ],
+                                "definition": "CREATE TABLE departments (id int NOT NULL PRIMARY KEY, name varchar(100) NOT NULL, description text(65535), manager_id int, created_at timestamp DEFAULT CURRENT_TIMESTAMP, updated_at timestamp DEFAULT CURRENT_TIMESTAMP);"
+                            },
+                            {
+                                "name": "employee_sample.projects",
+                                "columns": [
+                                    {
+                                        "name": "id",
+                                        "type": "int",
+                                        "nullable": false,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "name",
+                                        "type": "varchar(100)",
+                                        "nullable": false,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "description",
+                                        "type": "text(65535)",
+                                        "nullable": true,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "start_date",
+                                        "type": "date",
+                                        "nullable": true,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "end_date",
+                                        "type": "date",
+                                        "nullable": true,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "status",
+                                        "type": "varchar(20)",
+                                        "nullable": true,
+                                        "default": "active"
+                                    },
+                                    {
+                                        "name": "created_at",
+                                        "type": "timestamp",
+                                        "nullable": true,
+                                        "default": "CURRENT_TIMESTAMP"
+                                    }
+                                ],
+                                "definition": "CREATE TABLE projects (id int NOT NULL PRIMARY KEY, name varchar(100) NOT NULL, description text(65535), start_date date, end_date date, status varchar(20) DEFAULT active, created_at timestamp DEFAULT CURRENT_TIMESTAMP);"
+                            },
+                            {
+                                "name": "employee_sample.positions",
+                                "columns": [
+                                    {
+                                        "name": "id",
+                                        "type": "int",
+                                        "nullable": false,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "title",
+                                        "type": "varchar(100)",
+                                        "nullable": false,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "description",
+                                        "type": "text(65535)",
+                                        "nullable": true,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "salary_min",
+                                        "type": "decimal",
+                                        "nullable": true,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "salary_max",
+                                        "type": "decimal",
+                                        "nullable": true,
+                                        "default": null
+                                    },
+                                    {
+                                        "name": "created_at",
+                                        "type": "timestamp",
+                                        "nullable": true,
+                                        "default": "CURRENT_TIMESTAMP"
+                                    },
+                                    {
+                                        "name": "updated_at",
+                                        "type": "timestamp",
+                                        "nullable": true,
+                                        "default": "CURRENT_TIMESTAMP"
+                                    }
+                                ],
+                                "definition": "CREATE TABLE positions (id int NOT NULL PRIMARY KEY, title varchar(100) NOT NULL, description text(65535), salary_min decimal, salary_max decimal, created_at timestamp DEFAULT CURRENT_TIMESTAMP, updated_at timestamp DEFAULT CURRENT_TIMESTAMP);"
+                            }
+                        ],
+                        "views": [
+                            {
+                                "name": "employee_sample.employee_details",
+                                "definition": "CREATE VIEW employee_sample.employee_details AS select `e`.`id` AS `id`,`e`.`employee_number` AS `employee_number`,`e`.`first_name` AS `first_name`,`e`.`last_name` AS `last_name`,`e`.`email` AS `email`,`e`.`phone` AS `phone`,`e`.`hire_date` AS `hire_date`,`e`.`salary` AS `salary`,`p`.`title` AS `position_title`,`d`.`name` AS `department_name`,concat(`m`.`first_name`,' ',`m`.`last_name`) AS `manager_name`,`e`.`is_active` AS `is_active`,timestampdiff(YEAR,`e`.`hire_date`,curdate()) AS `years_of_service` from (((`employee_sample`.`employees` `e` left join `employee_sample`.`positions` `p` on((`e`.`position_id` = `p`.`id`))) left join `employee_sample`.`departments` `d` on((`e`.`department_id` = `d`.`id`))) left join `employee_sample`.`employees` `m` on((`e`.`manager_id` = `m`.`id`)))"
+                            }
+                        ]
+                    }
+                }
+            },
+            "timestamp": "2025-07-01T03:41:26.974183"
+        }
+    ]
+}

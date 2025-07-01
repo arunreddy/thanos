@@ -72,7 +72,6 @@ describe("ChatContent Component", () => {
       <ChatContent
         chatId={null}
         setActiveChatId={mockSetActiveChatId}
-        isNewChat={true}
       />
     );
 
@@ -100,7 +99,6 @@ describe("ChatContent Component", () => {
       <ChatContent
         chatId="123"
         setActiveChatId={mockSetActiveChatId}
-        isNewChat={false}
       />
     );
 
@@ -124,7 +122,6 @@ describe("ChatContent Component", () => {
       <ChatContent
         chatId="123"
         setActiveChatId={mockSetActiveChatId}
-        isNewChat={false}
       />
     );
 
@@ -160,7 +157,6 @@ describe("ChatContent Component", () => {
       <ChatContent
         chatId={null}
         setActiveChatId={mockSetActiveChatId}
-        isNewChat={true}
       />
     );
 
@@ -197,7 +193,6 @@ describe("ChatContent Component", () => {
       <ChatContent
         chatId="123"
         setActiveChatId={mockSetActiveChatId}
-        isNewChat={false}
       />
     );
 
@@ -250,7 +245,6 @@ describe("ChatContent Component", () => {
       <ChatContent
         chatId="123"
         setActiveChatId={mockSetActiveChatId}
-        isNewChat={false}
       />
     );
 
@@ -283,7 +277,6 @@ describe("ChatContent Component", () => {
       <ChatContent
         chatId="123"
         setActiveChatId={mockSetActiveChatId}
-        isNewChat={false}
       />
     );
 
@@ -316,7 +309,6 @@ describe("ChatContent Component", () => {
       <ChatContent
         chatId="123"
         setActiveChatId={mockSetActiveChatId}
-        isNewChat={false}
       />
     );
 
@@ -374,7 +366,6 @@ describe("ChatContent Component", () => {
       <ChatContent
         chatId="123"
         setActiveChatId={mockSetActiveChatId}
-        isNewChat={false}
       />
     );
 
