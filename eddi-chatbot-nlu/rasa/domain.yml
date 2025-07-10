@@ -25,6 +25,10 @@ intents:
   - inform
   - get_patch_information
   - inform_hostname
+  - create_column
+  - affirm_create_column
+  - drop_column
+  - affirm_drop_column
 
 entities:
   - database_name
@@ -83,6 +87,22 @@ forms:
     required_slots:
       - connection_string
       - sql_query
+
+#create-column
+  create_column_form:
+    required_slots:
+      - connection_string
+      - selected_table
+      - column_name
+      - column_type
+      - column_constraints
+
+#drop-column
+  drop_column_form:
+    required_slots:
+      - connection_string
+      - selected_table
+      - column_to_drop
 
 slots:
   app_architect:
@@ -263,6 +283,16 @@ slots:
         conditions:
           - active_loop: analyze_query_form
             requested_slot: connection_string
+      # NEW MAPPING for create_column_form
+      - type: from_text
+        conditions:
+          - active_loop: create_column_form
+            requested_slot: connection_string     
+      # NEW MAPPING for drop_column_form:
+      - type: from_text
+        conditions:
+          - active_loop: drop_column_form
+            requested_slot: connection_string
 
   object_types:
     type: list
@@ -347,6 +377,72 @@ slots:
           - deny
           - help
 
+# create-column
+  selected_table:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: create_column_form
+            requested_slot: selected_table
+      - type: from_text
+        conditions:
+          - active_loop: drop_column_form
+            requested_slot: selected_table
+
+  column_name:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: create_column_form
+            requested_slot: column_name
+
+  column_type:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: create_column_form
+            requested_slot: column_type
+
+  column_constraints:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: create_column_form
+            requested_slot: column_constraints
+
+  available_tables:
+    type: list
+    influence_conversation: false
+    mappings: []
+
+  alter_query:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+# drop-column
+  column_to_drop:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: drop_column_form
+            requested_slot: column_to_drop
+
+  drop_query:
+    type: text
+    influence_conversation: false
+    mappings: []
+
+  available_columns:
+    type: list
+    influence_conversation: false
+    mappings: []
+
 responses:
   utter_greet:
     - text: "Hello! How can I help you today?"
@@ -356,20 +452,16 @@ responses:
 
   utter_help:
     - text: |
-        ## 🤖 How can I help you today?
-        
-        I can assist you with:
-        
-        ### 📊 Database Operations
-        • **Recommend a database** - Get personalized database recommendations
-        • **Create a new database** - Provision new database instances  
-        • **Delete an existing database** - Safely delete databases
-        
-        ### 🔍 Analysis Tools
-        • **Explore database schema** - Browse and analyze database structures
-        • **Analyze SQL Queries** - Get performance insights and optimization tips
-        
-        **What would you like to do?**
+        I can help you:
+        • Recommend a database  
+        • Create a new database  
+        • Delete an existing database  
+        • Explore database schema
+        • Analyze SQL Queries
+        • Create a column in database
+        • Drop a column from database
+
+        What would you like to do?
       buttons:
         - title: "Recommend a Database"
           payload: "/recommend_database"
@@ -381,6 +473,10 @@ responses:
           payload: "/explore_schema"
         - title: "Query Analyzer"
           payload: "/analyze_query"
+        - title: "Create Column"
+          payload: "/create_column"
+        - title: "Drop Column"
+          payload: "/drop_column"
 
   utter_help_website:
     - text: |
@@ -390,6 +486,7 @@ responses:
         3. Decommission (delete) a database.
         4. Explore database schema.
         5. Analyze SQL query performance.
+        6. Create a new column in an existing table.
 
 
   utter_ask_app_architect:
@@ -780,6 +877,96 @@ responses:
   utter_patch_information_success:
     - text: "Here's the patch information for **{hostname}**:"
 
+#create-column
+  utter_postgresql_support_create_column:
+    - text: |
+        Which database type would you like to add a column to?  
+        We currently support only **PostgreSQL**.  
+        Other types will be available later.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm_create_column"
+        - title: "Redshift"
+          payload: "/undersupported_db_type"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+
+  utter_ask_selected_table:
+    - text: "Please select a table from the list below:"
+
+  utter_ask_column_name:
+    - text: "What would you like to name the new column?"
+
+  utter_ask_column_type:
+    - text: "What data type should this column be? (e.g., VARCHAR(255), INTEGER, BOOLEAN, TIMESTAMP)"
+
+  utter_ask_column_constraints:
+    - text: "Any constraints for this column? (e.g., NOT NULL, DEFAULT 'value', or type 'NONE' for no constraints)"
+
+  utter_ask_confirm_column_creation:
+    - text: |
+        Here's the ALTER TABLE query:
+        ```
+        {alter_query}
+        ```
+        Would you like to proceed?
+      buttons:
+        - title: "Yes, execute query"
+          payload: "/affirm"
+        - title: "No, cancel"
+          payload: "/deny"
+
+  utter_column_creation_cancelled:
+    - text: "Column creation has been cancelled. What would you like to do next?"
+      buttons:
+        - title: "Try again"
+          payload: "/create_column"
+        - title: "Help"
+          payload: "/help"
+
+#drop-column
+  utter_postgresql_support_drop_column:
+    - text: |
+        Which database type would you like to drop a column from?  
+        We currently support only **PostgreSQL**.  
+        Other types will be available later.
+      buttons:
+        - title: "PostgreSQL"
+          payload: "/affirm_drop_column"
+        - title: "Redshift"
+          payload: "/undersupported_db_type"
+        - title: "MySQL"
+          payload: "/unsupported_db_type"
+
+  utter_ask_column_to_drop:
+    - text: "Please select the column you want to drop from the list below:"
+
+  utter_ask_confirm_column_drop:
+    - text: |
+        ⚠️ **WARNING: This action cannot be undone!**
+        
+        You're about to drop this column:
+        ```
+        {drop_query}
+        ```
+        
+        **This will permanently delete the column and ALL its data.**
+        
+        Are you absolutely sure you want to proceed?
+      buttons:
+        - title: "Yes, DROP the column"
+          payload: "/affirm"
+        - title: "No, cancel"
+          payload: "/deny"
+
+  utter_column_drop_cancelled:
+    - text: "Column drop has been cancelled. What would you like to do next?"
+      buttons:
+        - title: "Try again"
+          payload: "/drop_column"
+        - title: "Help"
+          payload: "/help"
+
 actions:
   - action_recommend_database
   - action_recommend_database_create_ticket
@@ -800,6 +987,18 @@ actions:
   - action_get_patch_information
   - action_reset_patch_form
   - action_back_to_main_menu
+  - action_fetch_tables
+  - action_generate_alter_query
+  - action_execute_alter_query
+  - validate_create_column_form
+  - action_fetch_columns
+  - action_generate_drop_query
+  - action_execute_drop_query
+  - validate_drop_column_form
+  - action_fetch_tables_for_drop
+  - action_trigger_table_fetching_for_drop
+  - action_trigger_column_fetching
+  - action_request_table_selection
 
 session_config:
   session_expiration_time: 60

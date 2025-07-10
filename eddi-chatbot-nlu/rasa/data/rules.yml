@@ -445,3 +445,124 @@ rules:
       - intent: help
       - action: utter_help
       - action: action_listen
+
+# ——— create column flow ———
+  - rule: database support notice for creating column
+    steps:
+      - intent: create_column
+      - action: utter_postgresql_support_create_column
+      - action: action_listen
+
+  - rule: activate create column form after support affirmation
+    steps:
+      - intent: affirm_create_column  # Use specific intent instead of 'affirm'
+      - action: create_column_form
+      - active_loop: create_column_form
+
+  - rule: unsupported database type selected for create column
+    steps:
+      - intent: unsupported_db_type
+      - action: utter_working_on_features
+      - action: action_listen
+
+  - rule: submit create column form
+    condition:
+      - active_loop: create_column_form
+      - slot_was_set:
+          - column_constraints
+    steps:
+      - action: create_column_form
+      - active_loop: null
+      - action: action_generate_alter_query
+      - action: utter_ask_confirm_column_creation
+      - action: action_listen
+
+  - rule: handle affirm for column creation
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - connection_string
+          - selected_table
+          - column_name
+          - column_type
+          - alter_query
+    steps:
+      - intent: affirm
+      - action: action_execute_alter_query
+
+  - rule: handle deny for column creation
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - connection_string
+          - selected_table
+          - column_name
+          - column_type
+          - alter_query
+    steps:
+      - intent: deny
+      - action: utter_column_creation_cancelled
+
+
+# ——— drop column flow ———
+  - rule: database support notice for dropping column
+    steps:
+      - intent: drop_column
+      - action: utter_postgresql_support_drop_column
+      - action: action_listen
+
+  - rule: activate drop column form after support affirmation
+    steps:
+      - intent: affirm_drop_column
+      - action: drop_column_form
+      - active_loop: drop_column_form
+
+  - rule: unsupported database type selected for drop column
+    steps:
+      - intent: unsupported_db_type
+      - action: utter_working_on_features
+      - action: action_listen
+
+  - rule: submit drop column form
+    condition:
+      - active_loop: drop_column_form
+      - slot_was_set:
+          - column_to_drop
+    steps:
+      - action: drop_column_form
+      - active_loop: null
+      - action: action_generate_drop_query
+      - action: utter_ask_confirm_column_drop
+      - action: action_listen
+
+  - rule: handle affirm for column drop
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - connection_string
+          - selected_table
+          - column_to_drop
+          - drop_query
+    steps:
+      - intent: affirm
+      - action: action_execute_drop_query
+
+  - rule: handle deny for column drop
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - connection_string
+          - selected_table
+          - column_to_drop
+          - drop_query
+    steps:
+      - intent: deny
+      - action: utter_column_drop_cancelled
+
+  # - rule: fetch tables after connection validation for drop column
+  #   condition:
+  #     - active_loop: drop_column_form
+  #     - slot_was_set:
+  #         - connection_string
+  #   steps:
+  #     - action: action_fetch_tables_for_drop

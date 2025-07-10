@@ -233,3 +233,56 @@ nlu:
       - redis-prod-01.company.com
       - cassandra-prod-01.company.com
       - elasticsearch-prod-01.company.com
+
+  - intent: create_column
+    examples: |
+      - create a column
+      - add a column
+      - add column to database
+      - create new column
+      - add a new column
+      - I want to create a column
+      - add column to table
+      - create column in database
+
+  - intent: affirm_create_column
+    examples: |
+      - yes
+      - sure
+      - absolutely
+      - sounds good
+      - let's analyze
+      - proceed
+      - continue
+      - go ahead
+
+  - intent: affirm_create_database
+    examples: |
+      - yes
+      - sure
+      - absolutely
+      - sounds good
+      - let's analyze
+      - proceed
+      - continue
+      - go ahead
+
+  - intent: drop_column
+    examples: |
+      - drop a column
+      - remove a column
+      - delete a column
+      - drop column from database
+      - remove column from table
+      - delete column from database
+      - I want to drop a column
+      - remove column from table
+      - delete a column from table
+
+  - intent: affirm_drop_column
+    examples: |
+      - yes
+      - postgresql
+      - sure
+      - go ahead
+      - proceed with column drop

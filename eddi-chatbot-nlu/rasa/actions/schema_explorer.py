@@ -47,17 +47,30 @@ class ValidateExploreSchemaForm(FormValidationAction):
         db_user = parsed.username
         db_password = unquote(parsed.password) 
 
-        # connection-string patterns (removed regex validation, rely on urlparse)
+        # connection-string patterns
+        postgres_pattern = r"^postgres(?:ql)?://.+:.+@.+:\d+/.+$"
+        mysql_pattern    = r"^mysql://[^:]+:[^@]+@[^:/]+:\d+/[^/\s]+$"
+        mongodb_pattern = r"^mongodb://.+:.+@.+:\d+/.+$"
 
 
         # ── PostgreSQL ──────────────────────────────────────────────────────────
         if database_type.lower() == "postgresql":
             # No regex validation, rely on urlparse and connection attempt
 
-            # test connection
             try:
-                conn = psycopg2.connect(slot_value)
+                parsed = urlparse(slot_value)
+                # Test connection using parsed components for better error handling
+                conn = psycopg2.connect(
+                    host=parsed.hostname,
+                    port=parsed.port,
+                    user=parsed.username,
+                    password=parsed.password,
+                    database=parsed.path.lstrip("/")
+                )
                 conn.close()
+            except psycopg2.OperationalError as e:
+                dispatcher.utter_message(text=f"Could not connect to PostgreSQL database: {e}")
+                return {"connection_string": None}
             except Exception as e:
                 dispatcher.utter_message(text=f"Could not connect to PostgreSQL database: {e}")
                 return {"connection_string": None}
