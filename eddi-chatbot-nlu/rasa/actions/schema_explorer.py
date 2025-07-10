@@ -12,6 +12,7 @@ from rasa_sdk import Action, FormValidationAction, Tracker
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.types import DomainDict
+from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,12 @@ class ValidateExploreSchemaForm(FormValidationAction):
         # parse out the "default" schema from the URL
         parsed = urlparse(slot_value)
         target_schema = parsed.path.lstrip("/")
+        
+
+        db_host = parsed.hostname
+        db_port = parsed.port
+        db_user = parsed.username
+        db_password = unquote(parsed.password) 
 
         # connection-string patterns
         postgres_pattern = r"^postgres(?:ql)?://.+:.+@.+:\d+/.+$"
@@ -48,9 +55,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
 
         # ── PostgreSQL ──────────────────────────────────────────────────────────
         if database_type.lower() == "postgresql":
-            if not re.match(postgres_pattern, slot_value, re.IGNORECASE):
-                dispatcher.utter_message(text="Invalid PostgreSQL connection string format.")
-                return {"connection_string": None}
+            # No regex validation, rely on urlparse and connection attempt
 
             try:
                 parsed = urlparse(slot_value)
@@ -97,21 +102,16 @@ class ValidateExploreSchemaForm(FormValidationAction):
 
         # ── MySQL ───────────────────────────────────────────────────────────────
         elif database_type.lower() == "mysql":
-            if not re.match(mysql_pattern, slot_value, re.IGNORECASE):
-                dispatcher.utter_message(text=(
-                    "Invalid MySQL connection string format. "
-                    "Please use: mysql://username:password@host:port/database_name"
-                ))
-                return {"connection_string": None}
+            # No regex validation, rely on urlparse and connection attempt
 
             # test connection
             try:
                 import mysql.connector
                 conn = mysql.connector.connect(
-                    host=parsed.hostname,
-                    port=parsed.port,
-                    user=parsed.username,
-                    password=parsed.password
+                    host=db_host,
+                    port=db_port,
+                    user=db_user,
+                    password=db_password
                 )
                 conn.close()
             except ImportError:
@@ -150,12 +150,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
 
         # ── MongoDB ──────────────────────────────────────────────────────────
         elif database_type.lower() == "mongodb":
-            if not re.match(mongodb_pattern, slot_value, re.IGNORECASE):
-                dispatcher.utter_message(text=(
-                    "Invalid MongoDB connection string format. "
-                    "Please use: mongodb://username:password@host:port/database_name"
-                ))
-                return {"connection_string": None}
+            # No regex validation, rely on urlparse and connection attempt
 
             # test connection
             try:

@@ -138,19 +138,11 @@ export default function ChatMessage({
       x: 0,
       opacity: 1,
       scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 500,
-        damping: 30,
-        mass: 1,
-        duration: 0.4,
-      },
     },
     exit: {
       x: isUser ? 20 : -20,
       opacity: 0,
       scale: 0.95,
-      transition: { duration: 0.2 },
     },
   };
 
