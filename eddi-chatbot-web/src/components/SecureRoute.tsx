@@ -6,20 +6,16 @@ import { useAppContext } from '@/AppContext';
 import { Navigate } from 'react-router';
 
 export const RequiredAuth = () => {
-  const {isAuthenticated,loading} = useAppContext();
 
-  // Skip authentication in development mode
-  if (import.meta.env.DEV) {
-    return <Outlet />;
-  }
+  const {isAuthenticated,loading} = useAppContext();
 
   if (loading){
     return <Loading />;
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
+  // if (!isAuthenticated) {
+  //   return <Navigate to="/login" />;
+  // }
 
   return (<Outlet />);
 }

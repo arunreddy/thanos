@@ -1,3 +1,4 @@
 # chatbot-nlu/rasa/models/*
 # chatbot-nlu/models/*
 .env.example
+patch.txt
