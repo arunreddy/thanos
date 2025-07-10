@@ -9,4 +9,5 @@ dependencies = [
     "rasa[spacy]>=3.6.21",
     "sqlalchemy>=1.4.54",
     "mysql-connector-python>=9.3.0",
+    "pymongo>=4.3.3",
 ]

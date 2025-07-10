@@ -7,7 +7,6 @@ class RasaConnector:
     def __init__(self, rasa_url: str = ""): 
         
         if rasa_url == "":
-            # "http://dbq-eddi-chatbot-nlu:9090"
             rasa_url = os.getenv("EDDI_RASA_CONNECTOR_URL") or "http://dbq-eddi-chatbot-nlu:9090"
             
         # Changed port to 45005

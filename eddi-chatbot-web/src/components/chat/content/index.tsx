@@ -1,14 +1,14 @@
 import { useEffect, useState, useRef } from "react";
-import { getConversation, sendMessage } from "../../../lib/api";
+import { getConversation, sendMessage, newConversation } from "../../../lib/api";
 import ChatMessage from "../ChatMessage";
-import ChatInput from "../ChatInput";
+import ChatInput, { ChatInputRef } from "../ChatInput";
 import TopNav from "../topnav";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bot } from "lucide-react";
 import { CustomForm } from "@/types";
 
 interface ChatContentProps {
-  chatId: string ;
+  chatId: string | null;
   setActiveChatId: (id: string | null, isFirstMessage?: boolean) => void;
 }
 
@@ -37,6 +37,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<ChatInputRef>(null);
 
   // This effect handles loading conversations when chatId changes
   useEffect(() => {
@@ -107,10 +108,17 @@ const ChatContent: React.FC<ChatContentProps> = ({
     setError(null);
 
     try {
-      const response = await sendMessage({
-        conversation_id: chatId,
-        message: processedContent, // Send the processed content to the API
-      });
+      let response;
+      if (chatId) {
+        response = await sendMessage({
+          conversation_id: chatId,
+          message: processedContent, // Send the processed content to the API
+        });
+      } else {
+        response = await newConversation({
+          message: processedContent, // Send the processed content to the API
+        });
+      }
 
       const botMessage: Message = {
         id: messageId + 1,
@@ -132,6 +140,10 @@ const ChatContent: React.FC<ChatContentProps> = ({
       console.error(err);
     } finally {
       setChatState(ChatState.IDLE);
+      // Focus the input after response is received
+      setTimeout(() => {
+        chatInputRef.current?.focus();
+      }, 100);
     }
   };
 
@@ -253,6 +265,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
       {/* Message input */}
       <div className="border-t border-border p-4 bg-background">
         <ChatInput
+          ref={chatInputRef}
           onSendMessage={handleSendMessage}
           isLoading={chatState !== ChatState.IDLE}
         />

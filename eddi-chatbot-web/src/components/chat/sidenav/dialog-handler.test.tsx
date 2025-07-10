@@ -44,7 +44,6 @@ vi.mock("../../ui/dialog", () => ({
 
 describe("SideNav Dialog Component", () => {
   const mockOnSelectChat = vi.fn();
-  const mockOnNewChat = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -59,7 +58,6 @@ describe("SideNav Dialog Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 

@@ -31,13 +31,15 @@ services:
       args:
         BUILD_MODE: development
     ports:
-      - "3000:3000"
+      - "43000:3000"
     volumes:
       - ./eddi-chatbot-web/src:/app/src:ro
       - ./eddi-chatbot-web/public:/app/public:ro
     environment:
       - NODE_ENV=development
       - PORT=3000
+      - VITE_NODE_ENV=development
+      - VITE_API_URL=http://localhost:8000
     networks:
       - thanos-network
       
@@ -48,13 +50,14 @@ services:
       dockerfile: Dockerfile
     command: ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
-      - "8000:8000"
+      - "48000:8000"
     volumes:
       - ./eddi-chatbot-api/main.py:/app/main.py:ro
       - ./eddi-chatbot-api/app:/app/app:ro
     environment:
       - NODE_ENV=development
       - PORT=8000
+      - EDDI_RASA_CONNECTOR_URL=http://thanos-chatbot-nlu:5005
     networks:
       - thanos-network
 
@@ -64,7 +67,7 @@ services:
       context: ./eddi-chatbot-nlu
       dockerfile: Dockerfile
     ports:
-      - "5005:5005"
+      - "45005:5005"
     volumes:
       - ./eddi-chatbot-nlu/rasa/config.yml:/app/config.yml:ro
       - ./eddi-chatbot-nlu/rasa/domain.yml:/app/domain.yml:ro
@@ -83,14 +86,79 @@ services:
     volumes:
       - ./eddi-chatbot-nlu/rasa/actions:/app/actions:ro
     ports:
-      - "5055:5055"
+      - "45055:5055"
     networks:
       - thanos-network
+
+  # Sample Database Services for Testing Schema Exploration and Query Analysis
+  sample-employee-postgres:
+    image: postgres:15
+    container_name: sample-employee-postgres
+    ports:
+      - "45433:5432"
+    volumes:
+      - sample-postgres-data:/var/lib/postgresql/data
+      - ./sample-databases/postgres:/docker-entrypoint-initdb.d:ro
+    environment:
+      POSTGRES_USER: employee_user
+      POSTGRES_PASSWORD: employee_pass
+      POSTGRES_DB: employee_sample
+    networks:
+      - thanos-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U employee_user -d employee_sample"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  sample-employee-mysql:
+    image: mysql:8.0
+    container_name: sample-employee-mysql
+    ports:
+      - "45434:3306"
+    volumes:
+      - sample-mysql-data:/var/lib/mysql
+      - ./sample-databases/mysql:/docker-entrypoint-initdb.d:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: employee_sample
+      MYSQL_USER: employee_user
+      MYSQL_PASSWORD: employee_pass
+    networks:
+      - thanos-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "employee_user", "-pemployee_pass"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  sample-employee-mongo:
+    image: mongo:7.0
+    container_name: sample-employee-mongo
+    ports:
+      - "45435:27017"
+    volumes:
+      - sample-mongo-data:/data/db
+      - ./sample-databases/mongodb:/docker-entrypoint-initdb.d:ro
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo_admin
+      MONGO_INITDB_ROOT_PASSWORD: mongo_pass
+      MONGO_INITDB_DATABASE: employee_sample
+    networks:
+      - thanos-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
   redis-data:
   postgres-data:
   chatbot-nlu-models:
+  sample-postgres-data:
+  sample-mysql-data:
+  sample-mongo-data:
 
 
 networks:

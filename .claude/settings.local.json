@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(uv sync:*)",
+      "Bash(docker-compose build:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(curl:*)",
+      "Bash(mkdir:*)",
+      "Bash(docker exec:*)",
+      "Bash(pnpm build)"
+    ],
+    "deny": []
+  }
+}

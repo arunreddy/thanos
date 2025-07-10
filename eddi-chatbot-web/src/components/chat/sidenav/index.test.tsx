@@ -44,7 +44,6 @@ vi.mock("../../ui/dialog", () => ({
 
 describe("SideNav Component", () => {
   const mockOnSelectChat = vi.fn();
-  const mockOnNewChat = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -63,7 +62,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId={null}
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -85,7 +83,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId={null}
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -110,7 +107,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -137,7 +133,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId={null}
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -163,7 +158,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -184,7 +178,6 @@ describe("SideNav Component", () => {
     });
 
     expect(deleteConversation).toHaveBeenCalledWith("1");
-    expect(mockOnNewChat).toHaveBeenCalled();
 
     await waitFor(() => {
       expect(screen.queryByText("Chat 1")).not.toBeInTheDocument();
@@ -206,7 +199,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId={null}
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -251,7 +243,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -289,7 +280,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -310,7 +300,6 @@ describe("SideNav Component", () => {
     });
 
     expect(deleteConversation).toHaveBeenCalledWith("1");
-    expect(mockOnNewChat).toHaveBeenCalled();
   });
 
   test("logs fetched chats data", async () => {
@@ -323,7 +312,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId={null}
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -348,7 +336,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId={null}
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -380,13 +367,11 @@ describe("SideNav Component", () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const mockOnSelectChat = vi.fn();
-    const mockOnNewChat = vi.fn();
 
     render(
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -548,7 +533,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="2" // Different from the chat to be deleted
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -575,7 +559,6 @@ describe("SideNav Component", () => {
     );
 
     // Verify onNewChat was NOT called (since activeChatId !== id)
-    expect(mockOnNewChat).not.toHaveBeenCalled();
 
     consoleSpy.mockRestore();
   });
@@ -591,7 +574,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -611,7 +593,6 @@ describe("SideNav Component", () => {
         key="new"
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -635,7 +616,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -660,7 +640,6 @@ describe("SideNav Component", () => {
   test("direct test of if (!id) return; condition in handleDeleteConfirm", async () => {
     // Mock implementation of handleDeleteConfirm for direct testing
     const mockSetChats = vi.fn();
-    const mockOnNewChat = vi.fn();
     const mockDeleteConversation = vi.fn().mockResolvedValue({});
 
     // Test with null id
@@ -672,13 +651,11 @@ describe("SideNav Component", () => {
       mockSetChats((prevChats: Array<{ id: string; title: string }>) =>
         prevChats.filter((chat) => chat.id !== id)
       );
-      mockOnNewChat();
     };
 
     await testWithNullId();
     expect(mockDeleteConversation).not.toHaveBeenCalled();
     expect(mockSetChats).not.toHaveBeenCalled();
-    expect(mockOnNewChat).not.toHaveBeenCalled();
 
     // Reset mocks
     vi.clearAllMocks();
@@ -692,13 +669,11 @@ describe("SideNav Component", () => {
       mockSetChats((prevChats: Array<{ id: string; title: string }>) =>
         prevChats.filter((chat) => chat.id !== id)
       );
-      mockOnNewChat();
     };
 
     await testWithValidId();
     expect(mockDeleteConversation).toHaveBeenCalledWith("1");
     expect(mockSetChats).toHaveBeenCalled();
-    expect(mockOnNewChat).toHaveBeenCalled();
   });
 
   test("complete test of handleDeleteConfirm with both id cases", async () => {
@@ -715,8 +690,7 @@ describe("SideNav Component", () => {
         // We don't need to test setChats here
 
         if (activeChatId === id) {
-          mockOnNewChat();
-        }
+            }
         return true;
       } catch (err) {
         console.error("Failed to delete chat:", err);
@@ -727,41 +701,33 @@ describe("SideNav Component", () => {
     // Test with null id (should return early)
     // Using type assertion for mocked functions in tests
     (deleteConversation as jest.Mock).mockReset();
-    mockOnNewChat.mockReset();
     const resultWithNull = await testHandleDeleteConfirm(null, "1");
     expect(resultWithNull).toBe(false);
     expect(deleteConversation).not.toHaveBeenCalled();
-    expect(mockOnNewChat).not.toHaveBeenCalled();
 
     // Test with valid id and matching activeChatId
     (deleteConversation as jest.Mock).mockReset();
     (deleteConversation as jest.Mock).mockResolvedValueOnce({});
-    mockOnNewChat.mockReset();
     const resultWithMatchingIds = await testHandleDeleteConfirm("1", "1");
     expect(resultWithMatchingIds).toBe(true);
     expect(deleteConversation).toHaveBeenCalledWith("1");
-    expect(mockOnNewChat).toHaveBeenCalled();
 
     // Test with valid id but different activeChatId
     (deleteConversation as jest.Mock).mockReset();
     (deleteConversation as jest.Mock).mockResolvedValueOnce({});
-    mockOnNewChat.mockReset();
     const resultWithDifferentIds = await testHandleDeleteConfirm("1", "2");
     expect(resultWithDifferentIds).toBe(true);
     expect(deleteConversation).toHaveBeenCalledWith("1");
-    expect(mockOnNewChat).not.toHaveBeenCalled();
 
     // Test with error case
     (deleteConversation as jest.Mock).mockReset();
     (deleteConversation as jest.Mock).mockRejectedValueOnce(
       new Error("Test error")
     );
-    mockOnNewChat.mockReset();
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const resultWithError = await testHandleDeleteConfirm("1", "1");
     expect(resultWithError).toBe(false);
     expect(deleteConversation).toHaveBeenCalledWith("1");
-    expect(mockOnNewChat).not.toHaveBeenCalled();
     expect(consoleSpy).toHaveBeenCalledWith(
       "Failed to delete chat:",
       expect.any(Error)
@@ -947,7 +913,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -1034,7 +999,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -1081,7 +1045,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -1119,7 +1082,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 
@@ -1154,7 +1116,6 @@ describe("SideNav Component", () => {
       <SideNav
         activeChatId="1"
         onSelectChat={mockOnSelectChat}
-        onNewChat={mockOnNewChat}
       />
     );
 

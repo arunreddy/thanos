@@ -593,10 +593,28 @@ responses:
     - text: "Please provide the SYSID for your database."
 
   utter_submit_database:
-    - text: "Your request to create {database_name} ({database_version}) with SYSID {sysid} has been submitted!"
+    - text: |
+        ## ✅ Database Creation Request Submitted
+        
+        Your request has been successfully submitted with the following details:
+        - **Database Name:** `{database_name}`
+        - **Version:** `{database_version}`
+        - **SYSID:** `{sysid}`
+        
+        You will receive updates on the provisioning process soon!
 
   utter_ask_confirm_database_creation:
-    - text: "You're about to create a database with these details:\n\n- Name: {database_name}\n- Version: {database_version}\n- SYSID: {sysid}\n\nWould you like to proceed with this database creation?"
+    - text: |
+        ## 🗄️ Database Creation Confirmation
+        
+        You're about to create a database with these details:
+        
+        ### Database Configuration
+        - **Name:** `{database_name}`
+        - **Version:** `{database_version}`
+        - **SYSID:** `{sysid}`
+        
+        Would you like to proceed with this database creation?
       buttons:
         - title: "Yes, create the database"
           payload: "/affirm"
@@ -605,19 +623,30 @@ responses:
 
   # — delete-database confirmation —
   utter_confirm_delete_database:
-    - text: "Your request to delete {database_name} ({database_version}) with SYSID {sysid} has been submitted!"
+    - text: |
+        ## ✅ Database Deletion Request Submitted
+        
+        Your deletion request has been processed:
+        - **Database:** `{database_name}` ({database_version})
+        - **SYSID:** `{sysid}`
+        
+        The database will be safely decommissioned according to our deletion procedures.
 
   utter_ask_database_instance:
     - text: "Please provide the database instance you want to delete."
 
   utter_ask_confirm_database_deletion:
     - text: |
-        You're about to delete a database with these details:
-        - Name: {database_name}
-        - Instance: {database_instance}
-        - SysID: {sysid}
-
-        Are you sure you want to proceed?
+        ## ⚠️ Database Deletion Confirmation
+        
+        **WARNING:** You're about to permanently delete a database!
+        
+        ### Database Details
+        - **Name:** `{database_name}`
+        - **Instance:** `{database_instance}`
+        - **SysID:** `{sysid}`
+        
+        ⚠️ **This action cannot be undone!** Are you sure you want to proceed?
       buttons:
         - title: "Yes, delete it"
           payload: "/affirm"
@@ -633,7 +662,18 @@ responses:
           payload: "/help"
 
   utter_oos:
-    - text: "I'm sorry, I don't understand that request or it's outside the scope of what I can do. I'm primarily designed to help with database-related tasks and activities. Try the help menu (Type '/help')"
+    - text: |
+        ## 🤔 I didn't understand that
+        
+        I'm sorry, but that request is outside my area of expertise. I'm specifically designed to help with **database-related tasks**.
+        
+        ### What I can help with:
+        • Database recommendations
+        • Database provisioning and decommissioning  
+        • Schema exploration
+        • Query performance analysis
+        
+        Try typing **`/help`** to see all available options!
 
   utter_database_selection_confirmation:
     - text: "Would you like to proceed with this recommendation?"
@@ -698,26 +738,48 @@ responses:
   utter_ask_connection_string:
     - text: |
         Please provide the connection string in the appropriate format:
-        
-        **PostgreSQL:** `postgres://username:password@host:port/database_name`
-        **MySQL:** `mysql://username:password@host:port/database_name`
-        **MongoDB:** `mongodb://username:password@host:port/database_name`
+
+        ### PostgreSQL
+        ```
+        postgres://username:password@host:port/database_name
+        ```
+
+        ### MySQL
+        ```
+        mysql://username:password@host:port/database_name
+        ```
+
+        ### MongoDB
+        ```
+        mongodb://username:password@host:port/database_name
+        ```
 
   utter_invalid_connection_string:
     - text: "That doesn’t look like a valid PostgreSQL connection string. Please try again in the correct format."
 
   utter_ask_object_types:
-    - text: "Which object types would you like to explore? (e.g., tables, views, functions, sequences)"
+    - text: |
+        ## 🗂️ Object Type Selection
+        
+        Which database object types would you like to explore?
+        
+        **Examples:** `tables`, `views`, `functions`, `sequences`, `indexes`, `triggers`
+        
+        You can specify multiple types separated by commas.
 
   utter_ask_confirm_schema_explore:
     - text: |
-        You're about to explore schema for:
-        - Database type: {database_type}  
-        - Connection string: `{connection_string}`  
-        - Selected schemas: `{selected_schemas}`
-        - Object types: `{object_types}`  
+        ## 🔍 Schema Exploration Confirmation
+        
+        Ready to explore your database schema with these settings:
+        
+        ### Configuration
+        - **Database Type:** {database_type}  
+        - **Connection:** `{connection_string}`  
+        - **Selected Schemas:** `{selected_schemas}`
+        - **Object Types:** `{object_types}`  
 
-        Would you like to proceed?
+        Would you like to proceed with the schema exploration?
       buttons:
         - title: "Yes"
           payload: "/affirm"
@@ -739,7 +801,16 @@ responses:
 
 #query-analyzer
   utter_ask_sql_query:
-    - text: "Please enter the SQL query you want to analyze."
+    - text: |
+        ## 📝 SQL Query Input
+        
+        Please enter the SQL query you want to analyze.
+        
+        **I can help with:**
+        • Performance optimization suggestions
+        • Execution plan analysis  
+        • Index recommendations
+        • Query structure improvements
 
   utter_postgresql_support_query_analyzer:
     - text: |
@@ -759,10 +830,17 @@ responses:
 
   utter_ask_confirm_query_analysis:
     - text: |
-        You're about to analyze this query:
-        ```
+        ## 🔍 Query Analysis Confirmation
+        
+        Ready to analyze your SQL query for performance insights:
+        
+        ### Query to Analyze
+        ```sql
         {sql_query}
         ```
+        
+        I'll provide execution plan analysis, performance recommendations, and optimization suggestions.
+        
         Would you like to proceed?
       buttons:
         - title: "Yes"

@@ -1,0 +1,66 @@
+[
+  {
+    "_id": 1,
+    "name": "Engineering",
+    "description": "Software development and technical infrastructure",
+    "manager_id": 3,
+    "created_at": {"$date": "2024-01-01T00:00:00Z"},
+    "updated_at": {"$date": "2024-01-01T00:00:00Z"}
+  },
+  {
+    "_id": 2,
+    "name": "Marketing",
+    "description": "Product marketing and customer acquisition",
+    "manager_id": 15,
+    "created_at": {"$date": "2024-01-01T00:00:00Z"},
+    "updated_at": {"$date": "2024-01-01T00:00:00Z"}
+  },
+  {
+    "_id": 3,
+    "name": "Sales",
+    "description": "Revenue generation and client relationships",
+    "manager_id": 20,
+    "created_at": {"$date": "2024-01-01T00:00:00Z"},
+    "updated_at": {"$date": "2024-01-01T00:00:00Z"}
+  },
+  {
+    "_id": 4,
+    "name": "Human Resources",
+    "description": "Employee management and organizational development",
+    "manager_id": 26,
+    "created_at": {"$date": "2024-01-01T00:00:00Z"},
+    "updated_at": {"$date": "2024-01-01T00:00:00Z"}
+  },
+  {
+    "_id": 5,
+    "name": "Finance",
+    "description": "Financial planning and accounting",
+    "manager_id": 29,
+    "created_at": {"$date": "2024-01-01T00:00:00Z"},
+    "updated_at": {"$date": "2024-01-01T00:00:00Z"}
+  },
+  {
+    "_id": 6,
+    "name": "Operations",
+    "description": "Business operations and process management",
+    "manager_id": 33,
+    "created_at": {"$date": "2024-01-01T00:00:00Z"},
+    "updated_at": {"$date": "2024-01-01T00:00:00Z"}
+  },
+  {
+    "_id": 7,
+    "name": "Customer Support",
+    "description": "Customer service and technical support",
+    "manager_id": 35,
+    "created_at": {"$date": "2024-01-01T00:00:00Z"},
+    "updated_at": {"$date": "2024-01-01T00:00:00Z"}
+  },
+  {
+    "_id": 8,
+    "name": "Product Management",
+    "description": "Product strategy and development coordination",
+    "manager_id": 13,
+    "created_at": {"$date": "2024-01-01T00:00:00Z"},
+    "updated_at": {"$date": "2024-01-01T00:00:00Z"}
+  }
+]
