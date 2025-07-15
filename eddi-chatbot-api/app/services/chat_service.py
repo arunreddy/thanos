@@ -73,7 +73,6 @@ class ChatService:
             )
             
             # Send message to Rasa using conversation's Rasa sender ID
-            print(f"Sending message to Rasa: {message}")
             rasa_response = await self.rasa_connector.send_message(message, conversation.rasa_sender_id)
             
             # Calculate response time
@@ -104,7 +103,9 @@ class ChatService:
             }
             
         except Exception as e:
+            import traceback
             print(f"Database error in process_message: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
             # Fall back to in-memory processing
             return await self._process_message_in_memory(message, user_id, conversation_id)
     

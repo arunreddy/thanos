@@ -739,26 +739,25 @@ responses:
     - text: |
         Please provide the connection string in the appropriate format:
 
-        ### PostgreSQL
+        **PostgreSQL**
         ```
         postgres://username:password@host:port/database_name
         ```
 
-        ### MySQL
+        **MySQL**  
         ```
         mysql://username:password@host:port/database_name
         ```
 
-        ### MongoDB
+        **MongoDB**  
         ```
         mongodb://username:password@host:port/database_name
+        ```
         ```
 
   utter_ask_connection_string_postgresql:
     - text: |
-        Please provide the PostgreSQL connection string in the format:
-        
-        ### PostgreSQL
+        Please provide the PostgreSQL connection string in the format:        
         ```
         postgres://username:password@host:port/database_name
         ```
@@ -766,8 +765,6 @@ responses:
   utter_ask_connection_string_mysql:
     - text: |
         Please provide the MySQL connection string in the format:
-        
-        ### MySQL
         ```
         mysql://username:password@host:port/database_name
         ```
@@ -775,8 +772,6 @@ responses:
   utter_ask_connection_string_mongodb:
     - text: |
         Please provide the MongoDB connection string in the format:
-        
-        ### MongoDB
         ```
         mongodb://username:password@host:port/database_name
         ```

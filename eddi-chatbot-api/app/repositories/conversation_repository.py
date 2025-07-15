@@ -30,13 +30,16 @@ class ConversationRepository:
             conversation_metadata=conversation_metadata or {}
         )
         
-        # Generate Rasa sender ID
-        conversation.generate_rasa_sender_id()
-        
         try:
             self.db.add(conversation)
             self.db.commit()
             self.db.refresh(conversation)
+            
+            # Generate Rasa sender ID after conversation has been saved and has an ID
+            conversation.generate_rasa_sender_id()
+            self.db.commit()
+            self.db.refresh(conversation)
+            
             return conversation
         except IntegrityError:
             self.db.rollback()

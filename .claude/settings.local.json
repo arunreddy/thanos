@@ -10,7 +10,9 @@
       "Bash(docker exec:*)",
       "Bash(pnpm build)",
       "Bash(python:*)",
-      "Bash(docker-compose exec:*)"
+      "Bash(docker-compose exec:*)",
+      "Bash(docker logs:*)",
+      "Bash(pnpm test:*)"
     ],
     "deny": []
   }

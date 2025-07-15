@@ -75,7 +75,7 @@ interface ChatMessageProps {
   timestamp?: string;
   buttons?: Button[];
   customForm?: CustomForm;
-  onButtonClick?: (payload: string) => void;
+  onButtonClick?: (payload: string, title?: string) => void;
 }
 
 export default function ChatMessage({
@@ -321,7 +321,7 @@ export default function ChatMessage({
                   variant="ghost"
                   size="sm"
                   className="text-left justify-start h-auto p-1 font-normal"
-                  onClick={() => onButtonClick && onButtonClick(button.payload)}
+                  onClick={() => onButtonClick && onButtonClick(button.payload, button.title)}
                   aria-label={button.title}
                 >
                   {index + 1}. {button.title}
@@ -492,7 +492,7 @@ export default function ChatMessage({
   );
 }
 
-function MultiSelectForm({ customForm, onButtonClick }: { customForm: CustomForm, onButtonClick?: (payload: string) => void }) {
+function MultiSelectForm({ customForm, onButtonClick }: { customForm: CustomForm, onButtonClick?: (payload: string, title?: string) => void }) {
   const [selected, setSelected] = useState<{ [type: string]: Set<string> }>(() => {
     const initial: { [type: string]: Set<string> } = {};
     if (customForm.objects) {
@@ -524,7 +524,7 @@ function MultiSelectForm({ customForm, onButtonClick }: { customForm: CustomForm
     if (onButtonClick) {
       const resultObjects = {"objects": result}
       const command = JSON.stringify(resultObjects);
-      onButtonClick(command);
+      onButtonClick(command, "Save");
     }
   };
 

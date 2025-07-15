@@ -147,8 +147,72 @@ const ChatContent: React.FC<ChatContentProps> = ({
     }
   };
 
-  const handleButtonClick = async (payload: string) => {
-    await handleSendMessage(payload);
+  const handleButtonClick = async (payload: string, title?: string) => {
+    // Find the button title if not provided
+    let displayText = title;
+    if (!displayText) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage?.buttons?.length > 0) {
+        const button = lastMessage.buttons.find((btn: any) => btn.payload === payload);
+        displayText = button?.title || payload;
+      } else {
+        displayText = payload;
+      }
+    }
+
+    // Send the payload to the API but display the title to the user
+    if (!payload.trim()) return;
+
+    setHasInteracted(true);
+
+    const messageId = Date.now();
+
+    const userMessage: Message = {
+      id: messageId,
+      role: "user",
+      content: displayText || payload, // Display the button title
+      timestamp: new Date().toISOString(),
+    };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+    setChatState(ChatState.SENDING_MESSAGE);
+    setError(null);
+
+    try {
+      let response;
+      if (chatId) {
+        response = await sendMessage({
+          conversation_id: chatId,
+          message: payload, // Send the actual payload to the API
+        });
+      } else {
+        response = await newConversation({
+          message: payload, // Send the actual payload to the API
+        });
+      }
+
+      const botMessage: Message = {
+        id: messageId + 1,
+        role: response.message.role,
+        content: response.message.content,
+        buttons: response.message.buttons,
+        timestamp: new Date().toISOString(),
+        custom: response.message.custom,
+      };
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
+
+      if (!chatId && response.conversation_id) {
+        setActiveChatId(response.conversation_id, true);
+      }
+    } catch (err) {
+      setError("Failed to send message. Please try again.");
+      console.error(err);
+    } finally {
+      setChatState(ChatState.IDLE);
+      setTimeout(() => {
+        chatInputRef.current?.focus();
+      }, 100);
+    }
   };
 
   const TypingIndicator = () => (

@@ -13,6 +13,7 @@ import ChatContent from "./index";
 vi.mock("../../../lib/api", () => ({
   getConversation: vi.fn(),
   sendMessage: vi.fn(),
+  newConversation: vi.fn(),
 }));
 
 // Mock child components
