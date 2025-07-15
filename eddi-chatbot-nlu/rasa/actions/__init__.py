@@ -6,14 +6,14 @@ from .schema_explorer import (
     ActionFetchAvailableObjects,
     ActionFetchObjectDefinitions,
     ActionSubmitSchemaExplore,
-    ValidateExploreSchemaForm,
+    ValidateExploreSchemaForm, ActionAskExploreSchemaFormConnectionString
 )
 from .submit_database import ActionSubmitDatabase, ValidateCreateDatabaseForm
 from .submit_delete_database import ActionSubmitDeleteDatabase
-from .query_analyzer import ValidateAnalyzeQueryForm, ActionSubmitQueryAnalysis
+from .query_analyzer import ValidateAnalyzeQueryForm, ActionSubmitQueryAnalysis,ActionAskAnalyzeQueryFormConnectionString
 from .patch_information import ActionAskHostname,ActionConfirmHostname,ActionGetPatchInformation,ActionResetPatchForm
-from .create_column import ValidateCreateColumnForm, ActionFetchTables, ActionGenerateAlterQuery, ActionRequestTableSelection, ActionExecuteAlterQuery
-from .delete_column import ValidateDropColumnForm,ActionFetchTablesForDrop, ActionFetchColumns, ActionGenerateDropQuery, ActionExecuteDropQuery, ActionTriggerTableFetchingForDrop, ActionTriggerColumnFetching
+from .create_column import ValidateCreateColumnForm, ActionFetchTables, ActionGenerateAlterQuery, ActionRequestTableSelection, ActionExecuteAlterQuery, ActionAskCreateColumnFormConnectionString
+from .delete_column import ValidateDropColumnForm,ActionFetchTablesForDrop, ActionFetchColumns, ActionGenerateDropQuery, ActionExecuteDropQuery, ActionTriggerTableFetchingForDrop, ActionTriggerColumnFetching, ActionAskDropColumnFormConnectionString
 
 __all__ = [
     "ActionRecommendDatabase",
@@ -45,4 +45,8 @@ __all__ = [
     "ActionTriggerTableFetchingForDrop", 
     "ActionTriggerColumnFetching",
     "ActionExecuteAlterQuery",
+    "ActionAskCreateColumnFormConnectionString",
+    "ActionAskDropColumnFormConnectionString",
+    "ActionAskAnalyzeQueryFormConnectionString",
+    "ActionAskExploreSchemaFormConnectionString",
 ]

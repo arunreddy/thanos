@@ -754,6 +754,33 @@ responses:
         mongodb://username:password@host:port/database_name
         ```
 
+  utter_ask_connection_string_postgresql:
+    - text: |
+        Please provide the PostgreSQL connection string in the format:
+        
+        ### PostgreSQL
+        ```
+        postgres://username:password@host:port/database_name
+        ```
+
+  utter_ask_connection_string_mysql:
+    - text: |
+        Please provide the MySQL connection string in the format:
+        
+        ### MySQL
+        ```
+        mysql://username:password@host:port/database_name
+        ```
+
+  utter_ask_connection_string_mongodb:
+    - text: |
+        Please provide the MongoDB connection string in the format:
+        
+        ### MongoDB
+        ```
+        mongodb://username:password@host:port/database_name
+        ```
+
   utter_invalid_connection_string:
     - text: "That doesn’t look like a valid PostgreSQL connection string. Please try again in the correct format."
 
@@ -924,6 +951,15 @@ responses:
         - title: "Help"
           payload: "/help"
 
+  utter_ask_connection_string_create_column:
+    - text: |
+        Please provide the PostgreSQL connection string in the format:
+        
+        ### PostgreSQL
+        ```
+        postgres://username:password@host:port/database_name
+        ```
+
 #drop-column
   utter_postgresql_support_drop_column:
     - text: |
@@ -967,6 +1003,15 @@ responses:
         - title: "Help"
           payload: "/help"
 
+  utter_ask_connection_string_drop_column:
+    - text: |
+        Please provide the PostgreSQL connection string in the format:
+        
+        ### PostgreSQL
+        ```
+        postgres://username:password@host:port/database_name
+        ```
+
 actions:
   - action_recommend_database
   - action_recommend_database_create_ticket
@@ -999,6 +1044,10 @@ actions:
   - action_trigger_table_fetching_for_drop
   - action_trigger_column_fetching
   - action_request_table_selection
+  - action_ask_create_column_form_connection_string
+  - action_ask_drop_column_form_connection_string
+  - action_ask_explore_schema_form_connection_string
+  - action_ask_analyze_query_form_connection_string
 
 session_config:
   session_expiration_time: 60

@@ -438,3 +438,24 @@ class ActionRequestTableSelection(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
         return [FollowupAction("action_fetch_tables")]
+
+class ActionAskCreateColumnFormConnectionString(Action):
+    """Custom action to ask for connection string specifically in create column form"""
+    
+    def name(self) -> Text:
+        return "action_ask_create_column_form_connection_string"
+    
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        # Since user already selected PostgreSQL, only show PostgreSQL format
+        dispatcher.utter_message(
+            text="Please provide the PostgreSQL connection string in the format:\n\n"
+                 "### PostgreSQL\n"
+                 "```\n"
+                 "postgres://username:password@host:port/database_name\n"
+                 "```"
+        )
+        
+        return []
