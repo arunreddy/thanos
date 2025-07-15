@@ -29,7 +29,7 @@ class ValidateExploreSchemaForm(FormValidationAction):
         domain: DomainDict,
     ) -> Dict[Text, Any]:
         if not slot_value:
-            dispatcher.utter_message(text="Please provide a connection string.")
+            # dispatcher.utter_message(text="Please provide a connection string.")
             return {"connection_string": None}
 
         database_type = tracker.get_slot("database_type")
@@ -1614,3 +1614,54 @@ class ActionFetchObjectDefinitions(Action):
                 schema[key] = type(value).__name__
         
         return schema
+
+# Add this action to your schema_explorer.py file
+
+class ActionAskExploreSchemaFormConnectionString(Action):
+    """Custom action to ask for connection string specifically in explore schema form"""
+    
+    def name(self) -> Text:
+        return "action_ask_explore_schema_form_connection_string"
+    
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: DomainDict) -> List[Dict[Text, Any]]:
+        
+        # Get the selected database type
+        database_type = tracker.get_slot("database_type")
+        
+        if not database_type:
+            # Fallback to generic if no database type selected
+            dispatcher.utter_message(response="utter_ask_connection_string")
+            return []
+        
+        # Show database-specific connection string format
+        if database_type.lower() == "postgresql":
+            dispatcher.utter_message(
+                text="Please provide the PostgreSQL connection string in the format:\n\n"
+                     "### PostgreSQL\n"
+                     "```\n"
+                     "postgres://username:password@host:port/database_name\n"
+                     "```"
+            )
+        elif database_type.lower() == "mysql":
+            dispatcher.utter_message(
+                text="Please provide the MySQL connection string in the format:\n\n"
+                     "### MySQL\n"
+                     "```\n"
+                     "mysql://username:password@host:port/database_name\n"
+                     "```"
+            )
+        elif database_type.lower() == "mongodb":
+            dispatcher.utter_message(
+                text="Please provide the MongoDB connection string in the format:\n\n"
+                     "### MongoDB\n"
+                     "```\n"
+                     "mongodb://username:password@host:port/database_name\n"
+                     "```"
+            )
+        else:
+            # Fallback for unknown database types
+            dispatcher.utter_message(response="utter_ask_connection_string")
+        
+        return []
