@@ -376,6 +376,13 @@ slots:
           - affirm
           - deny
           - help
+          - create_database
+          - delete_database
+          - explore_schema
+          - analyze_query
+          - create_column
+          - drop_column
+          - recommend_database
 
 # create-column
   selected_table:
