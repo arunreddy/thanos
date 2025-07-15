@@ -9,7 +9,8 @@
       "Bash(mkdir:*)",
       "Bash(docker exec:*)",
       "Bash(pnpm build)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(docker-compose exec:*)"
     ],
     "deny": []
   }

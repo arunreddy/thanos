@@ -5,6 +5,7 @@ import { useChat } from '../hooks/useChat';
 import { HelpCircle, Loader2, MessageCircle, Rocket } from 'lucide-react';
 import { newConversation } from '@/lib/api';
 import { useAppContext, User } from '@/AppContext';
+import { RasaStatusDot } from './StatusIndicator';
 
 export default function ChatNew() {
   const { chatId } = useParams();
@@ -55,10 +56,10 @@ export default function ChatNew() {
               <h2 className="text-2xl font-semibold flex items-center gap-2 justify-center">
                 <img src="/citizens-logo.png" alt="EDDI Assistant" className="w-6 h-6" />
                 {new Date().getHours() < 12
-                  ? `Hello ${currentUser?.given_name || ''}, good morning`
+                  ? `Hello ${currentUser?.given_name || 'Developer'}, good morning`
                   : new Date().getHours() < 18
-                    ? `Hello ${currentUser?.given_name || ''}, good afternoon`
-                    : `Hello ${currentUser?.given_name || ''}, good evening`}
+                    ? `Hello ${currentUser?.given_name || 'Developer'}, good afternoon`
+                    : `Hello ${currentUser?.given_name || 'Developer'}, good evening`}
               </h2>
             </div>
 

@@ -5,12 +5,12 @@ action_endpoint:
 
 rest:
 
-# tracker_store:
-#   type: SQL
-#   dialect: "postgresql"
-#   url: "thanos-postgres"
-#   port: 5432
-#   db: "rasa"
-#   username: "postgres"
-#   password: "postgres"
-#   login_db: "postgres"
+tracker_store:
+  type: SQL
+  dialect: "postgresql"
+  url: "thanos-postgres"
+  port: 5432
+  db: "postgres"
+  username: "postgres"
+  password: "postgres"
+  login_db: "postgres"

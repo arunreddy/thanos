@@ -1,32 +1,60 @@
 import { MessageResponse } from "@/types";
 // frontend/src/lib/api.ts
-export const API_URL = "http://localhost:3000";
+export const API_URL = "http://localhost:48000";
 // export const API_URL = "https://dbq-dev-chatbot.p2.ocp.citizensbank.com"
 
-// Get token from localStorage
-// const getToken = () => {
-//   if (typeof window !== "undefined") {
-//     return localStorage.getItem("access_token");
-//   }
-//   return null;
-// };
+// User context for API calls
+let currentUserEmail: string | null = null;
 
-// Generic fetch function with authorization
+// Set current user for API calls
+export function setCurrentUser(userEmail: string | null) {
+  currentUserEmail = userEmail;
+}
+
+// Get current user email
+export function getCurrentUser(): string | null {
+  return currentUserEmail;
+}
+
+// Retry utility function
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 2,
+  delay: number = 1000
+): Promise<T> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt === maxRetries) {
+        throw error;
+      }
+      
+      // Exponential backoff with jitter
+      const backoffDelay = delay * Math.pow(2, attempt - 1) + Math.random() * 500;
+      await new Promise(resolve => setTimeout(resolve, backoffDelay));
+    }
+  }
+  
+  throw new Error('Max retries exceeded');
+}
+
+// Generic fetch function with user context
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  // const token = getToken();
-
   const headers = new Headers({
     "Content-Type": "application/json",
     ...options.headers,
   });
 
-  // if (token) {
-  //   headers.set('Authorization', `Bearer ${token}`);
-  // }
+  // Add user email to headers if available
+  if (currentUserEmail) {
+    headers.set('X-User-Email', currentUserEmail);
+  }
 
   const response = await fetch(`${API_URL}${url}`, {
     ...options,
     headers,
+    credentials: 'include', // Include cookies for session-based auth
   });
 
   if (!response.ok) {
@@ -45,10 +73,10 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 export async function newConversation(data: {
   message: string;
 }) {
-  const response = await fetchWithAuth("/api/chat/new", {
+  const response = await withRetry(() => fetchWithAuth("/api/chat/new", {
     method: "POST",
     body: JSON.stringify(data),
-  });
+  }));
 
   return response as MessageResponse;
 }
@@ -58,10 +86,10 @@ export async function sendMessage(data: {
   message: string;
 }) {
   console.log("Sending message:", data);
-  return fetchWithAuth("/api/chat/send", {
+  return withRetry(() => fetchWithAuth("/api/chat/send", {
     method: "POST",
     body: JSON.stringify(data),
-  });
+  }));
 }
 
 export async function getConversations() {
@@ -75,5 +103,26 @@ export async function getConversation(id: string) {
 export async function deleteConversation(id: string) {
   return fetchWithAuth(`/api/chat/conversations/${id}`, {
     method: "DELETE",
+  });
+}
+
+// New conversation management APIs
+export async function createConversation(data: {
+  title: string;
+  topic?: string;
+}) {
+  return fetchWithAuth("/api/chat/conversations", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateConversation(id: string, data: {
+  title?: string;
+  description?: string;
+}) {
+  return fetchWithAuth(`/api/chat/conversations/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
   });
 }

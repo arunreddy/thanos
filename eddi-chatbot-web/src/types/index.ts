@@ -4,6 +4,19 @@ export interface Chat {
   updated_at: string;
 }
 
+export interface Conversation {
+  id: string;
+  title: string;
+  description?: string;
+  status: 'active' | 'archived' | 'deleted';
+  topic?: string;
+  message_count: number;
+  created_at: string;
+  updated_at: string;
+  last_message_at: string;
+  last_message_preview?: string;
+}
+
 export interface Message {
   role: string;
   content: string;

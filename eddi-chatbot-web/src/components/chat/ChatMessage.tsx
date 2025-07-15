@@ -470,7 +470,7 @@ export default function ChatMessage({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className={`text-xs mt-1 ${
+            className={`text-xs mt-1 text-right ${
               isUser ? "text-muted-foreground" : "text-muted-foreground"
             }`}
           >

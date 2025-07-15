@@ -452,16 +452,9 @@ responses:
 
   utter_help:
     - text: |
-        I can help you:
-        • Recommend a database  
-        • Create a new database  
-        • Delete an existing database  
-        • Explore database schema
-        • Analyze SQL Queries
-        • Create a column in database
-        • Drop a column from database
+        Hello! I'm your Database Observability Assistant. I can help you manage databases, analyze performance, and explore schemas across PostgreSQL, MySQL, and MongoDB.
 
-        What would you like to do?
+        Choose an option below to get started:
       buttons:
         - title: "Recommend a Database"
           payload: "/recommend_database"

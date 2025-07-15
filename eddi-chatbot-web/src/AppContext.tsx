@@ -1,5 +1,5 @@
 import React, {createContext, useContext, useState, useEffect, ReactNode} from 'react';
-import {API_URL} from "@/lib/api";
+import {API_URL, setCurrentUser} from "@/lib/api";
 
 interface UserRole {
     id:string;
@@ -26,6 +26,7 @@ export interface User {
 
 interface AppContextType {
     user: User | null;
+    userEmail: string | null;
     isAuthenticated: boolean;
     loading: boolean;
     error: string | null;
@@ -75,16 +76,26 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
                 setUser(data);
                 setIsAuthenticated(true);
                 setError(null);
+                
+                // Set current user in API client for automatic user context
+                setCurrentUser(data.email);
+                
                 return data.user;
             } else {
                 setError('Failed to fetch user data');
                 setIsAuthenticated(false);
                 setUser(null);
+                
+                // Clear user from API client
+                setCurrentUser(null);
+                
                 return null;
             }
         } catch (error) {
             setIsAuthenticated(false);
             setUser(null);
+            // Clear user from API client
+            setCurrentUser(null);
             
         } finally {
             setLoading(false); // Ensure loading is set to false
@@ -107,6 +118,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             if (response.ok) {
                 setUser(null);
                 setIsAuthenticated(false);
+                // Clear user from API client
+                setCurrentUser(null);
             } else {
                 console.error('Failed to sign out');
             }
@@ -123,6 +136,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
     const contextValue: AppContextType = {
         user,
+        userEmail: user?.email || null,
         isAuthenticated,
         loading,
         error,

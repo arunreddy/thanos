@@ -35,6 +35,7 @@ app.add_middleware(
     allow_origins=["http://localhost:3005",
                    "http://localhost:3000",
                    "http://localhost:3001",
+                   "http://localhost:43000",
                    "https://eddi-chatbot.p2.ocp.citizensbank.com", "https://dbq-dev-chatbot.p2.ocp.citizensbank.com"], 
     allow_credentials=True,
     allow_methods=["OPTIONS", "*"],  # Explicitly include OPTIONS

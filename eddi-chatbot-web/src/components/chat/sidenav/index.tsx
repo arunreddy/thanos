@@ -1,6 +1,6 @@
 import {useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Plus, Trash2 } from "lucide-react";
+import { MessageSquare, Plus, Trash2, MoreVertical } from "lucide-react";
 import { Link } from "react-router";
 
 import { Button } from "../../ui/button";
@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "../../ui/dialog";
 import { useAppContext, User } from "@/AppContext";
+import { RasaStatusDot } from "../../StatusIndicator";
 
 interface ChatsListProps {
   activeChatId: string | null;
@@ -65,6 +66,7 @@ const SideNav: React.FC<ChatsListProps> = ({
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const { user, signOut } = useAppContext();
 
@@ -182,9 +184,11 @@ const SideNav: React.FC<ChatsListProps> = ({
           </Link>
         </div>
 
-        <div className="mt-4 border-b border-border">
-          <div className="px-4 py-2 text-sm font-medium border-b-2 border-gray-500 text-accent-foreground">
-            History
+        <div className="mt-6">
+          <div className="px-2 pb-3">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Chats
+            </span>
           </div>
         </div>
 
@@ -269,53 +273,80 @@ const SideNav: React.FC<ChatsListProps> = ({
             )}
         </div>
 
-        <div className="flex items-center gap-4 mt-4">
-          {loadingUser ? (
-            <div className="flex items-center gap-4">
-              <motion.div
-                className="w-10 h-10 rounded-full bg-muted animate-pulse"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              />
-              <div>
-                <motion.div
-                  className="h-4 w-24 bg-muted rounded-md animate-pulse"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                />
-                <motion.div
-                  className="h-3 w-32 bg-muted rounded-md animate-pulse mt-1"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="w-full">
-              <a
-              onClick={onLogoutClicked}
-              className="block text-sm font-medium hover:underline mb-4 cursor-pointer"
+        {/* Status Indicator */}
+        <div className="mt-6 pt-4 border-t border-border">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground">System Status</span>
+            <RasaStatusDot />
+          </div>
+        </div>
+
+        {/* Profile Section */}
+        <div className="mt-4 pt-3 border-t border-border relative">
+          <div className="flex items-center gap-3">
+            {loadingUser || !currentUser ? (
+              <>
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                  D
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    Dev User
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    developer@example.com
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">
+                  {currentUser?.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {currentUser?.name || "User"}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {currentUser?.email || "user@example.com"}
+                  </p>
+                </div>
+              </>
+            )}
+            
+            {/* Three dots menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="p-1 rounded-md hover:bg-muted transition-colors"
+                aria-label="User menu"
               >
-              Logout
-              </a>
-              <div className="border-t border-border pt-4">
-              <div className="flex items-center gap-4">
-                <div
-                className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold"
-                >
-                {currentUser?.name?.charAt(0).toUpperCase() || "G"}
+                <MoreVertical className="w-4 h-4 text-muted-foreground" />
+              </button>
+              
+              {/* Dropdown menu */}
+              {showUserMenu && (
+                <div className="absolute bottom-full right-0 mb-2 w-32 bg-popover border border-border rounded-md shadow-lg py-1 z-50">
+                  <button
+                    onClick={() => {
+                      onLogoutClicked();
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors text-destructive"
+                  >
+                    Logout
+                  </button>
                 </div>
-                <div>
-                <p className="text-sm font-medium">
-                  {currentUser?.name || "Guest User"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {currentUser?.email || "guest@example.com"}
-                </p>
-                </div>
-              </div>
-              </div>
+              )}
             </div>
+          </div>
+          
+          {/* Click outside to close menu */}
+          {showUserMenu && (
+            <div 
+              className="fixed inset-0 z-40" 
+              onClick={() => setShowUserMenu(false)}
+            />
           )}
         </div>
       </motion.div>
