@@ -2,7 +2,7 @@
 import json
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 
@@ -13,32 +13,20 @@ from app.repositories.message_repository import MessageRepository
 
 
 class ChatService:
-    def __init__(self, db: Optional[Session] = None):
-        # Database session for persistent storage
+    def __init__(self, db: Session):
+        # Database session is required - no fallback
         self.db = db
         
-        # Initialize repositories if database is available
-        if self.db:
-            self.user_repo = UserRepository(self.db)
-            self.conversation_repo = ConversationRepository(self.db)
-            self.message_repo = MessageRepository(self.db)
-        else:
-            self.user_repo = None
-            self.conversation_repo = None
-            self.message_repo = None
+        # Initialize repositories
+        self.user_repo = UserRepository(self.db)
+        self.conversation_repo = ConversationRepository(self.db)
+        self.message_repo = MessageRepository(self.db)
         
-        # Fallback to in-memory storage for backwards compatibility
-        self.conversations: Dict[str, List[dict]] = {}
         self.rasa_connector = RasaConnector()
 
     async def process_message(self, message: str, user_id: str = "anonymous", conversation_id: Optional[str] = None) -> dict:
-        start_time = datetime.utcnow()
-        
-        # Use database if available, otherwise fall back to in-memory
-        if self.db and self.user_repo and self.conversation_repo and self.message_repo:
-            return await self._process_message_with_db(message, user_id, conversation_id, start_time)
-        else:
-            return await self._process_message_in_memory(message, user_id, conversation_id)
+        start_time = datetime.now(timezone.utc)
+        return await self._process_message_with_db(message, user_id, conversation_id, start_time)
     
     async def _process_message_with_db(self, message: str, user_id: str, conversation_id: Optional[str], start_time: datetime) -> dict:
         """Process message using database storage"""
@@ -76,7 +64,7 @@ class ChatService:
             rasa_response = await self.rasa_connector.send_message(message, conversation.rasa_sender_id)
             
             # Calculate response time
-            response_time_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+            response_time_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
             
             # Process Rasa response
             processed_response = self._process_rasa_response(rasa_response)
@@ -106,49 +94,8 @@ class ChatService:
             import traceback
             print(f"Database error in process_message: {e}")
             print(f"Traceback: {traceback.format_exc()}")
-            # Fall back to in-memory processing
-            return await self._process_message_in_memory(message, user_id, conversation_id)
+            raise e
     
-    async def _process_message_in_memory(self, message: str, user_id: str, conversation_id: Optional[str]) -> dict:
-        """Process message using in-memory storage (backwards compatibility)"""
-        # Use existing conversation ID or generate a new one
-        if conversation_id is None:
-            conversation_id = str(uuid.uuid4())
-
-        # Send message to Rasa
-        print(f"Sending message to Rasa: {message}")
-        rasa_response = await self.rasa_connector.send_message(message, conversation_id)
-
-        # Process Rasa response
-        processed_response = self._process_rasa_response(rasa_response)
-
-        # Store message and response in history
-        if conversation_id not in self.conversations:
-            self.conversations[conversation_id] = []
-
-        timestamp = datetime.now().isoformat()
-
-        # Add user message to history
-        self.conversations[conversation_id].append({"role": "user", "content": message, "timestamp": timestamp, "user_id": user_id})
-
-        # Add assistant response to history
-        self.conversations[conversation_id].append(
-            {
-                "role": "assistant",
-                "content": processed_response.get("text", ""),
-                "buttons": processed_response.get("buttons", []),  # Store buttons in history
-                "custom": processed_response.get("custom", {}),
-                "timestamp": timestamp,
-            }
-        )
-
-        return {
-            "response": processed_response.get("text", ""),
-            "buttons": processed_response.get("buttons", []),
-            "conversation_id": conversation_id,
-            "custom": processed_response.get("custom", {}),
-            "timestamp": timestamp,
-        }
     
     def _generate_conversation_title(self, first_message: str) -> str:
         """Generate a conversation title from the first message"""
@@ -193,26 +140,16 @@ class ChatService:
         return {"text": " ".join(texts), "buttons": all_buttons, "custom": custom}
 
     def get_conversation_history(self, conversation_id: str) -> List[dict]:
-        """Get conversation history from database or in-memory storage"""
-        # Use database if available
-        if self.db and self.message_repo:
-            try:
-                messages = self.message_repo.get_conversation_messages(conversation_id)
-                return [msg.to_dict() for msg in messages]
-            except Exception as e:
-                print(f"Database error in get_conversation_history: {e}")
-                # Fall back to in-memory if database fails
-        
-        # Fall back to in-memory storage
-        if conversation_id not in self.conversations:
+        """Get conversation history from database"""
+        try:
+            messages = self.message_repo.get_conversation_messages(conversation_id)
+            return [msg.to_dict() for msg in messages]
+        except Exception as e:
+            print(f"Database error in get_conversation_history: {e}")
             raise ValueError(f"Conversation ID {conversation_id} not found")
-
-        return self.conversations[conversation_id]
     
     def get_user_conversations(self, user_id: str, limit: int = 20, offset: int = 0) -> List[dict]:
-        """Get conversations for a user (database only)"""
-        if not self.db or not self.conversation_repo:
-            raise ValueError("Database not available for user conversations")
+        """Get conversations for a user"""
         
         try:
             user = self.user_repo.get_user_by_email(user_id)

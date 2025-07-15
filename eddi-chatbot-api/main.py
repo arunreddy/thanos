@@ -13,12 +13,12 @@ from starlette.middleware.sessions import SessionMiddleware
 
 import httpx
 
-from app.api.routes import chat_router, chat_service
+from app.api.routes import chat_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
-    await chat_service.close()
+    # Chat service cleanup is now handled per request
 
 
 app = FastAPI(title="Chatbot API", lifespan=lifespan)

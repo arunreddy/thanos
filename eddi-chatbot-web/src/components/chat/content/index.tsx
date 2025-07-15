@@ -51,7 +51,19 @@ const ChatContent: React.FC<ChatContentProps> = ({
         try {
           const response = await getConversation(chatId);
           const conversationMessages = response.messages || [];
-          setMessages(conversationMessages);
+          
+          // Add welcome message if no messages exist
+          if (conversationMessages.length === 0) {
+            const welcomeMessage: Message = {
+              id: 0,
+              role: "assistant",
+              content: "Welcome to the Database Management Assistant! 👋\n\nI can help you with:\n• Database provisioning and management\n• Schema exploration and analysis\n• Query performance optimization\n• Database recommendations\n\nWhat would you like to do today?",
+              timestamp: new Date().toISOString(),
+            };
+            setMessages([welcomeMessage]);
+          } else {
+            setMessages(conversationMessages);
+          }
         } catch (err) {
           setError("Failed to load conversation");
           console.error(err);
@@ -63,7 +75,14 @@ const ChatContent: React.FC<ChatContentProps> = ({
       fetchConversation();
     } else {
       setChatState(ChatState.IDLE);
-      setMessages([]);
+      // Add welcome message for new chats
+      const welcomeMessage: Message = {
+        id: 0,
+        role: "assistant",
+        content: "Welcome to the Database Management Assistant! 👋\n\nI can help you with:\n• Database provisioning and management\n• Schema exploration and analysis\n• Query performance optimization\n• Database recommendations\n\nWhat would you like to do today?",
+        timestamp: new Date().toISOString(),
+      };
+      setMessages([welcomeMessage]);
     }
   }, [chatId]);
 
