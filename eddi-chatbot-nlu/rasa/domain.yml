@@ -914,7 +914,7 @@ responses:
         - title: "PostgreSQL"
           payload: "/affirm_create_column"
         - title: "Redshift"
-          payload: "/undersupported_db_type"
+          payload: "/unsupported_db_type"
         - title: "MySQL"
           payload: "/unsupported_db_type"
 
@@ -970,7 +970,7 @@ responses:
         - title: "PostgreSQL"
           payload: "/affirm_drop_column"
         - title: "Redshift"
-          payload: "/undersupported_db_type"
+          payload: "/unsupported_db_type"
         - title: "MySQL"
           payload: "/unsupported_db_type"
 
