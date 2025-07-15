@@ -199,31 +199,23 @@ class ValidateCreateColumnForm(FormValidationAction):
     def _fetch_tables_from_api(self, connection_string: str) -> List[str]:
         """Make API call to Hoover service to get tables"""
         try:
-            # Replace with your actual Hoover API endpoint
-            api_url = "https://your-hoover-api.com/api/tables"
+            # Mock data for testing - replace with actual API call when Hoover is ready
+            mock_tables = [
+                "employees",
+                "departments", 
+                "positions",
+                "projects",
+                "project_employees",
+                "users",
+                "orders",
+                "products",
+                "customers",
+                "inventory"
+            ]
             
-            payload = {
-                "connection_string": connection_string,
-                "database_type": "postgresql"
-            }
-            
-            response = requests.post(
-                api_url,
-                json=payload,
-                timeout=30,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("tables", [])
-            else:
-                logger.error(f"API request failed with status {response.status_code}")
-                return []
+            logger.info(f"Returning mock tables for connection: {connection_string}")
+            return mock_tables
                 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"API request error: {str(e)}")
-            return []
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
             return []
@@ -231,32 +223,24 @@ class ValidateCreateColumnForm(FormValidationAction):
     def _fetch_columns_from_api(self, connection_string: str, table_name: str) -> List[str]:
         """Make API call to Hoover service to get columns"""
         try:
-            # Replace with your actual Hoover API endpoint
-            api_url = "https://your-hoover-api.com/api/columns"
-            
-            payload = {
-                "connection_string": connection_string,
-                "table_name": table_name,
-                "database_type": "postgresql"
+            # Mock data for testing - replace with actual API call when Hoover is ready
+            mock_columns_data = {
+                "employees": ["id", "first_name", "last_name", "email", "phone", "hire_date", "department_id", "position_id", "manager_id", "salary", "status"],
+                "departments": ["id", "name", "description", "manager_id", "budget", "location", "created_date"],
+                "positions": ["id", "title", "description", "salary_min", "salary_max", "department_id", "level"],
+                "projects": ["id", "name", "description", "start_date", "end_date", "status", "budget", "manager_id"],
+                "project_employees": ["id", "project_id", "employee_id", "role", "assigned_date", "hours_allocated"],
+                "users": ["id", "username", "email", "password_hash", "role", "created_at", "last_login", "is_active"],
+                "orders": ["id", "customer_id", "order_date", "total_amount", "status", "shipping_address", "payment_method"],
+                "products": ["id", "name", "description", "price", "category", "stock_quantity", "sku", "created_date"],
+                "customers": ["id", "first_name", "last_name", "email", "phone", "address", "city", "country", "registration_date"],
+                "inventory": ["id", "product_id", "warehouse_location", "quantity", "reserved_quantity", "last_updated"]
             }
             
-            response = requests.post(
-                api_url,
-                json=payload,
-                timeout=30,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("columns", [])
-            else:
-                logger.error(f"API request failed with status {response.status_code}")
-                return []
+            columns = mock_columns_data.get(table_name.lower(), ["id", "name", "description", "created_date"])
+            logger.info(f"Returning mock columns for table {table_name}: {columns}")
+            return columns
                 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"API request error: {str(e)}")
-            return []
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
             return []
@@ -318,31 +302,23 @@ class ActionFetchTables(Action):
     def _fetch_tables_from_api(self, connection_string: str) -> List[str]:
         """Make API call to Hoover service to get tables"""
         try:
-            # Replace with your actual Hoover API endpoint
-            api_url = "https://your-hoover-api.com/api/tables"
+            # Mock data for testing - replace with actual API call when Hoover is ready
+            mock_tables = [
+                "employees",
+                "departments", 
+                "positions",
+                "projects",
+                "project_employees",
+                "users",
+                "orders",
+                "products",
+                "customers",
+                "inventory"
+            ]
             
-            payload = {
-                "connection_string": connection_string,
-                "database_type": "postgresql"
-            }
-            
-            response = requests.post(
-                api_url,
-                json=payload,
-                timeout=30,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("tables", [])
-            else:
-                logger.error(f"API request failed with status {response.status_code}")
-                return []
+            logger.info(f"Returning mock tables for connection: {connection_string}")
+            return mock_tables
                 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"API request error: {str(e)}")
-            return []
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
             return []
@@ -430,35 +406,23 @@ class ActionExecuteAlterQuery(Action):
     def _execute_query_via_api(self, connection_string: str, query: str) -> bool:
         """Execute query via Hoover API"""
         try:
-            # Replace with your actual Hoover API endpoint
-            api_url = "https://your-hoover-api.com/api/execute"
+            # Mock successful execution for testing
+            # In production, replace with actual Hoover API call
+            logger.info(f"Mock executing query: {query}")
+            logger.info(f"Connection: {connection_string}")
             
-            payload = {
-                "connection_string": connection_string,
-                "query": query,
-                "database_type": "postgresql"
-            }
-            
-            response = requests.post(
-                api_url,
-                json=payload,
-                timeout=60,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("success", False)
+            # Simulate some basic validation
+            if "ALTER TABLE" in query.upper() and "ADD COLUMN" in query.upper():
+                # Simulate successful column creation
+                logger.info("Mock query execution successful - column would be created")
+                return True
             else:
-                logger.error(f"API request failed with status {response.status_code}")
+                # Invalid query format
+                logger.error(f"Invalid query format: {query}")
                 return False
                 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"API request error: {str(e)}")
-            # Mock success for testing - remove in production
-            return True
         except Exception as e:
-            logger.error(f"Unexpected error: {str(e)}")
+            logger.error(f"Unexpected error in mock execution: {str(e)}")
             return False
 
 

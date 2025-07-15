@@ -12,7 +12,7 @@ from .submit_database import ActionSubmitDatabase, ValidateCreateDatabaseForm
 from .submit_delete_database import ActionSubmitDeleteDatabase
 from .query_analyzer import ValidateAnalyzeQueryForm, ActionSubmitQueryAnalysis
 from .patch_information import ActionAskHostname,ActionConfirmHostname,ActionGetPatchInformation,ActionResetPatchForm
-from .create_column import ValidateCreateColumnForm, ActionFetchTables, ActionGenerateAlterQuery, ActionRequestTableSelection
+from .create_column import ValidateCreateColumnForm, ActionFetchTables, ActionGenerateAlterQuery, ActionRequestTableSelection, ActionExecuteAlterQuery
 from .delete_column import ValidateDropColumnForm,ActionFetchTablesForDrop, ActionFetchColumns, ActionGenerateDropQuery, ActionExecuteDropQuery, ActionTriggerTableFetchingForDrop, ActionTriggerColumnFetching
 
 __all__ = [
@@ -42,6 +42,7 @@ __all__ = [
     "ActionFetchColumns",
     "ActionGenerateDropQuery",
     "ActionExecuteDropQuery",
-    "ActionTriggerTableFetchingForDrop",
+    "ActionTriggerTableFetchingForDrop", 
     "ActionTriggerColumnFetching",
+    "ActionExecuteAlterQuery",
 ]

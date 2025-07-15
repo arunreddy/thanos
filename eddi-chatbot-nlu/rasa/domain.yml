@@ -891,8 +891,8 @@ responses:
         - title: "MySQL"
           payload: "/unsupported_db_type"
 
-  utter_ask_selected_table:
-    - text: "Please select a table from the list below:"
+  # utter_ask_selected_table:
+  #   - text: "Please select a table from the list below:"
 
   utter_ask_column_name:
     - text: "What would you like to name the new column?"
@@ -938,8 +938,8 @@ responses:
         - title: "MySQL"
           payload: "/unsupported_db_type"
 
-  utter_ask_column_to_drop:
-    - text: "Please select the column you want to drop from the list below:"
+  # utter_ask_column_to_drop:
+  #   - text: "Please select the column you want to drop from the list below:"
 
   utter_ask_confirm_column_drop:
     - text: |
