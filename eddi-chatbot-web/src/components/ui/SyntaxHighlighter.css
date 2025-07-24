@@ -1,0 +1,44 @@
+/* Shiki syntax highlighting styles */
+.shiki-container {
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border));
+}
+
+.shiki-container pre {
+  padding: 0.75rem;
+  margin: 0;
+  overflow-x: auto;
+  background-color: transparent;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.shiki-container code {
+  background-color: transparent;
+  font-family: inherit;
+}
+
+/* Override Shiki background to match our theme */
+.shiki {
+  background-color: hsl(var(--muted)) !important;
+}
+
+/* Scrollbar styling for code blocks */
+.shiki-container pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+.shiki-container pre::-webkit-scrollbar-track {
+  background-color: hsl(var(--muted) / 0.5);
+  border-radius: 0.25rem;
+}
+
+.shiki-container pre::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 0.25rem;
+}
+
+.shiki-container pre::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.5);
+}

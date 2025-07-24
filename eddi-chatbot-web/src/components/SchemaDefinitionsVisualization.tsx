@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Database, Table, FileText, Key, Hash, Calendar, Type, Info, Copy, Check } from 'lucide-react';
+import { Database, Table, FileText, Key, Hash, Calendar, Type, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import SyntaxHighlighter from '@/components/ui/SyntaxHighlighter';
 
 // Type definitions for schema objects
 interface Column {
@@ -48,36 +49,6 @@ interface SchemaDefinitions {
   };
 }
 
-// Copy button component
-const CopyButton = ({ text }: { text: string }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
-  };
-
-  return (
-    <Button
-      onClick={handleCopy}
-      size="sm"
-      variant="ghost"
-      className="absolute top-3 right-3 h-9 w-9 opacity-0 group-hover:opacity-100 hover:bg-background/80 backdrop-blur-sm border border-border/50"
-      title="Copy to clipboard"
-    >
-      {copied ? (
-        <Check className="w-4 h-4 text-green-600" />
-      ) : (
-        <Copy className="w-4 h-4 text-muted-foreground" />
-      )}
-    </Button>
-  );
-};
 
 // Utility function to get type icon and color
 const getTypeIcon = (type: string) => {
@@ -190,12 +161,11 @@ export default function SchemaDefinitionsVisualization({ data }: SchemaDefinitio
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="relative group">
-                      <pre className="bg-muted p-6 rounded-lg overflow-x-auto text-base font-mono">
-                        {view.definition}
-                      </pre>
-                      <CopyButton text={view.definition} />
-                    </div>
+                    <SyntaxHighlighter
+                      code={view.definition}
+                      language="sql"
+                      showCopyButton={true}
+                    />
                   </CardContent>
                 </Card>
               ))}
@@ -259,12 +229,11 @@ function TableVisualization({ table }: { table: Table }) {
             >
               <Separator className="mb-6" />
               <h4 className="font-semibold text-base text-muted-foreground uppercase tracking-wide mb-4">CREATE TABLE Statement</h4>
-              <div className="relative group">
-                <pre className="bg-muted p-6 rounded-lg overflow-x-auto text-base font-mono">
-                  {table.definition}
-                </pre>
-                <CopyButton text={table.definition} />
-              </div>
+              <SyntaxHighlighter
+                code={table.definition}
+                language="sql"
+                showCopyButton={true}
+              />
             </motion.div>
           )}
         </CardContent>
@@ -332,12 +301,12 @@ function CollectionVisualization({ collection }: { collection: Collection }) {
         <CardContent className="pt-0">
           <div className="space-y-4">
             <h4 className="font-semibold text-base text-muted-foreground uppercase tracking-wide">Sample Schema</h4>
-            <div className="relative group">
-              <pre className="bg-muted p-6 rounded-lg overflow-x-auto text-base font-mono max-h-96">
-                {JSON.stringify(collection.sample_schema, null, 2)}
-              </pre>
-              <CopyButton text={JSON.stringify(collection.sample_schema, null, 2)} />
-            </div>
+            <SyntaxHighlighter
+              code={JSON.stringify(collection.sample_schema, null, 2)}
+              language="json"
+              showCopyButton={true}
+              className="max-h-96 overflow-auto"
+            />
           </div>
         </CardContent>
       </Card>
@@ -395,12 +364,11 @@ function IndexVisualization({ index }: { index: Index }) {
           {index.definition && (
             <div className="space-y-4">
               <h4 className="font-semibold text-base text-muted-foreground uppercase tracking-wide">Definition</h4>
-              <div className="relative group">
-                <pre className="bg-muted p-6 rounded-lg overflow-x-auto text-base font-mono">
-                  {index.definition}
-                </pre>
-                <CopyButton text={index.definition} />
-              </div>
+              <SyntaxHighlighter
+                code={index.definition}
+                language="sql"
+                showCopyButton={true}
+              />
             </div>
           )}
         </CardContent>

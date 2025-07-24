@@ -8,12 +8,13 @@ import { API_URL } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { maskSensitiveInfo, containsSensitiveInfo } from "@/utils/maskSensitiveInfo";
-import { Copy, Check, BarChart3, Database } from "lucide-react";
+import { BarChart3, Database } from "lucide-react";
 import ExecutionPlanVisualization from "../ExecutionPlanVisualization";
 import SchemaDefinitionsVisualization from "../SchemaDefinitionsVisualization";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import SyntaxHighlighter from "@/components/ui/SyntaxHighlighter";
 
 // JSON formatting utility
 const formatJSON = (text: string): string => {
@@ -34,36 +35,6 @@ const isValidJSON = (text: string): boolean => {
   }
 };
 
-// Copy button component
-const CopyButton = ({ text }: { text: string }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
-  };
-
-  return (
-    <Button
-      onClick={handleCopy}
-      size="icon"
-      variant="ghost"
-      className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 hover:bg-muted/50"
-      title="Copy to clipboard"
-    >
-      {copied ? (
-        <Check className="w-3 h-3 text-green-600" />
-      ) : (
-        <Copy className="w-3 h-3 text-muted-foreground" />
-      )}
-    </Button>
-  );
-};
 interface Button {
   title: string;
   payload: string;
@@ -244,16 +215,14 @@ export default function ChatMessage({
                 const match = /language-(\w+)/.exec(className || '');
                 const codeContent = String(children).replace(/\n$/, '');
                 const inline = props.inline;
+                const language = match ? match[1] : 'plaintext';
                 
                 return !inline && match ? (
-                  <div className="relative group">
-                    <pre className="bg-muted p-3 rounded-lg overflow-x-auto border">
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    </pre>
-                    <CopyButton text={codeContent} />
-                  </div>
+                  <SyntaxHighlighter
+                    code={codeContent}
+                    language={language}
+                    showCopyButton={true}
+                  />
                 ) : (
                   <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
                     {children}
