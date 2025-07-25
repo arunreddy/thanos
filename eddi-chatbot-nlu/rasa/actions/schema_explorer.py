@@ -5,14 +5,13 @@ import tempfile
 import uuid
 import logging
 from typing import Any, Dict, List, Text
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote, quote
 
 import psycopg2
 from rasa_sdk import Action, FormValidationAction, Tracker
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.types import DomainDict
-from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +19,37 @@ logger = logging.getLogger(__name__)
 class ValidateExploreSchemaForm(FormValidationAction):
     def name(self) -> Text:
         return "validate_explore_schema_form"
+
+    def parse_connection_string(self, connection_string: str) -> dict:
+        """Parse connection string to extract all connection details with URL encoding support"""
+        try:
+            # URL encode the password part if it contains special characters
+            if '@' in connection_string and ':' in connection_string:
+                # Split to get the password part
+                parts = connection_string.split('://', 1)
+                if len(parts) == 2:
+                    protocol = parts[0]
+                    rest = parts[1]
+                    
+                    # Find the password part (between : and @)
+                    auth_part = rest.split('@')[0]
+                    if ':' in auth_part:
+                        user, password = auth_part.split(':', 1)
+                        # URL encode the password
+                        encoded_password = quote(password, safe='')
+                        # Reconstruct the connection string
+                        connection_string = f"{protocol}://{user}:{encoded_password}@{rest.split('@', 1)[1]}"
+            
+            parsed = urlparse(connection_string)
+            return {
+                'host': parsed.hostname,
+                'port': parsed.port or 5432,
+                'database': parsed.path.lstrip('/'),
+                'user': parsed.username,
+                'password': unquote(parsed.password) if parsed.password else None
+            }
+        except Exception:
+            return None
 
     def validate_connection_string(
         self,
@@ -37,15 +67,17 @@ class ValidateExploreSchemaForm(FormValidationAction):
             dispatcher.utter_message(text="Please select a database type first.")
             return {"connection_string": None}
 
-        # parse out the "default" schema from the URL
-        parsed = urlparse(slot_value)
-        target_schema = parsed.path.lstrip("/")
+        # Parse connection string with URL encoding support
+        conn_params = self.parse_connection_string(slot_value)
+        if not conn_params:
+            dispatcher.utter_message(text="❌ Error: Could not parse connection string")
+            return {"connection_string": None}
         
-
-        db_host = parsed.hostname
-        db_port = parsed.port
-        db_user = parsed.username
-        db_password = unquote(parsed.password) 
+        target_schema = conn_params['database']
+        db_host = conn_params['host']
+        db_port = conn_params['port']
+        db_user = conn_params['user']
+        db_password = conn_params['password'] 
 
         # connection-string patterns
         postgres_pattern = r"^postgres(?:ql)?://.+:.+@.+:\d+/.+$"
@@ -58,14 +90,13 @@ class ValidateExploreSchemaForm(FormValidationAction):
             # No regex validation, rely on urlparse and connection attempt
 
             try:
-                parsed = urlparse(slot_value)
                 # Test connection using parsed components for better error handling
                 conn = psycopg2.connect(
-                    host=parsed.hostname,
-                    port=parsed.port,
-                    user=parsed.username,
-                    password=parsed.password,
-                    database=parsed.path.lstrip("/")
+                    host=conn_params['host'],
+                    port=conn_params['port'],
+                    user=conn_params['user'],
+                    password=conn_params['password'],
+                    database=conn_params['database']
                 )
                 conn.close()
             except psycopg2.OperationalError as e:
@@ -299,7 +330,18 @@ class ValidateExploreSchemaForm(FormValidationAction):
         """Fetch PostgreSQL schemas."""
         print(f"DEBUG: Attempting to connect to PostgreSQL with: {conn_str}")
         try:
-            conn = psycopg2.connect(conn_str)
+            # Parse connection string with URL encoding support
+            conn_params = self.parse_connection_string(conn_str)
+            if not conn_params:
+                raise Exception("Could not parse connection string")
+            
+            conn = psycopg2.connect(
+                host=conn_params['host'],
+                port=conn_params['port'],
+                user=conn_params['user'],
+                password=conn_params['password'],
+                database=conn_params['database']
+            )
             cursor = conn.cursor()
             print(f"DEBUG: Connected successfully to PostgreSQL")
             try:
@@ -323,13 +365,17 @@ class ValidateExploreSchemaForm(FormValidationAction):
         """Fetch MySQL schemas (databases)."""
         try:
             import mysql.connector
-            parsed = urlparse(conn_str)
-            target_db = parsed.path.lstrip("/")  # the database you connected to
+            # Parse connection string with URL encoding support
+            conn_params = self.parse_connection_string(conn_str)
+            if not conn_params:
+                raise Exception("Could not parse connection string")
+            
+            target_db = conn_params['database']  # the database you connected to
             conn = mysql.connector.connect(
-                host=parsed.hostname,
-                port=parsed.port,
-                user=parsed.username,
-                password=parsed.password
+                host=conn_params['host'],
+                port=conn_params['port'],
+                user=conn_params['user'],
+                password=conn_params['password']
             )
             cursor = conn.cursor()
             try:
@@ -353,8 +399,12 @@ class ValidateExploreSchemaForm(FormValidationAction):
         """Fetch MongoDB database name."""
         try:
             from pymongo import MongoClient
-            parsed = urlparse(conn_str)
-            target_db = parsed.path.lstrip("/")
+            # Parse connection string with URL encoding support
+            conn_params = self.parse_connection_string(conn_str)
+            if not conn_params:
+                raise Exception("Could not parse connection string")
+            
+            target_db = conn_params['database']
             return [target_db]
         except ImportError:
             raise Exception("pymongo library required for MongoDB")
@@ -434,6 +484,37 @@ class ValidateExploreSchemaForm(FormValidationAction):
 class ActionSubmitSchemaExplore(Action):
     def name(self) -> Text:
         return "action_submit_schema_explore"
+
+    def parse_connection_string(self, connection_string: str) -> dict:
+        """Parse connection string to extract all connection details with URL encoding support"""
+        try:
+            # URL encode the password part if it contains special characters
+            if '@' in connection_string and ':' in connection_string:
+                # Split to get the password part
+                parts = connection_string.split('://', 1)
+                if len(parts) == 2:
+                    protocol = parts[0]
+                    rest = parts[1]
+                    
+                    # Find the password part (between : and @)
+                    auth_part = rest.split('@')[0]
+                    if ':' in auth_part:
+                        user, password = auth_part.split(':', 1)
+                        # URL encode the password
+                        encoded_password = quote(password, safe='')
+                        # Reconstruct the connection string
+                        connection_string = f"{protocol}://{user}:{encoded_password}@{rest.split('@', 1)[1]}"
+            
+            parsed = urlparse(connection_string)
+            return {
+                'host': parsed.hostname,
+                'port': parsed.port or 5432,
+                'database': parsed.path.lstrip('/'),
+                'user': parsed.username,
+                'password': unquote(parsed.password) if parsed.password else None
+            }
+        except Exception:
+            return None
 
     async def run(
         self,
@@ -515,7 +596,18 @@ class ActionSubmitSchemaExplore(Action):
 
     def _fetch_postgresql_objects(self, conn_str: str, object_types: List[str], selected_schemas: List[str]) -> Dict[str, List[str]]:
         """Fetch PostgreSQL objects from selected schemas only."""
-        conn = psycopg2.connect(conn_str)
+        # Parse connection string with URL encoding support
+        conn_params = self.parse_connection_string(conn_str)
+        if not conn_params:
+            raise Exception("Could not parse connection string")
+        
+        conn = psycopg2.connect(
+            host=conn_params['host'],
+            port=conn_params['port'],
+            user=conn_params['user'],
+            password=conn_params['password'],
+            database=conn_params['database']
+        )
         cursor = conn.cursor()
         objects = {}
 
@@ -595,14 +687,17 @@ class ActionSubmitSchemaExplore(Action):
             import mysql.connector
         except ImportError:
             raise Exception("mysql-connector-python library required for MySQL")
-            
-        parsed = urlparse(conn_str)
+        
+        # Parse connection string with URL encoding support
+        conn_params = self.parse_connection_string(conn_str)
+        if not conn_params:
+            raise Exception("Could not parse connection string")
 
         conn = mysql.connector.connect(
-            host=parsed.hostname,
-            port=parsed.port,
-            user=parsed.username,
-            password=parsed.password
+            host=conn_params['host'],
+            port=conn_params['port'],
+            user=conn_params['user'],
+            password=conn_params['password']
         )
         
         cursor = conn.cursor()
@@ -751,6 +846,37 @@ class ActionFetchAvailableObjects(Action):
 class ActionFetchObjectDefinitions(Action):
     def name(self) -> Text:
         return "action_fetch_object_definitions"
+
+    def parse_connection_string(self, connection_string: str) -> dict:
+        """Parse connection string to extract all connection details with URL encoding support"""
+        try:
+            # URL encode the password part if it contains special characters
+            if '@' in connection_string and ':' in connection_string:
+                # Split to get the password part
+                parts = connection_string.split('://', 1)
+                if len(parts) == 2:
+                    protocol = parts[0]
+                    rest = parts[1]
+                    
+                    # Find the password part (between : and @)
+                    auth_part = rest.split('@')[0]
+                    if ':' in auth_part:
+                        user, password = auth_part.split(':', 1)
+                        # URL encode the password
+                        encoded_password = quote(password, safe='')
+                        # Reconstruct the connection string
+                        connection_string = f"{protocol}://{user}:{encoded_password}@{rest.split('@', 1)[1]}"
+            
+            parsed = urlparse(connection_string)
+            return {
+                'host': parsed.hostname,
+                'port': parsed.port or 5432,
+                'database': parsed.path.lstrip('/'),
+                'user': parsed.username,
+                'password': unquote(parsed.password) if parsed.password else None
+            }
+        except Exception:
+            return None
 
     async def run(
         self,
@@ -960,7 +1086,18 @@ class ActionFetchObjectDefinitions(Action):
 
     def _get_postgresql_definitions(self, conn_str: str, selected_objects: Dict[str, List[str]], selected_schemas: List[str]) -> Dict[str, List[Dict]]:
         """Get detailed PostgreSQL object definitions with CREATE statements - schema-aware version."""
-        conn = psycopg2.connect(conn_str)
+        # Parse connection string with URL encoding support
+        conn_params = self.parse_connection_string(conn_str)
+        if not conn_params:
+            raise Exception("Could not parse connection string")
+        
+        conn = psycopg2.connect(
+            host=conn_params['host'],
+            port=conn_params['port'],
+            user=conn_params['user'],
+            password=conn_params['password'],
+            database=conn_params['database']
+        )
         cursor = conn.cursor()
         definitions = {}
 
@@ -1288,14 +1425,17 @@ class ActionFetchObjectDefinitions(Action):
             import mysql.connector
         except ImportError:
             raise Exception("mysql-connector-python library required for MySQL")
-            
-        parsed = urlparse(conn_str)
+        
+        # Parse connection string with URL encoding support
+        conn_params = self.parse_connection_string(conn_str)
+        if not conn_params:
+            raise Exception("Could not parse connection string")
 
         conn = mysql.connector.connect(
-            host=parsed.hostname,
-            port=parsed.port,
-            user=parsed.username,
-            password=parsed.password
+            host=conn_params['host'],
+            port=conn_params['port'],
+            user=conn_params['user'],
+            password=conn_params['password']
         )
         
         cursor = conn.cursor()

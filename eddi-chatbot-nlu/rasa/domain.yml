@@ -29,6 +29,8 @@ intents:
   - affirm_create_column
   - drop_column
   - affirm_drop_column
+  - db_metrics_summary
+  # - affirm_metrics_summary
 
 entities:
   - database_name
@@ -103,6 +105,12 @@ forms:
       - connection_string
       - selected_table
       - column_to_drop
+
+  db_metrics_form:
+    required_slots:
+      - metrics_hostname
+      - resource_name
+      - time_period
 
 slots:
   app_architect:
@@ -383,6 +391,8 @@ slots:
           - create_column
           - drop_column
           - recommend_database
+          - db_metrics_summary
+
 
 # create-column
   selected_table:
@@ -450,6 +460,37 @@ slots:
     influence_conversation: false
     mappings: []
 
+#db metrics
+
+  metrics_hostname:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: db_metrics_form
+            requested_slot: metrics_hostname
+
+  resource_name:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: db_metrics_form
+            requested_slot: resource_name
+
+  time_period:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: db_metrics_form
+            requested_slot: time_period
+
+  metrics_data:
+    type: any
+    influence_conversation: false
+    mappings: []
+
 responses:
   utter_greet:
     - text: "Hello! How can I help you today?"
@@ -477,6 +518,8 @@ responses:
           payload: "/create_column"
         - title: "Drop Column"
           payload: "/drop_column"
+        - title: "DB Metrics Summary"
+          payload: "/db_metrics_summary"
 
   utter_help_website:
     - text: |
@@ -487,6 +530,8 @@ responses:
         4. Explore database schema.
         5. Analyze SQL query performance.
         6. Create a new column in an existing table.
+        7. Drop a column from an existing table.
+        8. Get database metrics summary.
 
 
   utter_ask_app_architect:
@@ -1012,6 +1057,63 @@ responses:
         postgres://username:password@host:port/database_name
         ```
 
+#db metrics
+  utter_ask_metrics_hostname:
+    - text: |
+        Please provide the hostname for metrics collection:
+        
+        **Examples:**
+        • PostgreSQL: `postgres-prod-01.company.com`
+        • MongoDB Atlas: `atlas-oiocpd-shard-00-00.2ms8h.mongodb.net`
+        • MySQL: `mysql-prod-01.company.com`
+
+  utter_ask_resource_name:
+    - text: |
+        Please provide the resource name (database/collection path):
+        
+        **Examples:**
+        • PostgreSQL: `my_database`
+        • MongoDB Atlas: `604b97f276d858654646dde3/atl-cm2-rcvatmn-fnd-p-2/local`
+        • MySQL: `production_db`
+
+  utter_ask_time_period:
+    - text: |
+        Please specify the time period for metrics (from now backwards):
+        
+        **Examples:**
+        • `1h` - Last 1 hour
+        • `30m` - Last 30 minutes  
+        • `2d` - Last 2 days
+        • `12h` - Last 12 hours
+        
+        **Format:** `[number][h/m/d]` where h=hours, m=minutes, d=days
+
+  utter_ask_confirm_metrics_summary:
+    - text: |
+        ## 📊 Database Metrics Summary Confirmation
+        
+        Ready to fetch metrics with these settings:
+        
+        ### Configuration
+        - **Hostname:** `{metrics_hostname}`
+        - **Resource:** `{resource_name}`
+        - **Time Period:** Last `{time_period}`
+        
+        Would you like to proceed?
+      buttons:
+        - title: "Yes, get metrics"
+          payload: "/affirm"
+        - title: "No, cancel"
+          payload: "/deny"
+
+  utter_metrics_summary_cancelled:
+    - text: "Metrics summary has been cancelled. What would you like to do next?"
+      buttons:
+        - title: "Try again"
+          payload: "/db_metrics_summary"
+        - title: "Help"
+          payload: "/help"
+
 actions:
   - action_recommend_database
   - action_recommend_database_create_ticket
@@ -1048,6 +1150,8 @@ actions:
   - action_ask_drop_column_form_connection_string
   - action_ask_explore_schema_form_connection_string
   - action_ask_analyze_query_form_connection_string
+  - action_get_db_metrics_summary
+  - validate_db_metrics_form
 
 session_config:
   session_expiration_time: 60

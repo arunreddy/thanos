@@ -286,3 +286,23 @@ nlu:
       - sure
       - go ahead
       - proceed with column drop
+
+  - intent: db_metrics_summary
+    examples: |
+      - db metrics summary
+      - database metrics summary
+      - show me database metrics
+      - get database metrics
+      - metrics summary
+      - database performance metrics
+      - show db metrics
+      - get db metrics
+
+  # - intent: affirm_metrics_summary
+  #   examples: |
+  #     - yes
+  #     - sure
+  #     - absolutely
+  #     - proceed
+  #     - continue
+  #     - go ahead

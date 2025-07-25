@@ -5,7 +5,7 @@ import tempfile
 import uuid
 import logging
 from typing import Any, Dict, List, Text
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote, quote
 from rasa_sdk import Action, FormValidationAction, Tracker
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
@@ -17,6 +17,37 @@ logger = logging.getLogger(__name__)
 class ValidateAnalyzeQueryForm(FormValidationAction):
     def name(self) -> Text:
         return "validate_analyze_query_form"
+
+    def parse_connection_string(self, connection_string: str) -> dict:
+        """Parse connection string to extract all connection details with URL encoding support"""
+        try:
+            # URL encode the password part if it contains special characters
+            if '@' in connection_string and ':' in connection_string:
+                # Split to get the password part
+                parts = connection_string.split('://', 1)
+                if len(parts) == 2:
+                    protocol = parts[0]
+                    rest = parts[1]
+                    
+                    # Find the password part (between : and @)
+                    auth_part = rest.split('@')[0]
+                    if ':' in auth_part:
+                        user, password = auth_part.split(':', 1)
+                        # URL encode the password
+                        encoded_password = quote(password, safe='')
+                        # Reconstruct the connection string
+                        connection_string = f"{protocol}://{user}:{encoded_password}@{rest.split('@', 1)[1]}"
+            
+            parsed = urlparse(connection_string)
+            return {
+                'host': parsed.hostname,
+                'port': parsed.port or 5432,
+                'database': parsed.path.lstrip('/'),
+                'user': parsed.username,
+                'password': unquote(parsed.password) if parsed.password else None
+            }
+        except Exception:
+            return None
 
     def validate_connection_string(
         self,
@@ -50,7 +81,19 @@ class ValidateAnalyzeQueryForm(FormValidationAction):
                 # Test PostgreSQL connection
                 try:
                     import psycopg2
-                    conn = psycopg2.connect(slot_value)
+                    # Parse connection string with URL encoding support
+                    conn_params = self.parse_connection_string(slot_value)
+                    if not conn_params:
+                        dispatcher.utter_message(text="Could not parse PostgreSQL connection string.")
+                        return {"connection_string": None}
+                    
+                    conn = psycopg2.connect(
+                        host=conn_params['host'],
+                        port=conn_params['port'],
+                        user=conn_params['user'],
+                        password=conn_params['password'],
+                        database=conn_params['database']
+                    )
                     conn.close()
                     return {"connection_string": slot_value}
                 except ImportError:
@@ -93,13 +136,18 @@ class ValidateAnalyzeQueryForm(FormValidationAction):
                 # Test MySQL connection
                 try:
                     import mysql.connector
-                    parsed = urlparse(slot_value)
+                    # Parse connection string with URL encoding support
+                    conn_params = self.parse_connection_string(slot_value)
+                    if not conn_params:
+                        dispatcher.utter_message(text="Could not parse MySQL connection string.")
+                        return {"connection_string": None}
+                    
                     conn = mysql.connector.connect(
-                        host=parsed.hostname,
-                        port=parsed.port,
-                        database=parsed.path[1:],
-                        user=parsed.username,
-                        password=parsed.password
+                        host=conn_params['host'],
+                        port=conn_params['port'],
+                        database=conn_params['database'],
+                        user=conn_params['user'],
+                        password=conn_params['password']
                     )
                     conn.close()
                     return {"connection_string": slot_value}
@@ -215,6 +263,39 @@ class ActionSubmitQueryAnalysis(Action):
     def name(self) -> Text:
         return "action_submit_query_analysis"
 
+    def parse_connection_string(self, connection_string: str) -> dict:
+        """Parse connection string to extract all connection details with URL encoding support"""
+        try:
+            # URL encode the password part if it contains special characters
+            if '@' in connection_string and ':' in connection_string:
+                # Split to get the password part
+                parts = connection_string.split('://', 1)
+                if len(parts) == 2:
+                    protocol = parts[0]
+                    rest = parts[1]
+                    
+                    # Find the password part (between : and @)
+                    auth_part = rest.split('@')[0]
+                    if ':' in auth_part:
+                        user, password = auth_part.split(':', 1)
+                        # URL encode the password
+                        from urllib.parse import quote, unquote
+                        encoded_password = quote(password, safe='')
+                        # Reconstruct the connection string
+                        connection_string = f"{protocol}://{user}:{encoded_password}@{rest.split('@', 1)[1]}"
+            
+            from urllib.parse import urlparse, unquote
+            parsed = urlparse(connection_string)
+            return {
+                'host': parsed.hostname,
+                'port': parsed.port or 5432,
+                'database': parsed.path.lstrip('/'),
+                'user': parsed.username,
+                'password': unquote(parsed.password) if parsed.password else None
+            }
+        except Exception:
+            return None
+
     async def run(
         self,
         dispatcher: CollectingDispatcher,
@@ -293,7 +374,18 @@ class ActionSubmitQueryAnalysis(Action):
         """Analyze PostgreSQL query execution plan."""
         import psycopg2
         
-        conn = psycopg2.connect(connection_string)
+        # Parse connection string with URL encoding support
+        conn_params = self.parse_connection_string(connection_string)
+        if not conn_params:
+            raise Exception("Could not parse connection string")
+        
+        conn = psycopg2.connect(
+            host=conn_params['host'],
+            port=conn_params['port'],
+            user=conn_params['user'],
+            password=conn_params['password'],
+            database=conn_params['database']
+        )
         cursor = conn.cursor()
         
         try:
@@ -347,16 +439,18 @@ class ActionSubmitQueryAnalysis(Action):
     def _analyze_mysql_query(self, connection_string: str, sql_query: str) -> Dict[str, Any]:
         """Analyze MySQL query execution plan."""
         import mysql.connector
-        from urllib.parse import urlparse
         
-        parsed = urlparse(connection_string)
+        # Parse connection string with URL encoding support
+        conn_params = self.parse_connection_string(connection_string)
+        if not conn_params:
+            raise Exception("Could not parse connection string")
         
         conn = mysql.connector.connect(
-            host=parsed.hostname,
-            port=parsed.port,
-            database=parsed.path[1:],
-            user=parsed.username,
-            password=parsed.password
+            host=conn_params['host'],
+            port=conn_params['port'],
+            database=conn_params['database'],
+            user=conn_params['user'],
+            password=conn_params['password']
         )
         
         cursor = conn.cursor()
@@ -397,12 +491,15 @@ class ActionSubmitQueryAnalysis(Action):
     def _analyze_mongodb_query(self, connection_string: str, query: str) -> Dict[str, Any]:
         """Analyze MongoDB query execution plan."""
         from pymongo import MongoClient
-        from urllib.parse import urlparse
         import json
         
         client = MongoClient(connection_string)
-        parsed = urlparse(connection_string)
-        db_name = parsed.path.lstrip("/")
+        # Parse connection string with URL encoding support
+        conn_params = self.parse_connection_string(connection_string)
+        if not conn_params:
+            raise Exception("Could not parse connection string")
+        
+        db_name = conn_params['database']
         db = client[db_name]
         
         try:

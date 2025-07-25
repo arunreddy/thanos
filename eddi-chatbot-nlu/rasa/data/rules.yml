@@ -566,3 +566,44 @@ rules:
   #         - connection_string
   #   steps:
   #     - action: action_fetch_tables_for_drop
+
+# ——— db metrics summary flow ———
+  - rule: activate db metrics summary flow
+    steps:
+      - intent: db_metrics_summary
+      - action: db_metrics_form
+      - active_loop: db_metrics_form
+
+  - rule: submit db metrics form
+    condition:
+      - active_loop: db_metrics_form
+      - slot_was_set:
+          - time_period
+    steps:
+      - action: db_metrics_form
+      - active_loop: null
+      - action: utter_ask_confirm_metrics_summary
+      - action: action_listen
+
+# Update the slot condition
+  - rule: handle affirm for metrics summary
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - metrics_hostname
+          - resource_name
+          - time_period
+    steps:
+      - intent: affirm
+      - action: action_get_db_metrics_summary
+
+  - rule: handle deny for metrics summary
+    condition:
+      - active_loop: null
+      - slot_was_set:
+          - metrics_hostname
+          - resource_name
+          - time_period
+    steps:
+      - intent: deny
+      - action: utter_metrics_summary_cancelled
