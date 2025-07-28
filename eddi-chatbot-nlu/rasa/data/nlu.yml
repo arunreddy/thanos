@@ -256,6 +256,16 @@ nlu:
       - continue
       - go ahead
 
+  - intent: confirm_column_creation
+    examples: |
+      - yes create column
+      - create the column
+      - proceed with column creation
+      - confirm column creation
+      - yes proceed
+      - create column now
+      - go ahead with creation
+
   - intent: affirm_create_database
     examples: |
       - yes
@@ -287,6 +297,16 @@ nlu:
       - go ahead
       - proceed with column drop
 
+  - intent: confirm_drop_column
+    examples: |
+      - yes drop the column
+      - drop the column
+      - proceed with drop
+      - confirm drop column
+      - yes proceed with deletion
+      - delete the column now
+      - go ahead with drop
+
   - intent: db_metrics_summary
     examples: |
       - db metrics summary
@@ -297,12 +317,3 @@ nlu:
       - database performance metrics
       - show db metrics
       - get db metrics
-
-  # - intent: affirm_metrics_summary
-  #   examples: |
-  #     - yes
-  #     - sure
-  #     - absolutely
-  #     - proceed
-  #     - continue
-  #     - go ahead

@@ -27,10 +27,11 @@ intents:
   - inform_hostname
   - create_column
   - affirm_create_column
+  - confirm_column_creation
   - drop_column
   - affirm_drop_column
+  - confirm_drop_column
   - db_metrics_summary
-  # - affirm_metrics_summary
 
 entities:
   - database_name
@@ -93,15 +94,18 @@ forms:
 #create-column
   create_column_form:
     required_slots:
+      - database_type
       - connection_string
-      - selected_table
+      - table_name
       - column_name
       - column_type
-      - column_constraints
+      - is_primary_key
+      - default_value
 
 #drop-column
   drop_column_form:
     required_slots:
+      - database_type
       - connection_string
       - selected_table
       - column_to_drop
@@ -217,6 +221,21 @@ slots:
       - type: from_entity
         entity: database_type
         intent: inform 
+      - type: from_entity
+        entity: database_type
+        intent: affirm_create_column
+      - type: from_entity
+        entity: database_type
+        intent: affirm_drop_column
+      - type: from_text
+        conditions:
+          - active_loop: create_column_form
+            requested_slot: database_type
+      - type: from_text
+        conditions:
+          - active_loop: drop_column_form
+            requested_slot: database_type
+      
 
   # — create/delete-database form slots —
   database_name:
@@ -392,20 +411,23 @@ slots:
           - drop_column
           - recommend_database
           - db_metrics_summary
+          - affirm_create_column
+          - affirm_drop_column
+          - affirm_schema
+          - affirm_query_analyzer
+          - affirm_delete
+          - confirm_column_creation
+          - confirm_drop_column
 
 
 # create-column
-  selected_table:
+  table_name:
     type: text
     mappings:
       - type: from_text
         conditions:
           - active_loop: create_column_form
-            requested_slot: selected_table
-      - type: from_text
-        conditions:
-          - active_loop: drop_column_form
-            requested_slot: selected_table
+            requested_slot: table_name
 
   column_name:
     type: text
@@ -423,25 +445,42 @@ slots:
           - active_loop: create_column_form
             requested_slot: column_type
 
-  column_constraints:
+  is_primary_key:
+    type: bool
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: create_column_form
+            requested_slot: is_primary_key
+
+  default_value:
     type: text
     mappings:
       - type: from_text
         conditions:
           - active_loop: create_column_form
-            requested_slot: column_constraints
+            requested_slot: default_value
 
-  available_tables:
-    type: list
+  query_id:
+    type: text
     influence_conversation: false
     mappings: []
 
-  alter_query:
+  query_status:
     type: text
     influence_conversation: false
     mappings: []
 
 # drop-column
+
+  selected_table:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: drop_column_form
+            requested_slot: selected_table
+
   column_to_drop:
     type: text
     mappings:
@@ -826,6 +865,15 @@ responses:
         mongodb://username:password@host:port/database_name
         ```
 
+  utter_ask_connection_string_redshift:
+    - text: |
+        Please provide the Redshift connection string in the format:
+        
+        ### Redshift
+        ```
+        redshift://username:password@host:port/database_name
+        ```
+
   utter_invalid_connection_string:
     - text: "That doesn’t look like a valid PostgreSQL connection string. Please try again in the correct format."
 
@@ -952,41 +1000,18 @@ responses:
 #create-column
   utter_postgresql_support_create_column:
     - text: |
-        Which database type would you like to add a column to?  
-        We currently support only **PostgreSQL**.  
-        Other types will be available later.
+        Which database type would you like to add a column to?
+        We currently support **PostgreSQL**, **MySQL**, and **Redshift**.
       buttons:
         - title: "PostgreSQL"
-          payload: "/affirm_create_column"
-        - title: "Redshift"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_create_column{{"database_type":"PostgreSQL"}}'
         - title: "MySQL"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_create_column{{"database_type":"MySQL"}}'
+        - title: "Redshift"
+          payload: '/affirm_create_column{{"database_type":"Redshift"}}'
 
-  # utter_ask_selected_table:
-  #   - text: "Please select a table from the list below:"
-
-  utter_ask_column_name:
-    - text: "What would you like to name the new column?"
-
-  utter_ask_column_type:
-    - text: "What data type should this column be? (e.g., VARCHAR(255), INTEGER, BOOLEAN, TIMESTAMP)"
-
-  utter_ask_column_constraints:
-    - text: "Any constraints for this column? (e.g., NOT NULL, DEFAULT 'value', or type 'NONE' for no constraints)"
-
-  utter_ask_confirm_column_creation:
-    - text: |
-        Here's the ALTER TABLE query:
-        ```
-        {alter_query}
-        ```
-        Would you like to proceed?
-      buttons:
-        - title: "Yes, execute query"
-          payload: "/affirm"
-        - title: "No, cancel"
-          payload: "/deny"
+  utter_ask_table_name:
+    - text: "Please provide the table name where you want to add the column:"
 
   utter_column_creation_cancelled:
     - text: "Column creation has been cancelled. What would you like to do next?"
@@ -996,47 +1021,72 @@ responses:
         - title: "Help"
           payload: "/help"
 
-  utter_ask_connection_string_create_column:
+  utter_ask_column_name:
+    - text: "What would you like to name the new column?"
+
+  utter_ask_column_type:
+    - text: "What data type should this column be? (e.g., varchar, integer, boolean, timestamp)"
+
+  utter_ask_is_primary_key:
+    - text: "Should this column be a primary key?"
+      buttons:
+        - title: "Yes"
+          payload: "Yes"
+        - title: "No"
+          payload: "No"
+
+  utter_ask_default_value:
+    - text: "What should be the default value for this column? (Type 'NULL' if no default value)"
+
+  utter_ask_confirm_column_creation:
     - text: |
-        Please provide the PostgreSQL connection string in the format:
+        ## 📋 Column Creation Summary
         
-        ### PostgreSQL
-        ```
-        postgres://username:password@host:port/database_name
-        ```
+        **Database Type:** {database_type}
+        **Table:** {table_name}
+        **Column Name:** {column_name}
+        **Column Type:** {column_type}
+        **Primary Key:** {is_primary_key}
+        **Default Value:** {default_value}
+        
+        Would you like to proceed with creating this column?
+      buttons:
+        - title: "Yes, create column"
+          payload: "/confirm_column_creation"
+        - title: "No, cancel"
+          payload: "/deny"
 
 #drop-column
   utter_postgresql_support_drop_column:
     - text: |
-        Which database type would you like to drop a column from?  
-        We currently support only **PostgreSQL**.  
-        Other types will be available later.
+        Which database type would you like to drop a column from?
+        We currently support **PostgreSQL**, **MySQL**, and **Redshift**.
       buttons:
         - title: "PostgreSQL"
-          payload: "/affirm_drop_column"
-        - title: "Redshift"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_drop_column{{"database_type":"PostgreSQL"}}'
         - title: "MySQL"
-          payload: "/unsupported_db_type"
+          payload: '/affirm_drop_column{{"database_type":"MySQL"}}'
+        - title: "Redshift"
+          payload: '/affirm_drop_column{{"database_type":"Redshift"}}'
 
-  # utter_ask_column_to_drop:
-  #   - text: "Please select the column you want to drop from the list below:"
+  utter_ask_drop_column_form_selected_table:
+    - text: "Please provide the table name from which you want to drop a column:"
+
+  utter_ask_drop_column_form_column_to_drop:
+    - text: "Please provide the name of the column you want to drop:"
 
   utter_ask_confirm_column_drop:
     - text: |
         ⚠️ **WARNING: This action cannot be undone!**
         
-        You're about to drop this column:
-        ```
-        {drop_query}
-        ```
+        You're about to drop column `{column_to_drop}` from table `{selected_table}`.
         
         **This will permanently delete the column and ALL its data.**
         
         Are you absolutely sure you want to proceed?
       buttons:
         - title: "Yes, DROP the column"
-          payload: "/affirm"
+          payload: "/confirm_drop_column"
         - title: "No, cancel"
           payload: "/deny"
 
@@ -1048,14 +1098,6 @@ responses:
         - title: "Help"
           payload: "/help"
 
-  utter_ask_connection_string_drop_column:
-    - text: |
-        Please provide the PostgreSQL connection string in the format:
-        
-        ### PostgreSQL
-        ```
-        postgres://username:password@host:port/database_name
-        ```
 
 #db metrics
   utter_ask_metrics_hostname:
@@ -1124,10 +1166,6 @@ actions:
   - action_get_patch_information
   - action_reset_patch_form
   - action_back_to_main_menu
-  - action_fetch_tables
-  - action_generate_alter_query
-  - action_execute_alter_query
-  - validate_create_column_form
   - action_fetch_columns
   - action_generate_drop_query
   - action_execute_drop_query
@@ -1142,6 +1180,12 @@ actions:
   - action_ask_analyze_query_form_connection_string
   - action_get_db_metrics_summary
   - validate_db_metrics_form
+  - validate_create_column_form
+  - action_generate_column_query
+  - action_confirm_column_creation
+  - action_check_column_status
+  - action_confirm_drop_column
+  - action_check_drop_status
 
 session_config:
   session_expiration_time: 60

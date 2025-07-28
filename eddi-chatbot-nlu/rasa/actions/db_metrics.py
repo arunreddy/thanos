@@ -170,11 +170,11 @@ class ActionGetDbMetricsSummary(Action):
             return []
         
         # Hardcoded database credentials (replace with your actual credentials)
-        POSTGRES_HOST = "your-postgres-host.company.com"
-        POSTGRES_PORT = 5432
+        POSTGRES_HOST = "vpce-0ab278b1de75383bb-wl3jg9a9.vpce-svc-0bad56ddb5811ca2c.us-east-1.vpce.amazonaws.com"
+        POSTGRES_PORT = 5438
         POSTGRES_DATABASE = "dbq_psql"
-        POSTGRES_USER = "your_username"
-        POSTGRES_PASSWORD = "your_password"
+        POSTGRES_USER = "rds_psql_eds"
+        POSTGRES_PASSWORD = "NWCsKGTy?ZHUN91V"
         
         try:
             # Connect to the database using hardcoded credentials
