@@ -1061,20 +1061,10 @@ responses:
   utter_ask_metrics_hostname:
     - text: |
         Please provide the hostname for metrics collection:
-        
-        **Examples:**
-        • PostgreSQL: `postgres-prod-01.company.com`
-        • MongoDB Atlas: `atlas-oiocpd-shard-00-00.2ms8h.mongodb.net`
-        • MySQL: `mysql-prod-01.company.com`
 
   utter_ask_resource_name:
     - text: |
-        Please provide the resource name (database/collection path):
-        
-        **Examples:**
-        • PostgreSQL: `my_database`
-        • MongoDB Atlas: `604b97f276d858654646dde3/atl-cm2-rcvatmn-fnd-p-2/local`
-        • MySQL: `production_db`
+        Please provide the resource name:
 
   utter_ask_time_period:
     - text: |
