@@ -13,9 +13,9 @@ export const RequiredAuth = () => {
     return <Loading />;
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
+  // if (!isAuthenticated) {
+  //   return <Navigate to="/login" />;
+  // }
 
   return (<Outlet />);
 }

@@ -58,6 +58,11 @@ services:
       - NODE_ENV=development
       - PORT=8000
       - EDDI_RASA_CONNECTOR_URL=http://thanos-chatbot-nlu:5005
+      - DB_HOST=thanos-postgres
+      - DB_PORT=5432
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
     networks:
       - thanos-network
 

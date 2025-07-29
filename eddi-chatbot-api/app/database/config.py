@@ -39,18 +39,17 @@ class DatabaseConfig(BaseModel):
         )
     
     def get_database_url(self) -> str:
-        """Get SQLAlchemy database URL (safe, avoids exposing credentials in logs)"""
+        """Get SQLAlchemy database URL with real password (for connection, not for logs)"""
         from sqlalchemy.engine import URL
-        return str(
-            URL.create(
-                drivername="postgresql",
-                username=self.username,
-                password=self.password,
-                host=self.host,
-                port=self.port,
-                database=self.database,
-            )
+        url = URL.create(
+            drivername="postgresql",
+            username=self.username,
+            password=self.password,
+            host=self.host,
+            port=self.port,
+            database=self.database,
         )
+        return url.render_as_string(hide_password=False)
     
     def get_alembic_url(self) -> str:
         """Get database URL for Alembic migrations"""

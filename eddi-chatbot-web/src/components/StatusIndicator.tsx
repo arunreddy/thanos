@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { API_URL } from '@/lib/config';
 
 interface ServiceStatus {
   status: 'healthy' | 'unhealthy' | 'degraded';
@@ -20,8 +21,7 @@ interface HealthStatus {
 
 // Health check API function
 const checkHealth = async (): Promise<HealthStatus> => {
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:48000';
-  const response = await fetch(`${API_BASE}/api/chat/health`, {
+  const response = await fetch(`${API_URL}/api/chat/health`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

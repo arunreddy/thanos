@@ -4,7 +4,7 @@ import { User, Bot } from "lucide-react";
 import { motion } from "framer-motion";
 import { CustomForm } from "@/types";
 import { useState } from "react";
-import { API_URL } from "@/lib/api";
+import { API_URL } from "@/lib/config";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { maskSensitiveInfo, containsSensitiveInfo } from "@/utils/maskSensitiveInfo";

@@ -14,10 +14,17 @@ class RasaConnector:
         self.rasa_url = rasa_url
         self.client = httpx.AsyncClient(timeout=30.0)
 
-    async def send_message(self, message: str, sender_id: str) -> Dict[str, Any]:
+    async def send_message(self, message: str, sender_id: str, auth_headers: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Send a message to Rasa and get the response."""
         endpoint = f"{self.rasa_url}/webhooks/rest/webhook"
         payload = {"sender": sender_id, "message": message}
+        
+        # Add auth headers to metadata if provided
+        if auth_headers:
+            payload["metadata"] = {
+                "auth_headers": auth_headers
+            }
+            print(f"[RASA CONNECTOR] Sending auth headers to Rasa: {auth_headers}")
 
         try:
             print(f"Sending message to Rasa: {endpoint} {payload}")

@@ -102,7 +102,6 @@ class TestDatabaseConfig:
         
         assert "postgresql://" in url
         assert "test_user" in url
-        assert "***" in url  # Password is masked in the URL
         assert "test-host" in url
         assert "5432" in url
         assert "test_db" in url

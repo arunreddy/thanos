@@ -64,7 +64,7 @@ rules:
       - active_loop: null
     steps:
       - intent: help
-      - action: utter_help
+      - action: action_dynamic_help
 
   - rule: Help website flow
     condition:
@@ -437,13 +437,13 @@ rules:
     steps:
       - intent: help
       - action: action_back_to_main_menu
-      - action: utter_help
+      - action: action_dynamic_help
       - action: action_listen
 
   - rule: Handle help during patch flow (no hostname set)
     steps:
       - intent: help
-      - action: utter_help
+      - action: action_dynamic_help
       - action: action_listen
 
 # ——— create column flow ———

@@ -1,7 +1,5 @@
 import { MessageResponse } from "@/types";
-// frontend/src/lib/api.ts
-export const API_URL = "http://localhost:48000";
-// export const API_URL = "https://dbq-dev-chatbot.p2.ocp.citizensbank.com"
+import { API_URL } from "./config";
 
 // User context for API calls
 let currentUserEmail: string | null = null;
@@ -49,7 +47,14 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   // Add user email to headers if available
   if (currentUserEmail) {
     headers.set('X-User-Email', currentUserEmail);
+    headers.set('X-User-Id', currentUserEmail);
   }
+
+  // Add demo auth headers for testing pass-through functionality
+  // TODO: Replace with actual auth headers from your authentication system
+  headers.set('X-Source-Id', 'eddi-chatbot'); // eddi, hoover, and teams are the only valid values
+  headers.set('X-Jwt-Token', 'my-jwt-token'); // this is the JWT token for the user
+  headers.set('X-User-Role', 'eddi-chatbot-dba'); // this is the role of the user
 
   const response = await fetch(`${API_URL}${url}`, {
     ...options,

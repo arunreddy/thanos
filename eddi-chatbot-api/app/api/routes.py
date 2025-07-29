@@ -27,6 +27,25 @@ def get_user_id_from_request(request: Request) -> str:
     user_id = request.query_params.get("user_id", "anonymous")
     return user_id
 
+def extract_auth_headers(request: Request) -> Dict[str, Any]:
+    """Extract special authentication headers for pass-through to Rasa actions"""
+    # Define whitelist of allowed auth headers to prevent header injection
+    allowed_headers = [
+        "X-User-Email",
+        "X-User-Id", 
+        "X-Source-Id",
+        "X-Jwt-Token", 
+        "X-User-Role",
+    ]
+    
+    auth_headers = {}
+    for header_name in allowed_headers:
+        header_value = request.headers.get(header_name)
+        if header_value:
+            auth_headers[header_name] = header_value
+    
+    return auth_headers
+
 
 class MessageRequest(BaseModel):
     message: str
@@ -62,7 +81,18 @@ async def new_conversation(request: MessageRequest, http_request: Request, servi
 async def send_message(request: MessageRequest, http_request: Request, service: ChatService = Depends(get_chat_service)):
     try:
         user_id = get_user_id_from_request(http_request)
-        response = await service.process_message(message=request.message, user_id=user_id, conversation_id=request.conversation_id)
+        auth_headers = extract_auth_headers(http_request)
+        
+        # Log extracted headers for debugging
+        if auth_headers:
+            print(f"[AUTH HEADERS] Extracted headers: {auth_headers}")
+        
+        response = await service.process_message(
+            message=request.message, 
+            user_id=user_id, 
+            conversation_id=request.conversation_id,
+            auth_headers=auth_headers
+        )
 
         # Format the response to match what the frontend expects
         print("-----> RESPONSE", response)

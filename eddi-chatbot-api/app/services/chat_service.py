@@ -24,11 +24,11 @@ class ChatService:
         
         self.rasa_connector = RasaConnector()
 
-    async def process_message(self, message: str, user_id: str = "anonymous", conversation_id: Optional[str] = None) -> dict:
+    async def process_message(self, message: str, user_id: str = "anonymous", conversation_id: Optional[str] = None, auth_headers: Optional[Dict[str, Any]] = None) -> dict:
         start_time = datetime.now(timezone.utc)
-        return await self._process_message_with_db(message, user_id, conversation_id, start_time)
+        return await self._process_message_with_db(message, user_id, conversation_id, start_time, auth_headers)
     
-    async def _process_message_with_db(self, message: str, user_id: str, conversation_id: Optional[str], start_time: datetime) -> dict:
+    async def _process_message_with_db(self, message: str, user_id: str, conversation_id: Optional[str], start_time: datetime, auth_headers: Optional[Dict[str, Any]] = None) -> dict:
         """Process message using database storage"""
         try:
             # Get or create user (for Okta integration, we'll enhance this later)
@@ -61,7 +61,7 @@ class ChatService:
             )
             
             # Send message to Rasa using conversation's Rasa sender ID
-            rasa_response = await self.rasa_connector.send_message(message, conversation.rasa_sender_id)
+            rasa_response = await self.rasa_connector.send_message(message, conversation.rasa_sender_id, auth_headers)
             
             # Calculate response time
             response_time_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)

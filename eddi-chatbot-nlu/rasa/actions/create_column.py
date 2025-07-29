@@ -23,6 +23,40 @@ class ValidateCreateColumnForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         """Validate PostgreSQL connection string format"""
         
+        # ==> HEADER DEBUG LOGGING <==
+        logger.info(f"=== HEADER DEBUG INFO (ValidateCreateColumnForm.validate_connection_string) ===")
+        logger.info(f"Slot value: {slot_value}")
+        logger.info(f"Tracker sender_id: {tracker.sender_id}")
+        logger.info(f"Latest message: {tracker.latest_message}")
+        logger.info(f"Latest message metadata: {getattr(tracker.latest_message, 'metadata', 'No metadata attr')}")
+        
+        # Check for auth headers in latest message metadata
+        if hasattr(tracker.latest_message, 'metadata') and tracker.latest_message.metadata:
+            logger.info(f"Message metadata contents: {tracker.latest_message.metadata}")
+            auth_headers = tracker.latest_message.metadata.get('auth_headers', {})
+            if auth_headers:
+                logger.info(f"🔑 FOUND AUTH HEADERS: {auth_headers}")
+            else:
+                logger.info("❌ No auth_headers found in metadata")
+        
+        # Check events for any request data with auth headers
+        recent_events = tracker.events[-5:] if tracker.events else []
+        for i, event in enumerate(recent_events):
+            event_dict = getattr(event, '__dict__', {})
+            logger.info(f"Event {i}: {type(event).__name__} - {event_dict}")
+            # Check if this event has metadata with auth headers
+            if isinstance(event_dict, dict) and 'metadata' in event_dict:
+                event_auth_headers = event_dict.get('metadata', {}).get('auth_headers', {})
+                if event_auth_headers:
+                    logger.info(f"🔑 FOUND AUTH HEADERS IN EVENT {i}: {event_auth_headers}")
+        
+        logger.info(f"=== END HEADER DEBUG (validate_connection_string) ===")
+        
+        # Extract auth headers for use in action
+        auth_headers = self._extract_auth_headers(tracker)
+        if auth_headers:
+            logger.info(f"🔑 Using auth headers for database operations: {list(auth_headers.keys())}")
+        
         if not slot_value:
             dispatcher.utter_message(
                 text="Please provide a connection string."
@@ -245,6 +279,16 @@ class ValidateCreateColumnForm(FormValidationAction):
             logger.error(f"Unexpected error: {str(e)}")
             return []
 
+    def _extract_auth_headers(self, tracker: Tracker) -> Dict[str, Any]:
+        """Extract auth headers from tracker latest message metadata"""
+        try:
+            if hasattr(tracker.latest_message, 'metadata') and tracker.latest_message.metadata:
+                return tracker.latest_message.metadata.get('auth_headers', {})
+            return {}
+        except Exception as e:
+            logger.error(f"Error extracting auth headers: {e}")
+            return {}
+
 
 class ActionFetchTables(Action):
     """Fetch available tables from the database"""
@@ -370,6 +414,37 @@ class ActionExecuteAlterQuery(Action):
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
+        # ==> HEADER DEBUG LOGGING <==
+        logger.info(f"=== HEADER DEBUG INFO (ActionExecuteAlterQuery) ===")
+        logger.info(f"Tracker sender_id: {tracker.sender_id}")
+        logger.info(f"Latest message: {tracker.latest_message}")
+        
+        # Deep dive into message structure
+        if tracker.latest_message:
+            logger.info(f"Message timestamp: {getattr(tracker.latest_message, 'timestamp', 'No timestamp')}")
+            logger.info(f"Message intent: {getattr(tracker.latest_message, 'intent', 'No intent')}")
+            logger.info(f"Message entities: {getattr(tracker.latest_message, 'entities', 'No entities')}")
+            
+        # Check for any custom data in events
+        for event in tracker.events[-3:] if tracker.events else []:
+            event_data = getattr(event, '__dict__', {})
+            if 'metadata' in event_data or 'headers' in event_data:
+                logger.info(f"Event with potential header data: {event_data}")
+        
+        # Extract auth headers for this action
+        auth_headers = self._extract_auth_headers(tracker)
+        if auth_headers:
+            logger.info(f"🔑 ActionExecuteAlterQuery using auth headers: {list(auth_headers.keys())}")
+            # Example: Use auth headers for database authentication
+            db_auth_token = auth_headers.get('X-Database-Auth-Token')
+            service_principal = auth_headers.get('X-Service-Principal')
+            if db_auth_token:
+                logger.info(f"🔑 Will use database auth token: {db_auth_token[:10]}...")
+            if service_principal:
+                logger.info(f"🔑 Will use service principal: {service_principal}")
+        
+        logger.info(f"=== END HEADER DEBUG (ActionExecuteAlterQuery) ===")
+        
         connection_string = tracker.get_slot("connection_string")
         alter_query = tracker.get_slot("alter_query")
         table_name = tracker.get_slot("selected_table")
@@ -425,6 +500,16 @@ class ActionExecuteAlterQuery(Action):
             logger.error(f"Unexpected error in mock execution: {str(e)}")
             return False
 
+    def _extract_auth_headers(self, tracker: Tracker) -> Dict[str, Any]:
+        """Extract auth headers from tracker latest message metadata"""
+        try:
+            if hasattr(tracker.latest_message, 'metadata') and tracker.latest_message.metadata:
+                return tracker.latest_message.metadata.get('auth_headers', {})
+            return {}
+        except Exception as e:
+            logger.error(f"Error extracting auth headers: {e}")
+            return {}
+
 
 # Additional helper action to trigger table fetching in the form
 class ActionRequestTableSelection(Action):
@@ -448,6 +533,28 @@ class ActionAskCreateColumnFormConnectionString(Action):
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        # ==> HEADER DEBUG LOGGING <==
+        logger.info(f"=== HEADER DEBUG INFO (ActionAskCreateColumnFormConnectionString) ===")
+        logger.info(f"Tracker sender_id: {tracker.sender_id}")
+        logger.info(f"Latest message: {tracker.latest_message}")
+        logger.info(f"Latest message metadata: {getattr(tracker.latest_message, 'metadata', 'No metadata attr')}")
+        logger.info(f"Latest message parse_data: {getattr(tracker.latest_message, 'parse_data', 'No parse_data attr')}")
+        logger.info(f"Events (last 3): {[str(event) for event in tracker.events[-3:]] if tracker.events else 'No events'}")
+        logger.info(f"Domain keys: {list(domain.keys()) if domain else 'No domain'}")
+        logger.info(f"Tracker slots: {dict(tracker.slots)}")
+        logger.info(f"Tracker current_state: {getattr(tracker, 'current_state', 'No current_state attr')}")
+        
+        # Check if there are any additional attributes on tracker
+        tracker_attrs = [attr for attr in dir(tracker) if not attr.startswith('_')]
+        logger.info(f"All tracker attributes: {tracker_attrs}")
+        
+        # Try to access any potential header/request data
+        for attr in ['request', 'headers', 'metadata', 'context', 'session_data']:
+            value = getattr(tracker, attr, f'No {attr} attribute')
+            logger.info(f"Tracker.{attr}: {value}")
+        
+        logger.info(f"=== END HEADER DEBUG ===")
         
         # Since user already selected PostgreSQL, only show PostgreSQL format
         dispatcher.utter_message(
