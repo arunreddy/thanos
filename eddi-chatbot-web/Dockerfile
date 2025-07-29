@@ -14,6 +14,7 @@ COPY public ./public
 COPY src ./src
 COPY index.html ./index.html
 COPY vite.config.ts ./vite.config.ts
+COPY vitest.config.ts ./vitest.config.ts
 COPY tailwind.config.ts ./tailwind.config.ts
 COPY tsconfig.json ./tsconfig.json
 COPY tsconfig.node.json ./tsconfig.node.json

@@ -16,7 +16,8 @@
       "Bash(pnpm vitest run:*)",
       "Bash(uv run pytest:*)",
       "Bash(uv add:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(docker ps:*)"
     ],
     "deny": []
   }

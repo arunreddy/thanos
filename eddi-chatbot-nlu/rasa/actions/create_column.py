@@ -546,7 +546,7 @@ class ActionRequestTableSelection(Action):
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        return {"status": "TIMEOUT"}
+        return []
 
 
 class ActionAskCreateColumnFormConnectionString(Action):
