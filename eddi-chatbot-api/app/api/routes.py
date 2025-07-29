@@ -12,9 +12,6 @@ from sqlalchemy.orm import Session
 
 chat_router = APIRouter(prefix="/chat", tags=["chat"])
 
-# Global chat service for backwards compatibility (in-memory)
-chat_service = ChatService()
-
 def get_chat_service(db: Session = Depends(get_db)) -> ChatService:
     """Get ChatService with database session"""
     return ChatService(db=db)
@@ -29,6 +26,25 @@ def get_user_id_from_request(request: Request) -> str:
     # Fallback to query parameter for backwards compatibility
     user_id = request.query_params.get("user_id", "anonymous")
     return user_id
+
+def extract_auth_headers(request: Request) -> Dict[str, Any]:
+    """Extract special authentication headers for pass-through to Rasa actions"""
+    # Define whitelist of allowed auth headers to prevent header injection
+    allowed_headers = [
+        "X-User-Email",
+        "X-User-Id", 
+        "X-Source-Id",
+        "X-Jwt-Token", 
+        "X-User-Role",
+    ]
+    
+    auth_headers = {}
+    for header_name in allowed_headers:
+        header_value = request.headers.get(header_name)
+        if header_value:
+            auth_headers[header_name] = header_value
+    
+    return auth_headers
 
 
 class MessageRequest(BaseModel):
@@ -65,7 +81,18 @@ async def new_conversation(request: MessageRequest, http_request: Request, servi
 async def send_message(request: MessageRequest, http_request: Request, service: ChatService = Depends(get_chat_service)):
     try:
         user_id = get_user_id_from_request(http_request)
-        response = await service.process_message(message=request.message, user_id=user_id, conversation_id=request.conversation_id)
+        auth_headers = extract_auth_headers(http_request)
+        
+        # Log extracted headers for debugging
+        if auth_headers:
+            print(f"[AUTH HEADERS] Extracted headers: {auth_headers}")
+        
+        response = await service.process_message(
+            message=request.message, 
+            user_id=user_id, 
+            conversation_id=request.conversation_id,
+            auth_headers=auth_headers
+        )
 
         # Format the response to match what the frontend expects
         print("-----> RESPONSE", response)
@@ -88,55 +115,17 @@ async def get_conversation(conversation_id: str, service: ChatService = Depends(
 
 @chat_router.get("/conversations", response_model=List[Dict[str, Any]])
 async def get_conversations(http_request: Request, service: ChatService = Depends(get_chat_service)):
-    """Get conversations for a user. Falls back to in-memory if database not available."""
+    """Get conversations for a user."""
     user_id = get_user_id_from_request(http_request)
-    
-    try:
-        # Try to get user conversations from database
-        conversations = service.get_user_conversations(user_id)
-        if conversations:
-            return conversations
-    except Exception as e:
-        print(f"Database error, falling back to in-memory: {e}")
-    
-    # Fall back to in-memory storage for backwards compatibility
-    conversations = []
-    for conv_id, messages in chat_service.conversations.items():
-        if messages:
-            # Filter by user_id if available in message data
-            user_messages = [msg for msg in messages if msg.get("user_id") == user_id]
-            if not user_messages and user_id != "anonymous":
-                continue  # Skip conversations that don't belong to this user
-                
-            # Get the first user message as the title, fallback to "New Conversation"
-            title = "New Conversation"
-            for msg in messages:
-                if msg["role"] == "user":
-                    title = msg["content"][:30] + ("..." if len(msg["content"]) > 30 else "")
-                    break
-
-            # Get the latest timestamp
-            latest_ts = messages[-1]["timestamp"] if messages else None
-
-            conversations.append({"id": conv_id, "title": title, "updated_at": latest_ts})
-
-    # Sort by most recent first
-    conversations.sort(key=lambda x: x["updated_at"] if x["updated_at"] else "", reverse=True)
+    conversations = service.get_user_conversations(user_id)
     return conversations
 
 
 @chat_router.delete("/conversations/{conversation_id}")
 async def delete_conversation(conversation_id: str, service: ChatService = Depends(get_chat_service)):
     try:
-        # Try to delete from database first
-        if service.db and service.conversation_repo:
-            success = service.conversation_repo.delete_conversation(conversation_id)
-            if success:
-                return {"status": "success", "message": f"Conversation {conversation_id} deleted"}
-        
-        # Fall back to in-memory deletion
-        if conversation_id in chat_service.conversations:
-            del chat_service.conversations[conversation_id]
+        success = service.conversation_repo.delete_conversation(conversation_id)
+        if success:
             return {"status": "success", "message": f"Conversation {conversation_id} deleted"}
         else:
             raise HTTPException(status_code=404, detail=f"Conversation {conversation_id} not found")

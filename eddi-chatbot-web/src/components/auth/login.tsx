@@ -1,4 +1,4 @@
-import { API_URL } from "@/lib/api";
+import { API_URL } from "@/lib/config";
 
 const Login = () => {
   const loginUrl = `${API_URL}/auth/login`;

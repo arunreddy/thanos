@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import SyntaxHighlighter from '@/components/ui/SyntaxHighlighter';
 
 // Type definitions for execution plans
 interface PostgresPlan {
@@ -193,10 +194,13 @@ export default function ExecutionPlanVisualization({ data, onClose }: ExecutionP
           
           <TabsContent value="raw" className="mt-4">
             <Card>
-              <CardContent className="p-0">
-                <pre className="p-4 font-mono text-sm overflow-auto max-h-96 whitespace-pre-wrap">
-                  {'text' in data.execution_plan ? data.execution_plan.text : JSON.stringify(data.execution_plan, null, 2)}
-                </pre>
+              <CardContent className="p-4">
+                <SyntaxHighlighter
+                  code={'text' in data.execution_plan ? data.execution_plan.text : JSON.stringify(data.execution_plan, null, 2)}
+                  language={'text' in data.execution_plan ? 'sql' : 'json'}
+                  showCopyButton={true}
+                  className="max-h-96 overflow-auto"
+                />
               </CardContent>
             </Card>
           </TabsContent>

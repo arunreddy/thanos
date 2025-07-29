@@ -5,7 +5,6 @@ import { useChat } from '../hooks/useChat';
 import { HelpCircle, Loader2, MessageCircle, Rocket } from 'lucide-react';
 import { newConversation } from '@/lib/api';
 import { useAppContext, User } from '@/AppContext';
-import { RasaStatusDot } from './StatusIndicator';
 
 export default function ChatNew() {
   const { chatId } = useParams();

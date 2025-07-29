@@ -1,5 +1,6 @@
 import React, {createContext, useContext, useState, useEffect, ReactNode} from 'react';
-import {API_URL, setCurrentUser} from "@/lib/api";
+import {setCurrentUser} from "@/lib/api";
+import { API_URL } from './lib/config';
 
 interface UserRole {
     id:string;

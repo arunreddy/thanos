@@ -1,4 +1,4 @@
-import { API_URL } from "@/lib/api";
+import { API_URL } from "@/lib/config";
 
 export default function Home() {
     const loginUrl = `${API_URL}/auth/login`;

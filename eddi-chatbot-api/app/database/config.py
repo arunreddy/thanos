@@ -9,9 +9,9 @@ class DatabaseConfig(BaseModel):
     # Database connection parameters
     host: str = "localhost"
     port: int = 5432
-    database: str = "postgres"
-    username: str = "postgres"
-    password: str = "postgres"
+    database: str = ""
+    username: str = ""
+    password: str = ""
     
     # Connection pool settings
     pool_size: int = 5
@@ -20,17 +20,17 @@ class DatabaseConfig(BaseModel):
     pool_recycle: int = 3600
     
     # SSL and other options
-    sslmode: str = "prefer"
+    sslmode: str = "disable"
     
     @classmethod
     def from_env(cls) -> "DatabaseConfig":
         """Create database config from environment variables"""
         return cls(
-            host=os.getenv("DB_HOST", "thanos-postgres"),  # Use Docker container name
+            host=os.getenv("DB_HOST", "eddi-postgres"),  # Use Docker container name
             port=int(os.getenv("DB_PORT", "5432")),
-            database=os.getenv("DB_NAME", "postgres"),
-            username=os.getenv("DB_USER", "postgres"),
-            password=os.getenv("DB_PASSWORD", "postgres"),
+            database=os.getenv("DB_NAME", ""),
+            username=os.getenv("DB_USER", ""),
+            password=os.getenv("DB_PASSWORD", ""),
             pool_size=int(os.getenv("DB_POOL_SIZE", "5")),
             max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "10")),
             pool_timeout=int(os.getenv("DB_POOL_TIMEOUT", "30")),
@@ -39,8 +39,17 @@ class DatabaseConfig(BaseModel):
         )
     
     def get_database_url(self) -> str:
-        """Get SQLAlchemy database URL"""
-        return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+        """Get SQLAlchemy database URL with real password (for connection, not for logs)"""
+        from sqlalchemy.engine import URL
+        url = URL.create(
+            drivername="postgresql",
+            username=self.username,
+            password=self.password,
+            host=self.host,
+            port=self.port,
+            database=self.database,
+        )
+        return url.render_as_string(hide_password=False)
     
     def get_alembic_url(self) -> str:
         """Get database URL for Alembic migrations"""
