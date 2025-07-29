@@ -155,7 +155,7 @@ class TestRoutesCoverage:
     def test_health_check_database_error(self):
         """Test health check with database error"""
         with patch('httpx.AsyncClient') as mock_client, \
-             patch('app.database.connection.SessionLocal') as mock_session:
+             patch('app.api.routes.SessionLocal') as mock_session:
             
             # Mock healthy Rasa
             mock_response = MagicMock()
