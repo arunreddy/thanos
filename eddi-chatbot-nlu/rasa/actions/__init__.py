@@ -12,8 +12,9 @@ from .submit_database import ActionSubmitDatabase, ValidateCreateDatabaseForm
 from .submit_delete_database import ActionSubmitDeleteDatabase
 from .query_analyzer import ValidateAnalyzeQueryForm, ActionSubmitQueryAnalysis,ActionAskAnalyzeQueryFormConnectionString
 from .patch_information import ActionAskHostname,ActionConfirmHostname,ActionGetPatchInformation,ActionResetPatchForm
-from .create_column import ValidateCreateColumnForm, ActionFetchTables, ActionGenerateAlterQuery, ActionRequestTableSelection, ActionExecuteAlterQuery, ActionAskCreateColumnFormConnectionString
-from .delete_column import ValidateDropColumnForm,ActionFetchTablesForDrop, ActionFetchColumns, ActionGenerateDropQuery, ActionExecuteDropQuery, ActionTriggerTableFetchingForDrop, ActionTriggerColumnFetching, ActionAskDropColumnFormConnectionString
+from .create_column import ValidateCreateColumnForm,ActionGenerateColumnQuery,ActionConfirmColumnCreation,ActionCheckColumnStatus,ActionAskCreateColumnFormConnectionString
+from .delete_column import ValidateDropColumnForm, ActionGenerateDropQuery, ActionConfirmDropColumn, ActionCheckDropStatus, ActionAskDropColumnFormConnectionString
+from .db_metrics import ActionGetDbMetricsSummary, ValidateDbMetricsForm
 
 __all__ = [
     "ActionRecommendDatabase",
@@ -34,19 +35,17 @@ __all__ = [
     "ActionGetPatchInformation",
     "ActionResetPatchForm",
     "ValidateCreateColumnForm",
-    "ActionFetchTables",
-    "ActionGenerateAlterQuery",
-    "ActionRequestTableSelection",
     "ValidateDropColumnForm",
-    "ActionFetchTablesForDrop",
-    "ActionFetchColumns",
     "ActionGenerateDropQuery",
-    "ActionExecuteDropQuery",
-    "ActionTriggerTableFetchingForDrop", 
-    "ActionTriggerColumnFetching",
-    "ActionExecuteAlterQuery",
-    "ActionAskCreateColumnFormConnectionString",
+    "ActionConfirmDropColumn",
+    "ActionCheckDropStatus",
     "ActionAskDropColumnFormConnectionString",
     "ActionAskAnalyzeQueryFormConnectionString",
     "ActionAskExploreSchemaFormConnectionString",
+    "ActionGetDbMetricsSummary",
+    "ValidateDbMetricsForm",
+    "ActionGenerateColumnQuery",
+    "ActionConfirmColumnCreation",
+    "ActionCheckColumnStatus",
+    "ActionAskCreateColumnFormConnectionString"
 ]

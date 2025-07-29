@@ -5,6 +5,8 @@ from rasa_sdk.events import SlotSet, FollowupAction
 import requests
 import re
 import logging
+import time
+import urllib.parse as urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -21,48 +23,24 @@ class ValidateDropColumnForm(FormValidationAction):
         tracker: Tracker,
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
-        """Validate PostgreSQL connection string format"""
+        """Validate connection string format for supported databases"""
         
         if not slot_value:
             dispatcher.utter_message(text="Please provide a connection string.")
             return {"connection_string": None}
         
-        # PostgreSQL connection string pattern (accept both postgres:// and postgresql://)
+        # Support multiple database types like create_column
         postgres_pattern = r'^postgres(ql)?://[^:]+:[^@]+@[^:]+:\d+/[^/]+$'
+        mysql_pattern = r'^mysql://[^:]+:[^@]+@[^:]+:\d+/[^/]+$'
+        redshift_pattern = r'^redshift://[^:]+:[^@]+@[^:]+:\d+/[^/]+$'
         
-        if re.match(postgres_pattern, slot_value.strip()):
+        if (re.match(postgres_pattern, slot_value.strip()) or 
+            re.match(mysql_pattern, slot_value.strip()) or 
+            re.match(redshift_pattern, slot_value.strip())):
             dispatcher.utter_message(text="✅ Connection string validated!")
-            
-            # Fetch and display available tables
-            try:
-                tables = self._fetch_tables_from_api(slot_value.strip())
-                if tables:
-                    dispatcher.utter_message(
-                        text=f"Available tables: {', '.join(tables)}\nPlease type the table name you want to modify:"
-                    )
-                    return {
-                        "connection_string": slot_value.strip(),
-                        "available_tables": tables,
-                        "requested_slot": "selected_table"
-                    }
-                else:
-                    dispatcher.utter_message(text="No tables found or unable to connect to database.")
-                    return {
-                        "connection_string": slot_value.strip(),
-                        "requested_slot": "selected_table"
-                    }
-            except Exception as e:
-                logger.error(f"Error fetching tables during validation: {str(e)}")
-                dispatcher.utter_message(text="Unable to fetch tables. Please type the table name manually.")
-                return {
-                    "connection_string": slot_value.strip(),
-                    "requested_slot": "selected_table"
-                }
+            return {"connection_string": slot_value.strip()}
         else:
-            dispatcher.utter_message(
-                text="Please provide a valid PostgreSQL connection string in format:\n"
-                     "`postgresql://user:pass@host:port/dbname`"
-            )
+            dispatcher.utter_message(text="Please provide a valid connection string for the selected database type.")
             return {"connection_string": None}
 
     def validate_selected_table(
@@ -75,29 +53,16 @@ class ValidateDropColumnForm(FormValidationAction):
         """Validate table selection"""
         
         if not slot_value:
-            dispatcher.utter_message(text="Please select a valid table name.")
+            dispatcher.utter_message(text="Please provide a table name.")
             return {"selected_table": None}
         
-        # Fetch and display available columns for the selected table
-        try:
-            columns = self._fetch_columns_from_api(tracker.get_slot("connection_string"), slot_value)
-            if columns:
-                dispatcher.utter_message(
-                    text=f"Available columns in table '{slot_value}': {', '.join(columns)}\nPlease type the column name you want to drop:"
-                )
-                return {
-                    "selected_table": slot_value,
-                    "available_columns": columns
-                }
-            else:
-                dispatcher.utter_message(
-                    text=f"No columns found in table '{slot_value}' or unable to fetch columns."
-                )
-                return {"selected_table": slot_value}
-        except Exception as e:
-            logger.error(f"Error fetching columns: {str(e)}")
-            dispatcher.utter_message(text="Unable to fetch columns. Please type the column name manually.")
-            return {"selected_table": slot_value}
+        if re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', slot_value.strip()):
+            return {"selected_table": slot_value.strip()}
+        else:
+            dispatcher.utter_message(
+                text="Table name should start with a letter or underscore and contain only letters, numbers, and underscores."
+            )
+            return {"selected_table": None}
 
     def validate_column_to_drop(
         self,
@@ -109,220 +74,20 @@ class ValidateDropColumnForm(FormValidationAction):
         """Validate column selection for dropping"""
         
         if not slot_value:
-            dispatcher.utter_message(text="Please select a valid column name.")
+            dispatcher.utter_message(text="Please provide a column name.")
             return {"column_to_drop": None}
         
-        return {"column_to_drop": slot_value}
-
-    def _fetch_tables_from_api(self, connection_string: str) -> List[str]:
-        """Make API call to Hoover service to get tables"""
-        try:
-            # Mock data for testing - replace with actual API call when Hoover is ready
-            mock_tables = [
-                "employees",
-                "departments", 
-                "positions",
-                "projects",
-                "project_employees",
-                "users",
-                "orders",
-                "products",
-                "customers",
-                "inventory"
-            ]
-            
-            logger.info(f"Returning mock tables for connection: {connection_string}")
-            return mock_tables
-                
-        except Exception as e:
-            logger.error(f"Unexpected error: {str(e)}")
-            return []
-
-    def _fetch_columns_from_api(self, connection_string: str, table_name: str) -> List[str]:
-        """Make API call to Hoover service to get columns"""
-        try:
-            # Mock data for testing - replace with actual API call when Hoover is ready
-            mock_columns_data = {
-                "employees": ["id", "first_name", "last_name", "email", "phone", "hire_date", "department_id", "position_id", "manager_id", "salary", "status", "address", "city", "country", "emergency_contact"],
-                "departments": ["id", "name", "description", "manager_id", "budget", "location", "created_date", "phone", "email", "floor"],
-                "positions": ["id", "title", "description", "salary_min", "salary_max", "department_id", "level", "requirements", "benefits", "remote_allowed"],
-                "projects": ["id", "name", "description", "start_date", "end_date", "status", "budget", "manager_id", "priority", "client_name"],
-                "project_employees": ["id", "project_id", "employee_id", "role", "assigned_date", "hours_allocated", "hourly_rate", "completion_percentage"],
-                "users": ["id", "username", "email", "password_hash", "role", "created_at", "last_login", "is_active", "profile_picture", "preferences"],
-                "orders": ["id", "customer_id", "order_date", "total_amount", "status", "shipping_address", "payment_method", "discount", "tax_amount"],
-                "products": ["id", "name", "description", "price", "category", "stock_quantity", "sku", "created_date", "weight", "dimensions"],
-                "customers": ["id", "first_name", "last_name", "email", "phone", "address", "city", "country", "registration_date", "loyalty_points"],
-                "inventory": ["id", "product_id", "warehouse_location", "quantity", "reserved_quantity", "last_updated", "reorder_level", "supplier_id"]
-            }
-            
-            columns = mock_columns_data.get(table_name.lower(), ["id", "name", "description", "created_date"])
-            logger.info(f"Returning mock columns for table {table_name}: {columns}")
-            return columns
-                
-        except Exception as e:
-            logger.error(f"Unexpected error: {str(e)}")
-            return []
-
-class ActionFetchTablesForDrop(Action):
-    """Fetch available tables from the database for drop column"""
-    
-    def name(self) -> Text:
-        return "action_fetch_tables_for_drop"
-
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        
-        connection_string = tracker.get_slot("connection_string")
-        
-        if not connection_string:
-            dispatcher.utter_message(text="Connection string is required to fetch tables.")
-            return []
-        
-        try:
-            # Call Hoover API to get table list
-            tables = self._fetch_tables_from_api(connection_string)
-            
-            if not tables:
-                dispatcher.utter_message(
-                    text="No tables found in the database or unable to connect."
-                )
-                return []
-            
-            # Create buttons for table selection
-            buttons = []
-            for table in tables[:10]:  # Limit to first 10 tables
-                buttons.append({
-                    "title": table,
-                    "payload": f'/inform{{"selected_table":"{table}"}}'
-                })
-            
-            # If more than 10 tables, show a note
-            table_text = "Please select a table from the list below:"
-            if len(tables) > 10:
-                table_text += f"\n(Showing first 10 of {len(tables)} tables)"
-            
+        if re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', slot_value.strip()):
+            return {"column_to_drop": slot_value.strip()}
+        else:
             dispatcher.utter_message(
-                text=table_text,
-                buttons=buttons
+                text="Column name should start with a letter or underscore and contain only letters, numbers, and underscores."
             )
-            
-            return [SlotSet("available_tables", tables)]
-            
-        except Exception as e:
-            logger.error(f"Error fetching tables: {str(e)}")
-            dispatcher.utter_message(
-                text="Sorry, I couldn't fetch the table list. Please check your connection string and try again."
-            )
-            return []
-
-    def _fetch_tables_from_api(self, connection_string: str) -> List[str]:
-        """Make API call to Hoover service to get tables"""
-        try:
-            # Mock data for testing - replace with actual API call when Hoover is ready
-            mock_tables = [
-                "employees",
-                "departments", 
-                "positions",
-                "projects",
-                "project_employees",
-                "users",
-                "orders",
-                "products",
-                "customers",
-                "inventory"
-            ]
-            
-            logger.info(f"Returning mock tables for connection: {connection_string}")
-            return mock_tables
-                
-        except Exception as e:
-            logger.error(f"Unexpected error: {str(e)}")
-            return []
-
-
-class ActionFetchColumns(Action):
-    """Fetch available columns from the selected table"""
-    
-    def name(self) -> Text:
-        return "action_fetch_columns"
-
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        
-        connection_string = tracker.get_slot("connection_string")
-        table_name = tracker.get_slot("selected_table")
-        
-        if not connection_string or not table_name:
-            dispatcher.utter_message(text="Connection string and table name are required to fetch columns.")
-            return []
-        
-        try:
-            # Call Hoover API to get column list
-            columns = self._fetch_columns_from_api(connection_string, table_name)
-            
-            if not columns:
-                dispatcher.utter_message(
-                    text=f"No columns found in table '{table_name}' or unable to connect."
-                )
-                return []
-            
-            # Create buttons for column selection
-            buttons = []
-            for column in columns[:15]:  # Limit to first 15 columns
-                buttons.append({
-                    "title": column,
-                    "payload": f'/inform{{"column_to_drop":"{column}"}}'
-                })
-            
-            # If more than 15 columns, show a note
-            column_text = f"Please select the column you want to drop from table '{table_name}':"
-            if len(columns) > 15:
-                column_text += f"\n(Showing first 15 of {len(columns)} columns)"
-            
-            dispatcher.utter_message(
-                text=column_text,
-                buttons=buttons
-            )
-            
-            return [SlotSet("available_columns", columns)]
-            
-        except Exception as e:
-            logger.error(f"Error fetching columns: {str(e)}")
-            dispatcher.utter_message(
-                text="Sorry, I couldn't fetch the column list. Please check your connection and try again."
-            )
-            return []
-
-    def _fetch_columns_from_api(self, connection_string: str, table_name: str) -> List[str]:
-        """Make API call to Hoover service to get columns"""
-        try:
-            # Mock data for testing - replace with actual API call when Hoover is ready
-            mock_columns_data = {
-                "employees": ["id", "first_name", "last_name", "email", "phone", "hire_date", "department_id", "position_id", "manager_id", "salary", "status", "address", "city", "country", "emergency_contact"],
-                "departments": ["id", "name", "description", "manager_id", "budget", "location", "created_date", "phone", "email", "floor"],
-                "positions": ["id", "title", "description", "salary_min", "salary_max", "department_id", "level", "requirements", "benefits", "remote_allowed"],
-                "projects": ["id", "name", "description", "start_date", "end_date", "status", "budget", "manager_id", "priority", "client_name"],
-                "project_employees": ["id", "project_id", "employee_id", "role", "assigned_date", "hours_allocated", "hourly_rate", "completion_percentage"],
-                "users": ["id", "username", "email", "password_hash", "role", "created_at", "last_login", "is_active", "profile_picture", "preferences"],
-                "orders": ["id", "customer_id", "order_date", "total_amount", "status", "shipping_address", "payment_method", "discount", "tax_amount"],
-                "products": ["id", "name", "description", "price", "category", "stock_quantity", "sku", "created_date", "weight", "dimensions"],
-                "customers": ["id", "first_name", "last_name", "email", "phone", "address", "city", "country", "registration_date", "loyalty_points"],
-                "inventory": ["id", "product_id", "warehouse_location", "quantity", "reserved_quantity", "last_updated", "reorder_level", "supplier_id"]
-            }
-            
-            columns = mock_columns_data.get(table_name.lower(), ["id", "name", "description", "created_date"])
-            logger.info(f"Returning mock columns for table {table_name}: {columns}")
-            return columns
-                
-        except Exception as e:
-            logger.error(f"Unexpected error: {str(e)}")
-            return []
+            return {"column_to_drop": None}
 
 
 class ActionGenerateDropQuery(Action):
-    """Generate the ALTER TABLE DROP COLUMN query"""
+    """Generate drop column query via Hoover API"""
     
     def name(self) -> Text:
         return "action_generate_drop_query"
@@ -331,138 +96,268 @@ class ActionGenerateDropQuery(Action):
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
+        # Get required slots
+        connection_string = tracker.get_slot("connection_string")
         table_name = tracker.get_slot("selected_table")
         column_name = tracker.get_slot("column_to_drop")
         
-        if not all([table_name, column_name]):
+        if not all([connection_string, table_name, column_name]):
             dispatcher.utter_message(text="Missing required information to generate query.")
             return []
         
         try:
-            # Generate ALTER TABLE DROP COLUMN query
-            query = f"ALTER TABLE {table_name} DROP COLUMN {column_name};"
+            # Parse connection string to extract DB details
+            db_details = self._parse_connection_string(connection_string)
             
-            return [SlotSet("drop_query", query)]
+            # Prepare API request for drop column
+            api_payload = {
+                "dbDetails": db_details,
+                "revalidate": False,
+                "eventName": "DROP_COLUMN",
+                "tableName": table_name,
+                "columnData": [
+                    {
+                        "name": column_name
+                    }
+                ]
+            }
             
+            # Call Hoover API
+            response = self._call_hoover_generate_api(api_payload)
+            
+            if response and response.get('code') == '000':
+                data = response.get('data', {})
+                query_id = data.get('queryId')
+                query_sql = data.get('query', [])
+                
+                if query_id:
+                    query_display = '\n'.join(query_sql) if query_sql else f"DROP COLUMN {column_name} FROM {table_name}"
+                    dispatcher.utter_message(
+                        text=f"✅ Drop column query generated successfully!\n\n"
+                             f"**Generated SQL:**\n```sql\n{query_display}\n```\n\n"
+                             f"**Query ID:** `{query_id}`\n\n"
+                             f"🔄 Checking execution status..."
+                    )
+                    return [SlotSet("query_id", query_id), FollowupAction("action_check_drop_status")]
+                else:
+                    dispatcher.utter_message(
+                        text="❌ Failed to get query ID from response."
+                    )
+                    return []
+            else:
+                error_message = response.get('message', 'Unknown error') if response else 'API call failed'
+                dispatcher.utter_message(
+                    text=f"❌ Failed to generate drop column query: {error_message}"
+                )
+                return []
+                
         except Exception as e:
             logger.error(f"Error generating drop query: {str(e)}")
-            dispatcher.utter_message(text="Sorry, I couldn't generate the DROP COLUMN query.")
-            return []
-
-
-class ActionExecuteDropQuery(Action):
-    """Execute the ALTER TABLE DROP COLUMN query"""
-    
-    def name(self) -> Text:
-        return "action_execute_drop_query"
-
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        
-        connection_string = tracker.get_slot("connection_string")
-        drop_query = tracker.get_slot("drop_query")
-        table_name = tracker.get_slot("selected_table")
-        column_name = tracker.get_slot("column_to_drop")
-        
-        if not all([connection_string, drop_query]):
-            dispatcher.utter_message(text="Missing required information to execute query.")
-            return []
-        
-        try:
-            # Execute query via Hoover API
-            success = self._execute_query_via_api(connection_string, drop_query)
-            
-            if success:
-                dispatcher.utter_message(
-                    text=f"✅ Column '{column_name}' has been successfully dropped from table '{table_name}'!\n\n"
-                         f"⚠️ **All data in this column has been permanently deleted.**\n\n"
-                         f"Executed query:\n```{drop_query}```"
-                )
-            else:
-                dispatcher.utter_message(
-                    text=f"❌ Failed to drop column '{column_name}'. Please check the query and try again.\n\n"
-                         f"Query attempted:\n```{drop_query}```"
-                )
-            
-            return []
-            
-        except Exception as e:
-            logger.error(f"Error executing drop query: {str(e)}")
             dispatcher.utter_message(
-                text=f"Sorry, I encountered an error while executing the query: {str(e)}"
+                text=f"Sorry, I encountered an error: {str(e)}"
             )
             return []
 
-    def _execute_query_via_api(self, connection_string: str, query: str) -> bool:
-        """Execute query via Hoover API"""
+    def _parse_connection_string(self, connection_string: str) -> Dict[str, Any]:
+        """Parse connection string to extract database details"""
+        
+        parsed = urlparse.urlparse(connection_string)
+        
+        # Map database type based on connection string scheme
+        type_mapping = {
+            "postgresql": "POSTGRESQL",
+            "postgres": "POSTGRESQL",
+            "mysql": "MYSQL",
+            "redshift": "REDSHIFT"
+        }
+        
+        return {
+            "type": type_mapping.get(parsed.scheme, "POSTGRESQL"),
+            "host": f"{parsed.hostname}:{parsed.port}" if parsed.port else parsed.hostname,
+            "userName": parsed.username,
+            "pass": parsed.password,
+            "databaseName": parsed.path.lstrip('/'),
+            "schemaName": "liquibase"
+        }
+
+    def _call_hoover_generate_api(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Call Hoover generate API"""
+        
+        api_url = "https://hoover-v3-dev.p2.ocp.citizensbank.com/liquibase-service/query/generate"
+        
         try:
-            # Mock successful execution for testing
-            # In production, replace with actual Hoover API call
-            logger.info(f"Mock executing query: {query}")
-            logger.info(f"Connection: {connection_string}")
+            response = requests.post(api_url, json=payload, timeout=30)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Hoover API call failed: {str(e)}")
+            return {}
+
+
+class ActionConfirmDropColumn(Action):
+    """Confirm drop column via Hoover API"""
+    
+    def name(self) -> Text:
+        return "action_confirm_drop_column"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        query_id = tracker.get_slot("query_id")
+        
+        if not query_id:
+            dispatcher.utter_message(text="No query ID found. Please start over.")
+            return []
+        
+        try:
+            # Call confirm API
+            response = self._call_hoover_confirm_api(query_id)
             
-            # Simulate some basic validation
-            if "ALTER TABLE" in query.upper() and "DROP COLUMN" in query.upper():
-                # Simulate successful column deletion
-                logger.info("Mock query execution successful - column would be dropped")
-                return True
+            if response and response.get('code') == '000':
+                message = response.get('message', 'Request accepted')
+                dispatcher.utter_message(
+                    text=f"✅ {message}\n\nChecking execution status..."
+                )
+                return [FollowupAction("action_check_drop_status")]
             else:
-                # Invalid query format
-                logger.error(f"Invalid query format: {query}")
-                return False
+                error_message = response.get('message', 'Unknown error') if response else 'API call failed'
+                dispatcher.utter_message(
+                    text=f"❌ Failed to confirm drop column: {error_message}"
+                )
+                return []
                 
         except Exception as e:
-            logger.error(f"Unexpected error in mock execution: {str(e)}")
-            return False
+            logger.error(f"Error confirming drop column: {str(e)}")
+            dispatcher.utter_message(
+                text=f"Sorry, I encountered an error: {str(e)}"
+            )
+            return []
+
+    def _call_hoover_confirm_api(self, query_id: str) -> Dict[str, Any]:
+        """Call Hoover confirm API"""
+        
+        api_url = "https://hoover-v3-dev.p2.ocp.citizensbank.com/liquibase-service/query/confirm"
+        payload = {"queryId": query_id}
+        
+        try:
+            response = requests.post(api_url, json=payload, timeout=30)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Hoover confirm API call failed: {str(e)}")
+            return {}
 
 
-# Helper action to trigger table fetching after connection validation for drop column
-class ActionTriggerTableFetchingForDrop(Action):
-    """Trigger table fetching after connection string validation for drop column"""
+class ActionCheckDropStatus(Action):
+    """Check drop column status via Hoover API"""
     
     def name(self) -> Text:
-        return "action_trigger_table_fetching_for_drop"
+        return "action_check_drop_status"
 
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
-        return [FollowupAction("action_fetch_tables_for_drop")]
-
-
-# Helper action to trigger column fetching after table selection
-class ActionTriggerColumnFetching(Action):
-    """Trigger column fetching after table selection"""
-    
-    def name(self) -> Text:
-        return "action_trigger_column_fetching"
-
-    def run(self, dispatcher: CollectingDispatcher,
-            tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        query_id = tracker.get_slot("query_id")
         
-        return [FollowupAction("action_fetch_columns")]
+        if not query_id:
+            dispatcher.utter_message(text="No query ID found.")
+            return []
+        
+        try:
+            # Poll status API
+            status_response = self._check_status_with_polling(query_id, max_attempts=10, delay=3)
+            
+            if status_response:
+                status = status_response.get('status', 'UNKNOWN')
+                
+                if status == "COMPLETED":
+                    column_name = tracker.get_slot("column_to_drop")
+                    table_name = tracker.get_slot("selected_table")
+                    dispatcher.utter_message(
+                        text=f"🎉 **Success!** Column `{column_name}` has been dropped from table `{table_name}`.\n\n"
+                             f"⚠️ **All data in this column has been permanently deleted.**"
+                    )
+                elif status == "FAILED":
+                    dispatcher.utter_message(
+                        text="❌ **Drop column failed.** Please check your inputs and try again."
+                    )
+                elif status in ["INITIATED", "IN_PROGRESS", "PROCESSING"]:
+                    dispatcher.utter_message(
+                        text=f"⏳ **Drop column is in progress** (Status: {status}). Please check back later."
+                    )
+                else:
+                    dispatcher.utter_message(
+                        text=f"📊 **Drop column status:** {status}"
+                    )
+                    
+                return [SlotSet("query_status", status)]
+            else:
+                dispatcher.utter_message(
+                    text="❌ Unable to check status. Please try again later."
+                )
+                return []
+                
+        except Exception as e:
+            logger.error(f"Error checking drop status: {str(e)}")
+            dispatcher.utter_message(
+                text=f"Sorry, I encountered an error while checking status: {str(e)}"
+            )
+            return []
 
-# Add this action to your drop_column.py file
+    def _check_status_with_polling(self, query_id: str, max_attempts: int = 10, delay: int = 3) -> Dict[str, Any]:
+        """Poll status API with retries"""
+        
+        api_url = f"https://hoover-v3-dev.p2.ocp.citizensbank.com/liquibase-service/query/{query_id}/status"
+        
+        for attempt in range(max_attempts):
+            try:
+                response = requests.get(api_url, timeout=30)
+                response.raise_for_status()
+                response_data = response.json()
+                
+                if response_data.get('code') == '000':
+                    data = response_data.get('data', {})
+                    status = data.get('status', 'UNKNOWN')
+                    
+                    if status in ['COMPLETED', 'FAILED']:
+                        return data
+                    
+                    if attempt < max_attempts - 1:
+                        time.sleep(delay)
+                else:
+                    logger.error(f"Status API returned error: {response_data.get('message')}")
+                    if attempt < max_attempts - 1:
+                        time.sleep(delay)
+                    
+            except Exception as e:
+                logger.error(f"Status check attempt {attempt + 1} failed: {str(e)}")
+                if attempt < max_attempts - 1:
+                    time.sleep(delay)
+        
+        return {"status": "TIMEOUT"}
+
 
 class ActionAskDropColumnFormConnectionString(Action):
-    """Custom action to ask for connection string specifically in drop column form"""
+    """Ask for connection string based on database type"""
     
     def name(self) -> Text:
         return "action_ask_drop_column_form_connection_string"
-    
+
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
-        # Since user already selected PostgreSQL, only show PostgreSQL format
-        dispatcher.utter_message(
-            text="Please provide the PostgreSQL connection string in the format:\n\n"
-                 "### PostgreSQL\n"
-                 "```\n"
-                 "postgres://username:password@host:port/database_name\n"
-                 "```"
-        )
+        db_type = tracker.get_slot("database_type")
+        
+        if db_type == "PostgreSQL":
+            dispatcher.utter_message(response="utter_ask_connection_string_postgresql")
+        elif db_type == "MySQL":
+            dispatcher.utter_message(response="utter_ask_connection_string_mysql")
+        elif db_type == "Redshift":
+            dispatcher.utter_message(response="utter_ask_connection_string_redshift")
+        else:
+            dispatcher.utter_message(response="utter_ask_connection_string_postgresql")
         
         return []
