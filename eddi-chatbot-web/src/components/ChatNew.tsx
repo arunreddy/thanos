@@ -29,9 +29,9 @@ const CATEGORIES = [
     bgColor: '#EFF6FF',
     borderColor: '#BFDBFE',
     examples: [
-      'I need a database for a high-traffic e-commerce app',
-      'Best DB for time-series IoT sensor data',
-      'Recommend a DB for a document-heavy CMS',
+      'I need a database for a new microservice, transactional and structured data, ACID compliant, open source',
+      'We have a vendor application that needs a database with Microsoft licensing',
+      'Recommend a database for structured analytics data, large dataset over 300 GB',
     ],
   },
   {
@@ -68,9 +68,10 @@ const CATEGORIES = [
     bgColor: '#F5F3FF',
     borderColor: '#DDD6FE',
     examples: [
-      'Show me consumer lag for the orders topic',
-      'Help me configure a new Kafka producer',
-      'Debug why messages are stuck in a dead letter queue',
+      'How do I create or modify a topic in the Kafka portal?',
+      'I need a service account and API key for my Kafka application',
+      'How does authentication and authorization work for Kafka?',
+      'I have a Kafka integration issue, how do I get help?',
     ],
   },
 ];
