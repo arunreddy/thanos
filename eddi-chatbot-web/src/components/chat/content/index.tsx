@@ -1,19 +1,21 @@
 import { useEffect, useState, useRef } from "react";
-import { getConversation, sendMessage, newConversation } from "../../../lib/api";
+import { getConversation, sendMessage, newConversation, submitFeedback, deleteFeedback } from "../../../lib/api";
 import ChatMessage from "../ChatMessage";
 import ChatInput, { ChatInputRef } from "../ChatInput";
 import TopNav from "../topnav";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bot } from "lucide-react";
-import { CustomForm } from "@/types";
+import { CustomForm, FeedbackType, FeedbackRequest } from "@/types";
+import type { ContextPanelData } from "../ContextPanel";
 
 interface ChatContentProps {
   chatId: string | null;
   setActiveChatId: (id: string | null, isFirstMessage?: boolean) => void;
+  onShowContext?: (context: ContextPanelData) => void;
 }
 
 interface Message {
-  id?: number;
+  id?: string | number;
   role: "user" | "assistant";
   content: string;
   created_at?: string;
@@ -31,6 +33,7 @@ enum ChatState {
 const ChatContent: React.FC<ChatContentProps> = ({
   chatId,
   setActiveChatId,
+  onShowContext,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatState, setChatState] = useState<ChatState>(ChatState.IDLE);
@@ -38,6 +41,42 @@ const ChatContent: React.FC<ChatContentProps> = ({
   const [hasInteracted, setHasInteracted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<ChatInputRef>(null);
+  const [feedbackStates, setFeedbackStates] = useState<Record<string, FeedbackType | "none">>({});
+
+  const handleFeedbackSubmit = async (messageId: string, data: FeedbackRequest) => {
+    // Optimistic update
+    setFeedbackStates((prev) => ({ ...prev, [messageId]: data.feedback_type }));
+    try {
+      await submitFeedback(messageId, data);
+    } catch (err) {
+      // Revert on error
+      setFeedbackStates((prev) => ({ ...prev, [messageId]: "none" }));
+      console.error("Failed to submit feedback:", err);
+    }
+  };
+
+  const handleFeedbackRemove = async (messageId: string) => {
+    const previous = feedbackStates[messageId];
+    // Optimistic update
+    setFeedbackStates((prev) => ({ ...prev, [messageId]: "none" }));
+    try {
+      await deleteFeedback(messageId);
+    } catch (err) {
+      // Revert on error
+      setFeedbackStates((prev) => ({ ...prev, [messageId]: previous || "none" }));
+      console.error("Failed to remove feedback:", err);
+    }
+  };
+
+  const handleRetry = (messageIndex: number) => {
+    // Find the user message that preceded this assistant message
+    for (let i = messageIndex - 1; i >= 0; i--) {
+      if (messages[i].role === "user") {
+        handleSendMessage(messages[i].content);
+        return;
+      }
+    }
+  };
 
   // This effect handles loading conversations when chatId changes
   useEffect(() => {
@@ -50,7 +89,10 @@ const ChatContent: React.FC<ChatContentProps> = ({
       const fetchConversation = async () => {
         try {
           const response = await getConversation(chatId);
-          const conversationMessages = response.messages || [];
+          const conversationMessages = (response.messages || []).map((m: any) => ({
+            ...m,
+            custom: m.custom || m.custom_data,
+          }));
           
           // Add welcome message if no messages exist
           if (conversationMessages.length === 0) {
@@ -140,7 +182,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
       }
 
       const botMessage: Message = {
-        id: messageId + 1,
+        id: response.message.id || messageId + 1,
         role: response.message.role,
         content: response.message.content,
         buttons: response.message.buttons,
@@ -211,7 +253,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
       }
 
       const botMessage: Message = {
-        id: messageId + 1,
+        id: response.message.id || messageId + 1,
         role: response.message.role,
         content: response.message.content,
         buttons: response.message.buttons,
@@ -287,71 +329,91 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
   const showTypingIndicator = chatState === ChatState.SENDING_MESSAGE;
 
+  // Derive conversation title from the first user message
+  const firstUserMessage = messages.find(m => m.role === "user");
+  const conversationTitle = firstUserMessage
+    ? firstUserMessage.content.slice(0, 80) + (firstUserMessage.content.length > 80 ? "..." : "")
+    : (chatId ? "Conversation" : null);
+
   return (
     <div className="flex flex-col h-full w-full">
-      <TopNav title={chatId ? "Conversation" : "New Chat"} />
+      <TopNav title={conversationTitle} />
 
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 bg-background container mx-auto relative">
-        {/* Loading screen - only shown when explicitly loading an existing conversation */}
-        {showLoadingScreen && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
-            <div className="flex items-center space-x-2">
-              {[0, 300, 600].map((delay, i) => (
-                <div
-                  key={i}
-                  className="w-3 h-3 bg-primary rounded-full animate-pulse"
-                  style={{ animationDelay: `${delay}ms` }}
-                />
-              ))}
+      {/* Messages area + floating input */}
+      <div className="flex-1 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-y-auto p-4 pb-24 bg-background">
+          <div className="max-w-3xl mx-auto">
+            {/* Loading screen */}
+            {showLoadingScreen && (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <div className="flex items-center space-x-2">
+                  {[0, 300, 600].map((delay, i) => (
+                    <div
+                      key={i}
+                      className="w-3 h-3 bg-primary rounded-full animate-pulse"
+                      style={{ animationDelay: `${delay}ms` }}
+                    />
+                  ))}
+                </div>
+                <div className="mt-2">Loading conversation...</div>
+              </div>
+            )}
+
+            {/* Message list */}
+            <div className="min-h-[50px]">
+              <AnimatePresence initial={false} mode="popLayout">
+                {messages.map((message, index) => (
+                  <ChatMessage
+                    key={
+                      message.id ||
+                      `msg-${index}-${message.timestamp || Date.now()}`
+                    }
+                    role={message.role}
+                    content={message.content}
+                    timestamp={message.timestamp || message.created_at}
+                    buttons={message.buttons}
+                    customForm={message.custom as CustomForm}
+                    messageId={message.id}
+                    feedbackState={
+                      typeof message.id === "string"
+                        ? feedbackStates[message.id] || "none"
+                        : "none"
+                    }
+                    onButtonClick={handleButtonClick}
+                    onShowContext={onShowContext}
+                    onFeedbackSubmit={handleFeedbackSubmit}
+                    onFeedbackRemove={handleFeedbackRemove}
+                    onRetry={() => handleRetry(index)}
+                  />
+                ))}
+              </AnimatePresence>
             </div>
-            <div className="mt-2">Loading conversation...</div>
-          </div>
-        )}
 
-        {/* Message list */}
-        <div className="min-h-[50px]">
-          {" "}
-          {/* Minimum height to prevent layout shifts */}
-          <AnimatePresence initial={false} mode="popLayout">
-            {messages.map((message, index) => (
-              <ChatMessage
-                key={
-                  message.id ||
-                  `msg-${index}-${message.timestamp || Date.now()}`
-                }
-                role={message.role}
-                content={message.content}
-                timestamp={message.timestamp || message.created_at}
-                buttons={message.buttons}
-                customForm={message.custom as CustomForm}
-                onButtonClick={handleButtonClick}
-              />
-            ))}
-          </AnimatePresence>
+            {/* Typing indicator */}
+            <AnimatePresence>
+              {showTypingIndicator && <TypingIndicator />}
+            </AnimatePresence>
+
+            {/* Error message */}
+            {error && (
+              <div className="text-red-500 text-center my-2 text-sm">{error}</div>
+            )}
+
+            {/* Invisible element to scroll to */}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
 
-        {/* Typing indicator */}
-        <AnimatePresence>
-          {showTypingIndicator && <TypingIndicator />}
-        </AnimatePresence>
-
-        {/* Error message */}
-        {error && (
-          <div className="text-red-500 text-center my-2 text-sm">{error}</div>
-        )}
-
-        {/* Invisible element to scroll to */}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Message input */}
-      <div className="border-t border-border p-4 bg-background">
-        <ChatInput
-          ref={chatInputRef}
-          onSendMessage={handleSendMessage}
-          isLoading={chatState !== ChatState.IDLE}
-        />
+        {/* Floating input */}
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 pt-2" style={{ background: "linear-gradient(transparent, var(--background) 30%)" }}>
+          <div className="max-w-3xl mx-auto">
+            <ChatInput
+              ref={chatInputRef}
+              onSendMessage={handleSendMessage}
+              isLoading={chatState !== ChatState.IDLE}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

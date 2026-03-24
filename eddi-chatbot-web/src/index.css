@@ -199,11 +199,27 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@theme inline {
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --color-brand: #008555;
+  --color-brand-light: #E6F4EF;
+  --color-brand-mid: #B3D9CC;
+  --color-severity-critical: #DC3545;
+  --color-severity-high: #D97706;
+  --color-severity-medium: #2563EB;
+  --color-severity-low: #22C55E;
+  --color-severity-info: #7C3AED;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }

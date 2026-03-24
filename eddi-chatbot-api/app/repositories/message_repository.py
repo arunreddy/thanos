@@ -182,7 +182,7 @@ class MessageRepository:
         self,
         conversation_id: str,
         content: str,
-        model_used: str = "rasa",
+        model_used: str = "mock-llm",
         intent_name: Optional[str] = None,
         confidence_score: Optional[float] = None,
         response_time_ms: Optional[int] = None,

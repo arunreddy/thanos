@@ -1,20 +1,19 @@
 // src/components/ChatMessage.tsx (updated)
 import { format } from "date-fns";
-import { User, Bot } from "lucide-react";
 import { motion } from "framer-motion";
-import { CustomForm } from "@/types";
+import { CustomForm, FeedbackType, FeedbackRequest } from "@/types";
 import { useState } from "react";
 import { API_URL } from "@/lib/config";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { maskSensitiveInfo, containsSensitiveInfo } from "@/utils/maskSensitiveInfo";
-import { BarChart3, Database } from "lucide-react";
-import ExecutionPlanVisualization from "../ExecutionPlanVisualization";
-import SchemaDefinitionsVisualization from "../SchemaDefinitionsVisualization";
+import { BarChart3, Database, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import SyntaxHighlighter from "@/components/ui/SyntaxHighlighter";
+import type { ContextPanelData } from "./ContextPanel";
+import MessageActions from "./MessageActions";
+import FeedbackDialog from "./FeedbackDialog";
 
 // JSON formatting utility
 const formatJSON = (text: string): string => {
@@ -46,7 +45,71 @@ interface ChatMessageProps {
   timestamp?: string;
   buttons?: Button[];
   customForm?: CustomForm;
+  messageId?: string | number;
+  feedbackState?: FeedbackType | "none";
   onButtonClick?: (payload: string, title?: string) => void;
+  onShowContext?: (context: ContextPanelData) => void;
+  onFeedbackSubmit?: (messageId: string, data: FeedbackRequest) => void;
+  onFeedbackRemove?: (messageId: string) => void;
+  onRetry?: () => void;
+}
+
+function ActionCard({
+  icon: Icon,
+  label,
+  subtitle,
+  onClick,
+  href,
+}: {
+  icon: React.ElementType;
+  label: string;
+  subtitle?: string;
+  onClick?: () => void;
+  href?: string;
+}) {
+  const content = (
+    <div
+      className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl cursor-pointer transition-colors"
+      style={{
+        background: "#F8F9FA",
+        border: "1px solid #E9ECEF",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = "#F1F3F5";
+        e.currentTarget.style.borderColor = "#DEE2E6";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "#F8F9FA";
+        e.currentTarget.style.borderColor = "#E9ECEF";
+      }}
+      onClick={onClick}
+    >
+      <div
+        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{ background: "#E9ECEF", color: "#495057" }}
+      >
+        <Icon className="w-4 h-4" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[13px] font-medium truncate" style={{ color: "#1A1E2E" }}>
+          {label}
+        </div>
+        {subtitle && (
+          <div className="text-[11px] truncate" style={{ color: "#868E96" }}>
+            {subtitle}
+          </div>
+        )}
+      </div>
+      <div className="text-[12px] font-medium flex-shrink-0" style={{ color: "#868E96" }}>
+        Open
+      </div>
+    </div>
+  );
+
+  if (href) {
+    return <a href={href} target="_blank" rel="noopener noreferrer" download>{content}</a>;
+  }
+  return content;
 }
 
 export default function ChatMessage({
@@ -55,10 +118,39 @@ export default function ChatMessage({
   timestamp,
   buttons = [],
   customForm,
+  messageId,
+  feedbackState = "none",
   onButtonClick,
+  onShowContext,
+  onFeedbackSubmit,
+  onFeedbackRemove,
+  onRetry,
 }: ChatMessageProps) {
   const isUser = role === "user";
   const hasSensitiveInfo = containsSensitiveInfo(content);
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [feedbackDialogType, setFeedbackDialogType] = useState<FeedbackType>("positive");
+
+  // Whether this message has a real backend ID (not a local numeric or welcome message ID)
+  const hasBackendId = typeof messageId === "string" && messageId.length > 10;
+
+  const handleFeedbackClick = (type: FeedbackType) => {
+    if (!hasBackendId) return;
+    // If clicking the already-active feedback, remove it
+    if (feedbackState === type) {
+      onFeedbackRemove?.(messageId as string);
+      return;
+    }
+    // Open the dialog for new feedback
+    setFeedbackDialogType(type);
+    setFeedbackDialogOpen(true);
+  };
+
+  const handleFeedbackDialogSubmit = (data: FeedbackRequest) => {
+    if (hasBackendId) {
+      onFeedbackSubmit?.(messageId as string, data);
+    }
+  };
   
   // Check if this is an execution plan by looking for execution plan structure in objects
   const isExecutionPlan = customForm?.objects && 
@@ -94,27 +186,9 @@ export default function ChatMessage({
 
   // Animation variants
   const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.3 } },
-    exit: { opacity: 0, transition: { duration: 0.2 } },
-  };
-
-  const messageVariants = {
-    hidden: {
-      x: isUser ? 20 : -20,
-      opacity: 0,
-      scale: 0.95,
-    },
-    visible: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-    },
-    exit: {
-      x: isUser ? 20 : -20,
-      opacity: 0,
-      scale: 0.95,
-    },
+    hidden: { opacity: 0, y: 6 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+    exit: { opacity: 0, transition: { duration: 0.15 } },
   };
 
   const formatContent = (role: string, text: string) => {
@@ -178,34 +252,24 @@ export default function ChatMessage({
 
   return (
     <motion.div
-      className={`flex mb-4 items-start gap-2 ${
-        isUser ? "justify-end" : "justify-start"
-      }`}
+      className={`mb-5 ${isUser ? "flex justify-end" : ""}`}
       initial="hidden"
       animate="visible"
       exit="exit"
       variants={containerVariants}
       layout
     >
-      {!isUser && (
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Bot className="w-6 h-6 mt-2 text-muted-foreground" />
-        </motion.div>
-      )}
-      <motion.div
-        variants={messageVariants}
-        className={`
-        max-w-[80%] rounded-lg px-4 py-2 
-        ${
+      <div
+        className={
           isUser
-            ? "bg-secondary text-secondary-foreground rounded-br-none"
-            : "bg-background border border-border rounded-bl-none"
+            ? "max-w-[85%] rounded-2xl px-4 py-2.5"
+            : "max-w-full"
         }
-      `}
+        style={
+          isUser
+            ? { background: "#EDE9FE", color: "#1A1E2E" }
+            : undefined
+        }
       >
         <div className="whitespace-pre-wrap prose prose-sm max-w-none dark:prose-invert">
           <ReactMarkdown
@@ -302,161 +366,88 @@ export default function ChatMessage({
 
         {customForm && customForm.form_type === "multiselect" ? (
           <MultiSelectForm customForm={customForm} onButtonClick={onButtonClick} />
-        ) : customForm && customForm.form_type === "download" && isSchemaDefinitions ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="text-sm text-muted-foreground mb-3">
-              {customForm.text}
-            </div>
-            <div className="flex gap-3">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="gap-2">
-                    <Database className="w-4 h-4" />
-                    📋 View Schema Definitions
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-[98vw] w-full max-h-[98vh] overflow-hidden p-0">
-                  <div className="h-[98vh] overflow-y-auto">
-                    <SchemaDefinitionsVisualization
-                      data={customForm.objects as any}
-                    />
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <Button
-                variant="secondary"
-                className="gap-2"
-                asChild
-              >
-                <a
-                  href={`${API_URL}/download/${customForm.file_name}`}
-                  download={customForm.file_name}
-                  target="_blank"
-                >
-                  📥 Download JSON
-                </a>
-              </Button>
-            </div>
-          </motion.div>
-        ) : customForm && customForm.form_type === "download" && isExecutionPlan ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="text-sm text-muted-foreground mb-3">
-              {customForm.text}
-            </div>
-            <div className="flex gap-3">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="gap-2">
-                    <BarChart3 className="w-4 h-4" />
-                    📊 View Execution Plan
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-6xl w-full max-h-[90vh] overflow-auto p-0">
-                  <ExecutionPlanVisualization
-                    data={customForm.objects as any}
-                  />
-                </DialogContent>
-              </Dialog>
-              <Button
-                variant="secondary"
-                className="gap-2"
-                asChild
-              >
-                <a
-                  href={`${API_URL}/download/${customForm.file_name}`}
-                  download={customForm.file_name}
-                  target="_blank"
-                >
-                  📥 Download JSON
-                </a>
-              </Button>
-            </div>
-          </motion.div>
-        ) : customForm && customForm.form_type === "download" ? (
-          <motion.div>
-            <div className="text-sm text-muted-foreground mb-1">
-              {customForm.text}
-            </div>
-            <Button
-              className="mt-2"
-              asChild
-            >
-              <a
+        ) : customForm && (customForm.form_type === "download" || customForm.form_type === "execution_plan" || customForm.form_type === "health") ? (
+          <div className="mt-3 space-y-2">
+            {/* Inline action card */}
+            {(isSchemaDefinitions || (customForm.form_type === "download" && isSchemaDefinitions)) && (
+              <ActionCard
+                icon={Database}
+                label="Schema Definitions"
+                subtitle={customForm.objects?.database_name || "Database"}
+                onClick={() => onShowContext?.({
+                  type: "schema",
+                  title: "Schema Definitions",
+                  data: customForm.objects,
+                })}
+              />
+            )}
+            {(isExecutionPlan || customForm.form_type === "execution_plan") && (
+              <ActionCard
+                icon={BarChart3}
+                label="Execution Plan"
+                subtitle={`${customForm.objects?.rows || 0} rows · ${customForm.objects?.execution_time || 0}ms`}
+                onClick={() => onShowContext?.({
+                  type: "execution_plan",
+                  title: "Execution Plan",
+                  data: customForm.objects,
+                })}
+              />
+            )}
+            {customForm.form_type === "health" && (
+              <ActionCard
+                icon={Activity}
+                label="Performance Snapshot"
+                subtitle={customForm.objects?.database_name || "Database"}
+                onClick={() => onShowContext?.({
+                  type: "health",
+                  title: "Performance Snapshot",
+                  data: customForm.objects,
+                })}
+              />
+            )}
+            {/* Plain download (no schema/plan) */}
+            {customForm.form_type === "download" && !isSchemaDefinitions && !isExecutionPlan && (
+              <ActionCard
+                icon={Database}
+                label={customForm.file_name}
+                subtitle="Download"
                 href={`${API_URL}/download/${customForm.file_name}`}
-                download={customForm.file_name}
-                target="_blank"
-              >
-                Download {customForm.file_name}
-              </a>
-            </Button>
-          </motion.div>
-        ) : customForm && customForm.form_type === "execution_plan" ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="text-sm text-muted-foreground mb-2">
-              {customForm.text}
-            </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="mt-2 gap-2">
-                  <BarChart3 className="w-4 h-4" />
-                  📊 View Execution Plan
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-6xl w-full max-h-[90vh] overflow-auto p-0">
-                <ExecutionPlanVisualization
-                  data={customForm.objects as any}
-                />
-              </DialogContent>
-            </Dialog>
-          </motion.div>
+              />
+            )}
+          </div>
         ) : customForm ? (
-          <motion.div>
-            <div className="text-sm text-muted-foreground mb-1">
-              {customForm.text}
-            </div>
-            <div className="text-sm text-muted-foreground mb-1">
-              {customForm.objects && Object.keys(customForm.objects).map((key) => (
-                <div key={key}>{key}</div>
-              ))}
-            </div>
-          </motion.div>
+          <div className="text-sm text-muted-foreground mt-2">
+            {customForm.text}
+          </div>
         ) : null}
 
         {timestamp && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className={`text-xs mt-1 text-right ${
-              isUser ? "text-muted-foreground" : "text-muted-foreground"
-            }`}
+          <div
+            className={`text-[11px] mt-1.5 ${isUser ? "text-right" : ""}`}
+            style={{ color: "#ADB5BD" }}
           >
             {format(new Date(timestamp), "h:mm a")}
-          </motion.div>
+          </div>
         )}
-      </motion.div>
-      {isUser && (
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-        >
-          <User className="w-6 h-6 mt-2 text-muted-foreground" />
-        </motion.div>
-      )}
 
+        {!isUser && (
+          <>
+            <MessageActions
+              content={content}
+              feedbackState={hasBackendId ? feedbackState : "none"}
+              onFeedback={handleFeedbackClick}
+              onRetry={onRetry}
+              disabled={!hasBackendId}
+            />
+            <FeedbackDialog
+              open={feedbackDialogOpen}
+              onOpenChange={setFeedbackDialogOpen}
+              feedbackType={feedbackDialogType}
+              onSubmit={handleFeedbackDialogSubmit}
+            />
+          </>
+        )}
+      </div>
     </motion.div>
   );
 }

@@ -14,11 +14,18 @@ from starlette.middleware.sessions import SessionMiddleware
 import httpx
 
 from app.api.routes import chat_router
+from app.worker import task_app
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    yield
-    # Chat service cleanup is now handled per request
+    # Create database tables if they don't exist
+    from app.database.connection import engine
+    from app.models.base import Base
+    Base.metadata.create_all(bind=engine)
+
+    # Open procrastinate connection pool so API can defer tasks
+    async with task_app.open_async():
+        yield
 
 
 app = FastAPI(title="Chatbot API", lifespan=lifespan)

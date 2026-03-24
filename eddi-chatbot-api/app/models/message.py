@@ -17,8 +17,8 @@ class Message(Base):
     content = Column(Text, nullable=False)
     
     # Model and processing metadata
-    model_used = Column(String(100), nullable=True, index=True)  # 'rasa', 'gpt-4', 'claude-3', etc.
-    intent_name = Column(String(255), nullable=True, index=True)  # Rasa intent or LLM-classified intent
+    model_used = Column(String(100), nullable=True, index=True)  # 'mock-llm', 'gpt-4', 'claude-3', etc.
+    intent_name = Column(String(255), nullable=True, index=True)  # LLM-classified intent
     confidence_score = Column(Numeric(3, 2), nullable=True)  # 0.00 to 1.00
     response_time_ms = Column(Integer, nullable=True)  # Performance tracking
     

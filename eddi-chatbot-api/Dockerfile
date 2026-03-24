@@ -3,6 +3,8 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
+    build-essential \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -11,7 +13,7 @@ ENV PATH="/root/.local/bin:/root/.venv/bin:$PATH"
 
 WORKDIR /app
 
-COPY uv.lock pyproject.toml ./
+COPY uv.lock pyproject.toml .python-version ./
 
 RUN uv sync --frozen
 

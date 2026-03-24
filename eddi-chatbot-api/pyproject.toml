@@ -19,6 +19,7 @@ dependencies = [
     "python-multipart>=0.0.20",
     "sqlalchemy>=2.0.23",
     "uvicorn>=0.34.0",
+    "procrastinate>=2.0.0",
 ]
 
 [dependency-groups]

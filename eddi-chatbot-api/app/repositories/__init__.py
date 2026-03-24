@@ -1,5 +1,6 @@
 from .user_repository import UserRepository
 from .conversation_repository import ConversationRepository
 from .message_repository import MessageRepository
+from .feedback_repository import FeedbackRepository
 
-__all__ = ["UserRepository", "ConversationRepository", "MessageRepository"]
+__all__ = ["UserRepository", "ConversationRepository", "MessageRepository", "FeedbackRepository"]

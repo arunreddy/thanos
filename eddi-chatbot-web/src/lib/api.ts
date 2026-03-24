@@ -1,4 +1,4 @@
-import { MessageResponse } from "@/types";
+import { MessageResponse, FeedbackRequest, FeedbackResponse } from "@/types";
 import { API_URL } from "./config";
 
 // User context for API calls
@@ -129,5 +129,23 @@ export async function updateConversation(id: string, data: {
   return fetchWithAuth(`/api/chat/conversations/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
+  });
+}
+
+// Feedback APIs
+
+export async function submitFeedback(
+  messageId: string,
+  data: FeedbackRequest,
+): Promise<FeedbackResponse> {
+  return fetchWithAuth(`/api/chat/messages/${messageId}/feedback`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteFeedback(messageId: string): Promise<void> {
+  return fetchWithAuth(`/api/chat/messages/${messageId}/feedback`, {
+    method: "DELETE",
   });
 }

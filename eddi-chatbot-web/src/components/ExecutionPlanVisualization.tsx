@@ -1,13 +1,8 @@
-import { BarChart3, Database, Clock, Zap, Info, X } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
+import { useState } from 'react';
+import { BarChart3, Clock, Database, Zap, Layers, Table2, FileCode } from 'lucide-react';
 import SyntaxHighlighter from '@/components/ui/SyntaxHighlighter';
 
-// Type definitions for execution plans
+// Type definitions
 interface PostgresPlan {
   metadata: {
     query: string;
@@ -16,18 +11,7 @@ interface PostgresPlan {
   };
   execution_plan: {
     json: Array<{
-      Plan: {
-        'Node Type': string;
-        'Relation Name'?: string;
-        'Startup Cost': number;
-        'Total Cost': number;
-        'Plan Rows': number;
-        'Actual Total Time'?: number;
-        'Actual Rows'?: number;
-        Output?: string[];
-        Filter?: string;
-        'Rows Removed by Filter'?: number;
-      };
+      Plan: PlanNodeType & { Plans?: PlanNodeType[] };
       'Planning Time': number;
       'Execution Time': number;
     }>;
@@ -50,9 +34,7 @@ interface MySQLPlan {
     json: {
       query_block: {
         select_id: number;
-        cost_info: {
-          query_cost: string;
-        };
+        cost_info: { query_cost: string };
         nested_loop?: Array<{
           table: {
             table_name: string;
@@ -60,11 +42,7 @@ interface MySQLPlan {
             possible_keys?: string[];
             key?: string;
             rows_examined_per_scan: number;
-            cost_info: {
-              read_cost: string;
-              eval_cost: string;
-              prefix_cost: string;
-            };
+            cost_info: { read_cost: string; eval_cost: string; prefix_cost: string };
           };
         }>;
       };
@@ -101,190 +79,6 @@ interface MongoDBPlan {
 
 type ExecutionPlanData = PostgresPlan | MySQLPlan | MongoDBPlan;
 
-// Database type detection
-const detectDatabaseType = (data: ExecutionPlanData): 'postgresql' | 'mysql' | 'mongodb' | 'unknown' => {
-  if (data.metadata?.connection_endpoint?.includes('postgres')) return 'postgresql';
-  if (data.metadata?.connection_endpoint?.includes('mysql')) return 'mysql';
-  if (data.metadata?.connection_endpoint?.includes('mongo')) return 'mongodb';
-  
-  // Fallback detection based on structure
-  if ('json' in data.execution_plan && Array.isArray(data.execution_plan.json) && data.execution_plan.json[0]?.Plan) return 'postgresql';
-  if ('json' in data.execution_plan && 'query_block' in data.execution_plan.json) return 'mysql';
-  if ('collection' in data.execution_plan) return 'mongodb';
-  
-  return 'unknown';
-};
-
-// Performance indicator utility
-const getPerformanceIndicator = (cost: number | string, threshold: { good: number; fair: number }) => {
-  const numericCost = typeof cost === 'string' ? parseFloat(cost) || 0 : cost;
-  if (numericCost <= threshold.good) return { color: 'text-green-600', bg: 'bg-green-100', label: 'Good' };
-  if (numericCost <= threshold.fair) return { color: 'text-yellow-600', bg: 'bg-yellow-100', label: 'Fair' };
-  return { color: 'text-red-600', bg: 'bg-red-100', label: 'Poor' };
-};
-
-interface ExecutionPlanVisualizationProps {
-  data: ExecutionPlanData;
-  onClose?: () => void;
-}
-
-export default function ExecutionPlanVisualization({ data, onClose }: ExecutionPlanVisualizationProps) {
-  const dbType = detectDatabaseType(data);
-
-  return (
-    <Card className="max-w-6xl mx-auto">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-primary" />
-            <CardTitle>Query Execution Plan</CardTitle>
-            <Badge variant="outline">
-              {dbType.toUpperCase()}
-            </Badge>
-          </div>
-          {onClose && (
-            <Button
-              onClick={onClose}
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
-
-        {/* Query Display */}
-        <div className="mt-4">
-          <div className="text-sm text-muted-foreground mb-2">Query:</div>
-          <Card>
-            <CardContent className="p-3">
-              <code className="text-sm font-mono">
-                {data.metadata.query}
-              </code>
-            </CardContent>
-          </Card>
-        </div>
-      </CardHeader>
-
-      <CardContent>
-        <Tabs defaultValue="visual" className="w-full">
-          <TabsList>
-            <TabsTrigger value="visual" className="gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Visual
-            </TabsTrigger>
-            <TabsTrigger value="raw" className="gap-2">
-              <Info className="w-4 h-4" />
-              Raw Plan
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="visual" className="min-h-[300px] mt-4">
-            {dbType === 'postgresql' && <PostgreSQLVisualization data={data as PostgresPlan} />}
-            {dbType === 'mysql' && <MySQLVisualization data={data as MySQLPlan} />}
-            {dbType === 'mongodb' && <MongoDBVisualization data={data as MongoDBPlan} />}
-            {dbType === 'unknown' && (
-              <div className="text-center py-8 text-muted-foreground">
-                <Info className="w-8 h-8 mx-auto mb-2" />
-                <p>Unable to detect database type for visualization</p>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="raw" className="mt-4">
-            <Card>
-              <CardContent className="p-4">
-                <SyntaxHighlighter
-                  code={'text' in data.execution_plan ? data.execution_plan.text : JSON.stringify(data.execution_plan, null, 2)}
-                  language={'text' in data.execution_plan ? 'sql' : 'json'}
-                  showCopyButton={true}
-                  className="max-h-96 overflow-auto"
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
-  );
-}
-
-// PostgreSQL Visualization Component
-function PostgreSQLVisualization({ data }: { data: PostgresPlan }) {
-  const plan = data.execution_plan.json[0];
-  const costIndicator = getPerformanceIndicator(data.cost, { good: 1, fair: 10 });
-  const timeIndicator = getPerformanceIndicator(data.execution_time, { good: 1, fair: 100 });
-
-  return (
-    <div className="space-y-4">
-      {/* Performance Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Zap className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Total Cost</span>
-            </div>
-            <div className="text-lg font-bold">{data.cost}</div>
-            <Badge variant={costIndicator.label === 'Good' ? 'default' : costIndicator.label === 'Fair' ? 'secondary' : 'destructive'} className="text-xs">
-              {costIndicator.label}
-            </Badge>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Clock className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Execution Time</span>
-            </div>
-            <div className="text-lg font-bold">{data.execution_time}ms</div>
-            <Badge variant={timeIndicator.label === 'Good' ? 'default' : timeIndicator.label === 'Fair' ? 'secondary' : 'destructive'} className="text-xs">
-              {timeIndicator.label}
-            </Badge>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Database className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Rows</span>
-            </div>
-            <div className="text-lg font-bold">{data.rows}</div>
-            <div className="text-xs text-muted-foreground">Estimated</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Clock className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Planning</span>
-            </div>
-            <div className="text-lg font-bold">{data.planning_time}ms</div>
-            <div className="text-xs text-muted-foreground">Planning Time</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Plan Tree */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Execution Plan Tree</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <PlanNode node={plan.Plan} level={0} />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// Plan Node Component for PostgreSQL tree  
 interface PlanNodeType {
   'Node Type': string;
   'Relation Name'?: string;
@@ -292,240 +86,359 @@ interface PlanNodeType {
   'Total Cost': number;
   'Plan Rows': number;
   'Actual Total Time'?: number;
+  'Actual Rows'?: number;
+  Output?: string[];
   Filter?: string;
+  'Sort Key'?: string[];
+  'Hash Cond'?: string;
+  'Rows Removed by Filter'?: number;
+  Plans?: PlanNodeType[];
 }
 
-function PlanNode({ node, level }: { node: PlanNodeType; level: number }) {
-  const indent = level * 20;
-  
+const detectDatabaseType = (data: ExecutionPlanData): 'postgresql' | 'mysql' | 'mongodb' | 'unknown' => {
+  if (data.metadata?.connection_endpoint?.includes('postgres')) return 'postgresql';
+  if (data.metadata?.connection_endpoint?.includes('mysql')) return 'mysql';
+  if (data.metadata?.connection_endpoint?.includes('mongo')) return 'mongodb';
+  if ('json' in data.execution_plan && Array.isArray(data.execution_plan.json) && data.execution_plan.json[0]?.Plan) return 'postgresql';
+  if ('json' in data.execution_plan && 'query_block' in data.execution_plan.json) return 'mysql';
+  if ('collection' in data.execution_plan) return 'mongodb';
+  return 'unknown';
+};
+
+function getColor(value: number, good: number, fair: number) {
+  if (value <= good) return { text: "#28A745", label: "Good" };
+  if (value <= fair) return { text: "#E8A800", label: "Fair" };
+  return { text: "#DC3545", label: "Slow" };
+}
+
+const DB_LABELS: Record<string, string> = {
+  postgresql: "POSTGRESQL",
+  mysql: "MYSQL",
+  mongodb: "MONGODB",
+  unknown: "DATABASE",
+};
+
+interface ExecutionPlanVisualizationProps {
+  data: ExecutionPlanData;
+  onClose?: () => void;
+}
+
+export default function ExecutionPlanVisualization({ data }: ExecutionPlanVisualizationProps) {
+  const [tab, setTab] = useState<'visual' | 'raw'>('visual');
+  const dbType = detectDatabaseType(data);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: level * 0.1 }}
-      style={{ marginLeft: `${indent}px` }}
-    >
-      <Card>
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">{node['Node Type']}</div>
-              {node['Relation Name'] && (
-                <div className="text-sm text-muted-foreground">Table: {node['Relation Name']}</div>
-              )}
-              {node.Filter && (
-                <div className="text-sm text-muted-foreground">Filter: {node.Filter}</div>
-              )}
-            </div>
-            <div className="text-right text-sm">
-              <div>Cost: {node['Startup Cost']} → {node['Total Cost']}</div>
-              <div className="text-muted-foreground">Rows: {node['Plan Rows']}</div>
-              {node['Actual Total Time'] && (
-                <div className="text-muted-foreground">Time: {node['Actual Total Time']}ms</div>
-              )}
-            </div>
+    <div className="p-5 space-y-6">
+      {/* Query */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <FileCode className="w-4 h-4" style={{ color: "#495057" }} />
+            <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "#495057" }}>
+              Query
+            </h3>
+            <span
+              className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded"
+              style={{ background: "#E9ECEF", color: "#495057", letterSpacing: "0.05em" }}
+            >
+              {DB_LABELS[dbType]}
+            </span>
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
-
-// MySQL Visualization Component
-function MySQLVisualization({ data }: { data: MySQLPlan }) {
-  const queryBlock = data.execution_plan.json.query_block;
-  const totalCost = parseFloat(queryBlock.cost_info.query_cost);
-  const costIndicator = getPerformanceIndicator(totalCost, { good: 1, fair: 5 });
-
-  return (
-    <div className="space-y-4">
-      {/* Performance Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Zap className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Query Cost</span>
-            </div>
-            <div className="text-lg font-bold">{queryBlock.cost_info.query_cost}</div>
-            <Badge variant={costIndicator.label === 'Good' ? 'default' : costIndicator.label === 'Fair' ? 'secondary' : 'destructive'} className="text-xs">
-              {costIndicator.label}
-            </Badge>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Database className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Tables</span>
-            </div>
-            <div className="text-lg font-bold">{queryBlock.nested_loop?.length || 0}</div>
-            <div className="text-xs text-muted-foreground">Joined</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Info className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Analysis</span>
-            </div>
-            <div className="text-sm">{data.analyzed ? 'Analyzed' : 'Plan Only'}</div>
-            <div className="text-xs text-muted-foreground">{data.note}</div>
-          </CardContent>
-        </Card>
+        </div>
+        <div
+          className="rounded-lg px-4 py-3 font-mono text-[12px] leading-relaxed overflow-x-auto"
+          style={{ background: "#F8F9FA", border: "1px solid #E9ECEF", color: "#495057" }}
+        >
+          {data.metadata.query}
+        </div>
       </div>
 
-      {/* Join Flow */}
-      {queryBlock.nested_loop && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Table Access & Join Flow</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {queryBlock.nested_loop.map((item, index) => (
-                <TableNode key={index} table={item.table} step={index + 1} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Tab switcher */}
+      <div className="flex gap-1" style={{ borderBottom: "1px solid #E9ECEF" }}>
+        <button
+          className="px-3 py-1.5 text-[12px] font-medium transition-colors cursor-pointer"
+          style={{
+            color: tab === 'visual' ? "#008555" : "#868E96",
+            borderBottom: tab === 'visual' ? "2px solid #008555" : "2px solid transparent",
+          }}
+          onClick={() => setTab('visual')}
+        >
+          Visual
+        </button>
+        <button
+          className="px-3 py-1.5 text-[12px] font-medium transition-colors cursor-pointer"
+          style={{
+            color: tab === 'raw' ? "#008555" : "#868E96",
+            borderBottom: tab === 'raw' ? "2px solid #008555" : "2px solid transparent",
+          }}
+          onClick={() => setTab('raw')}
+        >
+          Raw Plan
+        </button>
+      </div>
+
+      {/* Content */}
+      {tab === 'visual' ? (
+        <>
+          {dbType === 'postgresql' && <PostgreSQLVisual data={data as PostgresPlan} />}
+          {dbType === 'mysql' && <MySQLVisual data={data as MySQLPlan} />}
+          {dbType === 'mongodb' && <MongoDBVisual data={data as MongoDBPlan} />}
+        </>
+      ) : (
+        <div
+          className="rounded-lg overflow-hidden"
+          style={{ border: "1px solid #E9ECEF" }}
+        >
+          <SyntaxHighlighter
+            code={'text' in data.execution_plan ? data.execution_plan.text : JSON.stringify(data.execution_plan, null, 2)}
+            language={'text' in data.execution_plan ? 'sql' : 'json'}
+            showCopyButton={true}
+          />
+        </div>
       )}
     </div>
   );
 }
 
-// Table Node Component for MySQL
-interface TableNodeType {
-  table_name: string;
-  access_type: string;
-  key?: string;
-  rows_examined_per_scan: number;
-  cost_info: {
-    read_cost: string;
-  };
-}
-
-function TableNode({ table, step }: { table: TableNodeType; step: number }) {
-  const accessTypeColors: Record<string, string> = {
-    'ALL': 'text-red-600',
-    'eq_ref': 'text-green-600',
-    'ref': 'text-blue-600',
-    'range': 'text-yellow-600'
-  };
-  const accessTypeColor = accessTypeColors[table.access_type] || 'text-muted-foreground';
-
+// --- Metric Card (reusable, matches HealthDashboard style) ---
+function MetricCard({ label, value, unit, icon: Icon, color }: {
+  label: string;
+  value: string | number;
+  unit?: string;
+  icon: React.ElementType;
+  color?: string;
+}) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: step * 0.1 }}
+    <div
+      className="rounded-lg p-3"
+      style={{ background: "#fff", border: "1px solid #E9ECEF" }}
     >
-      <Card>
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Step {step}: {table.table_name}</div>
-              <Badge variant="outline" className={`text-xs ${accessTypeColor}`}>
-                {table.access_type}
-              </Badge>
-              {table.key && (
-                <div className="text-sm text-muted-foreground mt-1">Using key: {table.key}</div>
-              )}
-            </div>
-            <div className="text-right text-sm">
-              <div>Rows: {table.rows_examined_per_scan}</div>
-              <div className="text-muted-foreground">
-                Cost: {table.cost_info.read_cost}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "#868E96" }}>
+          {label}
+        </span>
+        <Icon className="w-3.5 h-3.5" style={{ color: "#ADB5BD" }} />
+      </div>
+      <div className="text-xl font-bold" style={{ color: color || "#1A1E2E" }}>
+        {value}{unit && <span className="text-sm font-medium ml-0.5">{unit}</span>}
+      </div>
+    </div>
   );
 }
 
-// MongoDB Visualization Component
-function MongoDBVisualization({ data }: { data: MongoDBPlan }) {
+// --- PostgreSQL ---
+function PostgreSQLVisual({ data }: { data: PostgresPlan }) {
+  const plan = data.execution_plan.json[0];
+  const costColor = getColor(data.cost, 1, 10);
+  const timeColor = getColor(data.execution_time, 1, 100);
+
+  return (
+    <div className="space-y-6">
+      {/* Metrics grid */}
+      <div className="grid grid-cols-4 gap-3">
+        <MetricCard label="Total Cost" value={data.cost} icon={Zap} color={costColor.text} />
+        <MetricCard label="Execution" value={data.execution_time} unit="ms" icon={Clock} color={timeColor.text} />
+        <MetricCard label="Rows" value={data.rows.toLocaleString()} icon={Layers} />
+        <MetricCard label="Planning" value={data.planning_time} unit="ms" icon={Clock} />
+      </div>
+
+      {/* Plan tree */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-sm font-semibold" style={{ color: "#495057" }}>
+            Execution Plan Tree
+          </span>
+        </div>
+        <div className="rounded-lg overflow-hidden" style={{ border: "1px solid #E9ECEF" }}>
+          <table className="w-full text-[12px]">
+            <thead>
+              <tr style={{ background: "#F8F9FA", borderBottom: "1px solid #E9ECEF" }}>
+                <th className="text-left px-3 py-2 font-semibold" style={{ color: "#495057" }}>Operation</th>
+                <th className="text-left px-3 py-2 font-semibold" style={{ color: "#495057" }}>Detail</th>
+                <th className="text-right px-3 py-2 font-semibold" style={{ color: "#495057" }}>Cost</th>
+                <th className="text-right px-3 py-2 font-semibold" style={{ color: "#495057" }}>Rows</th>
+                <th className="text-right px-3 py-2 font-semibold" style={{ color: "#495057" }}>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <PlanRows node={plan.Plan} depth={0} />
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlanRows({ node, depth }: { node: PlanNodeType; depth: number }) {
+  const detail = node['Relation Name']
+    ? `on ${node['Relation Name']}`
+    : node['Sort Key']
+      ? `by ${node['Sort Key'].join(', ')}`
+      : node['Hash Cond']
+        ? node['Hash Cond']
+        : node.Filter || '—';
+
+  return (
+    <>
+      <tr style={{ borderBottom: "1px solid #F1F3F5" }}>
+        <td className="px-3 py-2.5 font-medium" style={{ color: "#1A1E2E", paddingLeft: `${12 + depth * 20}px` }}>
+          {depth > 0 && <span style={{ color: "#CED4DA" }}>└ </span>}
+          {node['Node Type']}
+        </td>
+        <td className="px-3 py-2.5 font-mono truncate max-w-[200px]" style={{ color: "#868E96" }}>
+          {detail}
+        </td>
+        <td className="px-3 py-2.5 text-right font-mono" style={{ color: "#495057" }}>
+          {node['Startup Cost']}→{node['Total Cost']}
+        </td>
+        <td className="px-3 py-2.5 text-right font-mono" style={{ color: "#495057" }}>
+          {node['Plan Rows']}
+        </td>
+        <td className="px-3 py-2.5 text-right font-mono" style={{ color: "#495057" }}>
+          {node['Actual Total Time'] != null ? `${node['Actual Total Time']}ms` : '—'}
+        </td>
+      </tr>
+      {node.Plans?.map((child, i) => (
+        <PlanRows key={i} node={child} depth={depth + 1} />
+      ))}
+    </>
+  );
+}
+
+// --- MySQL ---
+function MySQLVisual({ data }: { data: MySQLPlan }) {
+  const queryBlock = data.execution_plan.json.query_block;
+  const totalCost = parseFloat(queryBlock.cost_info.query_cost);
+  const costColor = getColor(totalCost, 1, 5);
+  const tables = queryBlock.nested_loop || [];
+
+  const ACCESS_COLORS: Record<string, { bg: string; text: string }> = {
+    ALL: { bg: "#FEE8EA", text: "#DC3545" },
+    eq_ref: { bg: "#D4EDDA", text: "#155724" },
+    ref: { bg: "#D1ECF1", text: "#0C5460" },
+    range: { bg: "#FFF3CD", text: "#856404" },
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-3 gap-3">
+        <MetricCard label="Query Cost" value={queryBlock.cost_info.query_cost} icon={Zap} color={costColor.text} />
+        <MetricCard label="Tables" value={tables.length} icon={Table2} />
+        <MetricCard label="Status" value={data.analyzed ? 'Analyzed' : 'Plan Only'} icon={Database} />
+      </div>
+
+      {tables.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-sm font-semibold" style={{ color: "#495057" }}>
+              Table Access & Join Flow
+            </span>
+          </div>
+          <div className="rounded-lg overflow-hidden" style={{ border: "1px solid #E9ECEF" }}>
+            <table className="w-full text-[12px]">
+              <thead>
+                <tr style={{ background: "#F8F9FA", borderBottom: "1px solid #E9ECEF" }}>
+                  <th className="text-left px-3 py-2 font-semibold" style={{ color: "#495057" }}>Step</th>
+                  <th className="text-left px-3 py-2 font-semibold" style={{ color: "#495057" }}>Table</th>
+                  <th className="text-left px-3 py-2 font-semibold" style={{ color: "#495057" }}>Access</th>
+                  <th className="text-left px-3 py-2 font-semibold" style={{ color: "#495057" }}>Key</th>
+                  <th className="text-right px-3 py-2 font-semibold" style={{ color: "#495057" }}>Rows</th>
+                  <th className="text-right px-3 py-2 font-semibold" style={{ color: "#495057" }}>Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tables.map((item, i) => {
+                  const t = item.table;
+                  const ac = ACCESS_COLORS[t.access_type] || { bg: "#E2E8F0", text: "#4A5568" };
+                  return (
+                    <tr key={i} style={{ borderBottom: i < tables.length - 1 ? "1px solid #F1F3F5" : undefined }}>
+                      <td className="px-3 py-2.5 font-mono" style={{ color: "#495057" }}>{i + 1}</td>
+                      <td className="px-3 py-2.5 font-medium" style={{ color: "#1A1E2E" }}>{t.table_name}</td>
+                      <td className="px-3 py-2.5">
+                        <span
+                          className="px-2 py-0.5 rounded text-[10px] font-bold uppercase"
+                          style={{ background: ac.bg, color: ac.text }}
+                        >
+                          {t.access_type}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 font-mono" style={{ color: "#868E96" }}>{t.key || '—'}</td>
+                      <td className="px-3 py-2.5 text-right font-mono" style={{ color: "#495057" }}>{t.rows_examined_per_scan}</td>
+                      <td className="px-3 py-2.5 text-right font-mono" style={{ color: "#495057" }}>{t.cost_info.read_cost}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {data.note && (
+        <div
+          className="rounded-r-lg px-5 py-4"
+          style={{ background: "#EFF6FF", borderLeft: "4px solid #3B82F6" }}
+        >
+          <span className="text-[13px] leading-relaxed" style={{ color: "#1A1E2E" }}>
+            {data.note}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- MongoDB ---
+function MongoDBVisual({ data }: { data: MongoDBPlan }) {
   const stats = data.execution_plan.stats;
 
   return (
-    <div className="space-y-4">
-      {/* Collection Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Database className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Documents</span>
-            </div>
-            <div className="text-lg font-bold">{stats.document_count.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">Total Count</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <BarChart3 className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Collection Size</span>
-            </div>
-            <div className="text-lg font-bold">{(stats.collection_size / 1024).toFixed(1)}KB</div>
-            <div className="text-xs text-muted-foreground">Storage</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Info className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Avg Doc Size</span>
-            </div>
-            <div className="text-lg font-bold">{stats.avg_doc_size}B</div>
-            <div className="text-xs text-muted-foreground">Per Document</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Zap className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Indexes</span>
-            </div>
-            <div className="text-lg font-bold">{stats.index_count}</div>
-            <div className="text-xs text-muted-foreground">Available</div>
-          </CardContent>
-        </Card>
+    <div className="space-y-6">
+      <div className="grid grid-cols-4 gap-3">
+        <MetricCard label="Documents" value={stats.document_count.toLocaleString()} icon={Layers} />
+        <MetricCard label="Collection" value={`${(stats.collection_size / 1024).toFixed(1)}KB`} icon={Database} />
+        <MetricCard label="Avg Doc" value={`${stats.avg_doc_size}B`} icon={BarChart3} />
+        <MetricCard label="Indexes" value={stats.index_count} icon={Zap} />
       </div>
 
-      {/* Query Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Query Analysis</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Collection:</span>
-              <Badge variant="outline">{data.execution_plan.collection}</Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Operation:</span>
-              <Badge variant="secondary" className="font-mono">{data.execution_plan.operation}</Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Database:</span>
-              <Badge variant="outline">{data.database}</Badge>
-            </div>
-            <Separator />
-            <div className="text-sm text-muted-foreground">
-              {data.note}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Query details table */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-sm font-semibold" style={{ color: "#495057" }}>
+            Query Analysis
+          </span>
+        </div>
+        <div className="rounded-lg overflow-hidden" style={{ border: "1px solid #E9ECEF" }}>
+          <table className="w-full text-[12px]">
+            <tbody>
+              <tr style={{ borderBottom: "1px solid #F1F3F5" }}>
+                <td className="px-3 py-2.5 font-medium" style={{ color: "#868E96", width: 120 }}>Collection</td>
+                <td className="px-3 py-2.5 font-mono" style={{ color: "#1A1E2E" }}>{data.execution_plan.collection}</td>
+              </tr>
+              <tr style={{ borderBottom: "1px solid #F1F3F5" }}>
+                <td className="px-3 py-2.5 font-medium" style={{ color: "#868E96" }}>Operation</td>
+                <td className="px-3 py-2.5 font-mono" style={{ color: "#1A1E2E" }}>{data.execution_plan.operation}</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2.5 font-medium" style={{ color: "#868E96" }}>Database</td>
+                <td className="px-3 py-2.5 font-mono" style={{ color: "#1A1E2E" }}>{data.database}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {data.note && (
+        <div
+          className="rounded-r-lg px-5 py-4"
+          style={{ background: "#EFF6FF", borderLeft: "4px solid #3B82F6" }}
+        >
+          <span className="text-[13px] leading-relaxed" style={{ color: "#1A1E2E" }}>
+            {data.note}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

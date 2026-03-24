@@ -1,21 +1,18 @@
-
-
-import { Outlet } from 'react-router';
-import Loading from '@/components/Loading';
-import { useAppContext } from '@/AppContext';
-import { Navigate } from 'react-router';
+import { Outlet } from "react-router";
+import Loading from "@/components/Loading";
+import { useAppContext } from "@/AppContext";
+import { Navigate } from "react-router";
 
 export const RequiredAuth = () => {
+  const { loading, isAuthenticated } = useAppContext();
 
-  const {loading, isAuthenticated} = useAppContext();
-
-  if (loading){
+  if (loading) {
     return <Loading />;
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
+  // if (!isAuthenticated) {
+  //   return <Navigate to="/login" />;
+  // }
 
-  return (<Outlet />);
-}
+  return <Outlet />;
+};

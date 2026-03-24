@@ -34,12 +34,6 @@ class ConversationRepository:
             self.db.add(conversation)
             self.db.commit()
             self.db.refresh(conversation)
-            
-            # Generate Rasa sender ID after conversation has been saved and has an ID
-            conversation.generate_rasa_sender_id()
-            self.db.commit()
-            self.db.refresh(conversation)
-            
             return conversation
         except IntegrityError:
             self.db.rollback()
@@ -48,10 +42,6 @@ class ConversationRepository:
     def get_conversation_by_id(self, conversation_id: str) -> Optional[Conversation]:
         """Get conversation by ID"""
         return self.db.query(Conversation).filter(Conversation.id == conversation_id).first()
-    
-    def get_conversation_by_rasa_sender_id(self, rasa_sender_id: str) -> Optional[Conversation]:
-        """Get conversation by Rasa sender ID"""
-        return self.db.query(Conversation).filter(Conversation.rasa_sender_id == rasa_sender_id).first()
     
     def get_user_conversations(
         self, 

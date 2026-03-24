@@ -18,9 +18,6 @@ class Conversation(Base):
     status = Column(String(50), nullable=False, default="active", index=True)
     topic = Column(String(100), nullable=True, index=True)  # e.g., 'database_setup', 'query_optimization'
     
-    # Rasa integration
-    rasa_sender_id = Column(String(255), unique=True, nullable=True, index=True)
-    
     # Conversation analytics
     message_count = Column(Integer, nullable=False, default=0)
     
@@ -74,11 +71,3 @@ class Conversation(Base):
         
         return result
 
-    def generate_rasa_sender_id(self):
-        """Generate a unique Rasa sender ID for this conversation"""
-        if not self.rasa_sender_id:
-            # Format: user_uuid_conv_uuid (shortened for readability)
-            user_short = str(self.user_id).replace("-", "")[:8]
-            conv_short = str(self.id).replace("-", "")[:8]
-            self.rasa_sender_id = f"user_{user_short}_conv_{conv_short}"
-        return self.rasa_sender_id
