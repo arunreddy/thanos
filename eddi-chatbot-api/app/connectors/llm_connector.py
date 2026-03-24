@@ -1,20 +1,28 @@
 from typing import Any, Dict, List, Optional
 
+from app.connectors.db_recommendation import process_user_input as db_recommend
+from app.connectors.kafka_assist import get_mock_response as kafka_respond
+
 
 class LLMConnector:
     """
     Mock LLM connector that returns canned responses based on keyword matching.
+    DB recommendation and Kafka assist intents delegate to dedicated handlers.
     TODO: Replace with real LLM integration (OpenAI, Anthropic, etc.)
     """
 
     INTENT_KEYWORDS: Dict[str, List[str]] = {
-        "recommend_database": ["recommend", "suggestion", "which database", "best db", "what db"],
+        "recommend_database": ["recommend", "suggestion", "which database", "best db", "what db", "i need a database", "database for"],
         "provision_database": ["provision", "create database", "set up", "new database", "spin up"],
         "health_check": ["health", "status", "slow queries", "connection pool", "performance"],
-        "kafka_assist": ["kafka", "consumer lag", "producer", "topic", "dead letter"],
+        "kafka_assist": ["kafka", "consumer lag", "producer", "topic", "dead letter", "service account", "api key"],
         "explore_schema": ["schema", "tables", "columns", "explore", "structure"],
         "analyze_query": ["query", "explain", "execution plan", "optimize", "index"],
     }
+
+    # Track which conversations are in a recommend_database or kafka_assist flow
+    # so follow-up messages (like "yes", "no") stay in the same intent
+    _conversation_intents: Dict[str, str] = {}
 
     MOCK_RESPONSES: Dict[str, Dict[str, Any]] = {
         "recommend_database": {
@@ -227,9 +235,39 @@ class LLMConnector:
     ) -> Dict[str, Any]:
         """
         Process a message and return a mock LLM response.
-        Signature is compatible with what ChatService expects.
+        DB recommendation and Kafka assist intents use dedicated handlers.
         """
         intent = self._classify_intent(message)
+
+        # Check if this conversation is already in a multi-turn flow
+        prev_intent = self._conversation_intents.get(conversation_id)
+        if prev_intent in ("recommend_database", "kafka_assist") and intent == "fallback":
+            # Stay in the same flow for follow-up messages like "yes", "no", etc.
+            intent = prev_intent
+
+        # Track the active intent for this conversation
+        self._conversation_intents[conversation_id] = intent
+
+        # Delegate to dedicated handlers
+        if intent == "recommend_database":
+            text = db_recommend(message)
+            return {
+                "text": text,
+                "buttons": [],
+                "intent": intent,
+                "custom": {},
+            }
+
+        if intent == "kafka_assist":
+            text = kafka_respond(message)
+            return {
+                "text": text,
+                "buttons": [],
+                "intent": intent,
+                "custom": {},
+            }
+
+        # Fall back to canned responses for other intents
         response = self.MOCK_RESPONSES.get(intent, self.MOCK_RESPONSES["fallback"])
 
         return {
