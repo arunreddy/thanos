@@ -10,16 +10,21 @@ services:
       - thanos-network
 
   postgres:
-    image: postgres:latest
+    image: postgres:15
     container_name: thanos-postgres
     ports:
       - "45432:5432"
     volumes:
-      - postgres-data:/data
+      - postgres-data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - thanos-network
 
@@ -28,8 +33,6 @@ services:
     build:
       context: ./eddi-chatbot-web
       dockerfile: Dockerfile
-      args:
-        BUILD_MODE: development
     ports:
       - "43000:3000"
     volumes:
@@ -39,7 +42,12 @@ services:
       - NODE_ENV=development
       - PORT=3000
       - VITE_NODE_ENV=development
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:48000
+      - API_PROXY_TARGET=http://chatbot-api:8000
+    depends_on:
+      - chatbot-api
+      - postgres
+    restart: unless-stopped
     networks:
       - thanos-network
 
@@ -68,11 +76,33 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=8000
+      - EDDI_CHATBOT_APP_URL=http://localhost:43000
       - DB_HOST=thanos-postgres
       - DB_PORT=5432
       - DB_NAME=postgres
       - DB_USER=postgres
       - DB_PASSWORD=postgres
+      - REDIS_HOST=thanos-redis
+      - REDIS_PORT=6379
+      # Mock mode for local development - returns mock data instead of calling external APIs
+      - USE_MOCK_DATA=true
+      # Optional: DBQ API configuration (set these if using database query service)
+      - DBQ_API_BASE_URL=
+      - DBQ_API_TIMEOUT=30.0
+      - DBQ_API_AUTH_TOKEN=
+      - DBQ_API_CLIENT_APP_NAME=thanos
+      # Optional: DataDog configuration (set these for monitoring)
+      - DD_API_KEY=
+      - DD_APP_KEY=
+      # Optional: Okta configuration (set these for authentication)
+      - EDDI_OKTA_CLIENT_ID=
+      - EDDI_OKTA_CLIENT_SECRET=
+      - EDDI_OKTA_REDIRECT_URI=http://localhost:43000/auth/callback
+      - EDDI_SESSION_SECRET_KEY=dev-session-secret-key-change-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       - thanos-network
 
@@ -100,10 +130,16 @@ services:
       - DB_NAME=postgres
       - DB_USER=postgres
       - DB_PASSWORD=postgres
+      - REDIS_HOST=thanos-redis
+      - REDIS_PORT=6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       - thanos-network
 
-  # # Sample Database Services for Testing Schema Exploration and Query Analysis
+  # Sample Database Services for Testing Schema Exploration and Query Analysis
   # sample-employee-postgres:
   #   image: postgres:15
   #   container_name: sample-employee-postgres

@@ -10,6 +10,7 @@ export default function Chat() {
   const { chatId } = useParams();
   const { currentChatId, setCurrentChatId } = useChat();
   const [contextPanel, setContextPanel] = useState<ContextPanelData | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Clear context panel when conversation changes
   const activeChatId = chatId || currentChatId;
@@ -17,12 +18,21 @@ export default function Chat() {
     setContextPanel(null);
   }, [activeChatId]);
 
+  // Wrap setCurrentChatId so creating a new conversation also refreshes the sidenav
+  const handleSetActiveChatId = (id: string | null, isFirstMessage?: boolean) => {
+    setCurrentChatId(id);
+    if (isFirstMessage) {
+      setRefreshTrigger((prev) => prev + 1);
+    }
+  };
+
   return (
     <div className="bg-background text-foreground w-full h-[100vh] flex overflow-hidden">
       <SideNav
         data-testid="sidenav"
         activeChatId={chatId || currentChatId || 'unknown'}
         onSelectChat={setCurrentChatId}
+        refreshTrigger={refreshTrigger}
       />
 
       {/* Chat panel — animates width */}
@@ -40,7 +50,7 @@ export default function Chat() {
         <ChatContent
           data-testid="chat-content"
           chatId={chatId || currentChatId || 'unknown'}
-          setActiveChatId={setCurrentChatId}
+          setActiveChatId={handleSetActiveChatId}
           onShowContext={setContextPanel}
         />
       </motion.div>

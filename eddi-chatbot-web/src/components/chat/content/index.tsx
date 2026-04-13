@@ -278,47 +278,35 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
   const TypingIndicator = () => (
     <motion.div
-      className="flex mb-4 items-start gap-2 justify-start"
+      className="flex mb-6 items-start gap-2.5"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.2 }}
     >
-      <motion.div
-        className="w-6 h-6 mt-2 text-muted-foreground flex items-center justify-center"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.1 }}
+      {/* Matching bot avatar */}
+      <div
+        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5"
+        style={{ background: "#1A1E2E" }}
       >
-        <Bot className="w-5 h-5" />
-      </motion.div>
-      <motion.div
-        className="max-w-[80%] rounded-lg px-4 py-3 bg-background border border-border rounded-bl-none"
-        initial={{ x: -20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{
-          type: "spring",
-          stiffness: 500,
-          damping: 30,
-          mass: 1,
-        }}
+        <Bot className="w-4 h-4 text-white" />
+      </div>
+      <div
+        className="rounded-2xl rounded-tl-sm px-4 py-3 border shadow-sm"
+        style={{ background: "#F8F9FA", borderColor: "#E9ECEF" }}
       >
-        <div className="flex space-x-2 items-center h-5">
-          {[0, 0.2, 0.4].map((delay, i) => (
+        <div className="flex space-x-1.5 items-center h-5">
+          {[0, 0.15, 0.3].map((delay, i) => (
             <motion.div
               key={i}
-              className="w-2 h-2 bg-primary rounded-full"
-              animate={{ y: [0, -5, 0] }}
-              transition={{
-                repeat: Infinity,
-                duration: 0.6,
-                ease: "easeInOut",
-                delay,
-              }}
+              className="w-2 h-2 rounded-full"
+              style={{ background: "#ADB5BD" }}
+              animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut", delay }}
             />
           ))}
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   );
 
@@ -329,90 +317,93 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
   const showTypingIndicator = chatState === ChatState.SENDING_MESSAGE;
 
-  // Derive conversation title from the first user message
+  // Derive category from first user message e.g. "[Kafka Assist] ..."
   const firstUserMessage = messages.find(m => m.role === "user");
-  const conversationTitle = firstUserMessage
-    ? firstUserMessage.content.slice(0, 80) + (firstUserMessage.content.length > 80 ? "..." : "")
-    : (chatId ? "Conversation" : null);
+  const categoryMatch = firstUserMessage?.content.match(/^\[([^\]]+)\]/);
+  const activeCategory = categoryMatch ? categoryMatch[1] : null;
+  const conversationTitle = activeCategory ?? (chatId ? "Conversation" : null);
 
   return (
     <div className="flex flex-col h-full w-full">
       <TopNav title={conversationTitle} />
 
       {/* Messages area + floating input */}
-      <div className="flex-1 relative overflow-hidden">
-        <div className="absolute inset-0 overflow-y-auto p-4 pb-24 bg-background">
-          <div className="max-w-3xl mx-auto">
-            {/* Loading screen */}
-            {showLoadingScreen && (
-              <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                <div className="flex items-center space-x-2">
-                  {[0, 300, 600].map((delay, i) => (
-                    <div
-                      key={i}
-                      className="w-3 h-3 bg-primary rounded-full animate-pulse"
-                      style={{ animationDelay: `${delay}ms` }}
-                    />
-                  ))}
-                </div>
-                <div className="mt-2">Loading conversation...</div>
-              </div>
-            )}
-
-            {/* Message list */}
-            <div className="min-h-[50px]">
-              <AnimatePresence initial={false} mode="popLayout">
-                {messages.map((message, index) => (
-                  <ChatMessage
-                    key={
-                      message.id ||
-                      `msg-${index}-${message.timestamp || Date.now()}`
-                    }
-                    role={message.role}
-                    content={message.content}
-                    timestamp={message.timestamp || message.created_at}
-                    buttons={message.buttons}
-                    customForm={message.custom as CustomForm}
-                    messageId={message.id}
-                    feedbackState={
-                      typeof message.id === "string"
-                        ? feedbackStates[message.id] || "none"
-                        : "none"
-                    }
-                    onButtonClick={handleButtonClick}
-                    onShowContext={onShowContext}
-                    onFeedbackSubmit={handleFeedbackSubmit}
-                    onFeedbackRemove={handleFeedbackRemove}
-                    onRetry={() => handleRetry(index)}
+      <div className="flex-1 relative overflow-hidden" style={{ background: "linear-gradient(180deg, #F8FAFB 0%, #FFFFFF 60%)" }}>
+        <div className="absolute inset-0 overflow-y-auto px-8 pt-6 pb-28">
+          {/* Loading screen */}
+          {showLoadingScreen && (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground pt-24">
+              <div className="flex items-center space-x-2">
+                {[0, 300, 600].map((delay, i) => (
+                  <div
+                    key={i}
+                    className="w-2.5 h-2.5 rounded-full animate-pulse"
+                    style={{ background: "#1A1E2E", animationDelay: `${delay}ms` }}
                   />
                 ))}
-              </AnimatePresence>
+              </div>
+              <div className="mt-3 text-sm" style={{ color: "#ADB5BD" }}>Loading conversation...</div>
             </div>
+          )}
 
-            {/* Typing indicator */}
-            <AnimatePresence>
-              {showTypingIndicator && <TypingIndicator />}
+          {/* Message list */}
+          <div className="min-h-[50px]">
+            <AnimatePresence initial={false} mode="popLayout">
+              {messages.map((message, index) => (
+                <ChatMessage
+                  key={
+                    message.id ||
+                    `msg-${index}-${message.timestamp || Date.now()}`
+                  }
+                  role={message.role}
+                  content={message.content}
+                  timestamp={message.timestamp || message.created_at}
+                  buttons={message.buttons}
+                  customForm={message.custom as CustomForm}
+                  messageId={message.id}
+                  activeCategory={activeCategory}
+                  feedbackState={
+                    typeof message.id === "string"
+                      ? feedbackStates[message.id] || "none"
+                      : "none"
+                  }
+                  onButtonClick={handleButtonClick}
+                  onShowContext={onShowContext}
+                  onFeedbackSubmit={handleFeedbackSubmit}
+                  onFeedbackRemove={handleFeedbackRemove}
+                  onRetry={() => handleRetry(index)}
+                />
+              ))}
             </AnimatePresence>
-
-            {/* Error message */}
-            {error && (
-              <div className="text-red-500 text-center my-2 text-sm">{error}</div>
-            )}
-
-            {/* Invisible element to scroll to */}
-            <div ref={messagesEndRef} />
           </div>
+
+          {/* Typing indicator */}
+          <AnimatePresence>
+            {showTypingIndicator && <TypingIndicator />}
+          </AnimatePresence>
+
+          {/* Error message */}
+          {error && (
+            <div className="flex justify-center my-3">
+              <span className="text-sm px-4 py-2 rounded-full" style={{ background: "#FFF5F5", color: "#E53E3E", border: "1px solid #FED7D7" }}>
+                {error}
+              </span>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Floating input */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 pt-2" style={{ background: "linear-gradient(transparent, var(--background) 30%)" }}>
-          <div className="max-w-3xl mx-auto">
-            <ChatInput
-              ref={chatInputRef}
-              onSendMessage={handleSendMessage}
-              isLoading={chatState !== ChatState.IDLE}
-            />
-          </div>
+        <div
+          className="absolute bottom-0 left-0 right-0 px-8 pb-4 pt-6"
+          style={{ background: "linear-gradient(transparent, #ffffff 35%)" }}
+        >
+          <ChatInput
+            ref={chatInputRef}
+            onSendMessage={handleSendMessage}
+            isLoading={chatState !== ChatState.IDLE}
+          />
         </div>
       </div>
     </div>

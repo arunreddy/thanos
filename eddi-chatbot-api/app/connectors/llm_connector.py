@@ -1,7 +1,9 @@
 from typing import Any, Dict, List, Optional
 
 from app.connectors.db_recommendation import process_user_input as db_recommend
+from app.connectors.db_provisioning import process_user_input as db_provision
 from app.connectors.kafka_assist import get_mock_response as kafka_respond
+from app.connectors.health_monitoring import process_health_request
 
 
 class LLMConnector:
@@ -14,7 +16,13 @@ class LLMConnector:
     INTENT_KEYWORDS: Dict[str, List[str]] = {
         "recommend_database": ["recommend", "suggestion", "which database", "best db", "what db", "i need a database", "database for"],
         "provision_database": ["provision", "create database", "set up", "new database", "spin up"],
-        "health_check": ["health", "status", "slow queries", "connection pool", "performance"],
+        "health_check": [
+            "health", "status", "slow queries", "connection pool", "performance",
+            "datadog", "metrics", "metric", "monitoring", "monitor", "vitals",
+            "cpu", "memory", "disk", "connections", "throughput", "latency",
+            "rds", "instance", "database health", "db health", "db metrics",
+            "observability", "observe",
+        ],
         "kafka_assist": ["kafka", "consumer lag", "producer", "topic", "dead letter", "service account", "api key"],
         "explore_schema": ["schema", "tables", "columns", "explore", "structure"],
         "analyze_query": ["query", "explain", "execution plan", "optimize", "index"],
@@ -241,7 +249,7 @@ class LLMConnector:
 
         # Check if this conversation is already in a multi-turn flow
         prev_intent = self._conversation_intents.get(conversation_id)
-        if prev_intent in ("recommend_database", "kafka_assist") and intent == "fallback":
+        if prev_intent in ("recommend_database", "kafka_assist", "provision_database", "health_check") and intent == "fallback":
             # Stay in the same flow for follow-up messages like "yes", "no", etc.
             intent = prev_intent
 
@@ -258,6 +266,15 @@ class LLMConnector:
                 "custom": {},
             }
 
+        if intent == "provision_database":
+            text = db_provision(message, conversation_id)
+            return {
+                "text": text,
+                "buttons": [],
+                "intent": intent,
+                "custom": {},
+            }
+
         if intent == "kafka_assist":
             text = kafka_respond(message)
             return {
@@ -265,6 +282,19 @@ class LLMConnector:
                 "buttons": [],
                 "intent": intent,
                 "custom": {},
+            }
+
+        if intent == "health_check":
+            response = await process_health_request(
+                message=message,
+                conversation_id=conversation_id,
+                auth_headers=auth_headers,
+            )
+            return {
+                "text": response.get("text", ""),
+                "buttons": response.get("buttons", []),
+                "intent": intent,
+                "custom": response.get("custom", {}),
             }
 
         # Fall back to canned responses for other intents
@@ -277,9 +307,34 @@ class LLMConnector:
             "custom": response.get("custom", {}),
         }
 
+    def _normalize(self, message: str) -> str:
+        """Normalize user input before intent classification.
+
+        - Lowercases
+        - Collapses extra whitespace
+        - Expands common abbreviations so keyword matching is more robust
+        """
+        import re
+        text = message.lower().strip()
+        text = re.sub(r'\s+', ' ', text)
+
+        abbreviations = {
+            r'\bpg\b': 'postgres',
+            r'\bpostgresql\b': 'postgres',
+            r'\bdb\b': 'database',
+            r'\bperf\b': 'performance',
+            r'\bmon\b': 'monitoring',
+            r'\bstat(s)?\b': 'status',
+            r'\bconn(s)?\b': 'connections',
+            r'\bdd\b': 'datadog',
+        }
+        for pattern, replacement in abbreviations.items():
+            text = re.sub(pattern, replacement, text)
+        return text
+
     def _classify_intent(self, message: str) -> str:
-        """Simple keyword-based intent classification."""
-        message_lower = message.lower()
+        """Keyword-based intent classification with message normalization."""
+        message_lower = self._normalize(message)
 
         # Strip category prefix if present, e.g. "[Recommend DB] ..."
         if message_lower.startswith("[") and "]" in message_lower:

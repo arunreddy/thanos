@@ -250,9 +250,12 @@ async def delete_feedback(
 @chat_router.get("/health")
 async def health_check():
     """Check system health including database and LLM connectivity"""
+    from datetime import datetime
+
     health_status = {
         "api": "healthy",
         "services": {},
+        "timestamp": datetime.utcnow().isoformat(),  # ✅ ADD THIS
     }
 
     # Check database
@@ -271,7 +274,7 @@ async def health_check():
             "error": str(e),
         }
 
-    # LLM status (mock for now)
+    # LLM status (mock)
     health_status["services"]["llm"] = {
         "status": "healthy",
         "type": "mock",

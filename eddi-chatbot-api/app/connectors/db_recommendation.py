@@ -1,7 +1,21 @@
-"""Mock Chatbot - Simulates DatabaseRecommendationChatbot without LLM or Jira dependencies"""
+"""DatabaseRecommendationChatbot with real Jira integration"""
 
+import json
+import os
 import re
 from typing import Dict, Any, Optional
+
+import requests
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# ---------------------------------------------------------------------------
+# Jira configuration
+# ---------------------------------------------------------------------------
+
+JIRA_URL = os.environ.get("EDDI_JIRA_BASE_URL", "https://citizensbank-sandbox.atlassian.net")
+JIRA_USER = os.environ.get("EDDI_JIRA_USER", "")
+JIRA_API_TOKEN = os.environ.get("EDDI_JIRA_API_TOKEN", "")
 
 
 # ---------------------------------------------------------------------------
@@ -21,12 +35,54 @@ _MOCK_RECOMMENDATIONS: Dict[str, Dict[str, Any]] = {
                                      "email": "dl-edsdelivery@citizensbank.com",                                                           "status": "dba_review"},
 }
 
-_MOCK_JIRA_TICKET = {
-    "success": True,
-    "ticket_id": "EDE-demo-1042",
-    "jira_link": "https://citizensbank-sandbox.atlassian.net/browse/EDE-demo-1042",
-    "error": None,
-}
+# ---------------------------------------------------------------------------
+# State: store the last recommendation so "yes" can reference it
+# ---------------------------------------------------------------------------
+
+_last_recommendation: Dict[str, Any] = {}
+
+
+# ---------------------------------------------------------------------------
+# Jira ticket creation
+# ---------------------------------------------------------------------------
+
+def create_jira_ticket(project_key: str, summary: str, description: str = "",
+                       issue_type: str = "Story") -> Dict[str, Any]:
+    """Create a real Jira ticket via the REST API."""
+    url = f"{JIRA_URL}/rest/api/2/issue"
+    auth = (JIRA_USER, JIRA_API_TOKEN)
+    headers = {"content-type": "application/json"}
+    payload = json.dumps({
+        "fields": {
+            "project": {"key": project_key},
+            "summary": summary,
+            "description": description,
+            "issuetype": {"name": issue_type},
+        }
+    })
+
+    try:
+        response = requests.post(url, headers=headers, data=payload,
+                                 auth=auth, verify=False, timeout=30)
+    except requests.RequestException as exc:
+        return {"success": False, "error": str(exc)}
+
+    if response.status_code != 201:
+        error_detail = response.text
+        try:
+            error_detail = response.json().get("errors", error_detail)
+        except ValueError:
+            pass
+        return {"success": False, "error": f"HTTP {response.status_code}: {error_detail}"}
+
+    data = response.json()
+    ticket_key = data.get("key", "")
+    return {
+        "success": True,
+        "ticket_id": ticket_key,
+        "jira_link": f"{JIRA_URL}/browse/{ticket_key}",
+        "error": None,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -192,7 +248,18 @@ def process_user_input(user_message: str) -> str:
 
     # ---- Jira-ticket confirmation ----------------------------------------
     if t in {"yes", "y", "create ticket", "yes please", "create jira", "create jira ticket"}:
-        return _format_jira_response(_MOCK_JIRA_TICKET)
+        description = _build_jira_description(
+            _last_recommendation.get("rec", {}),
+            _last_recommendation.get("business_info", {}),
+            _last_recommendation.get("rec_key", ""),
+        )
+        ticket = create_jira_ticket(
+            project_key="EDE",
+            summary="Database choice analysis",
+            description=description,
+            issue_type="Story",
+        )
+        return _format_jira_response(ticket)
 
     # ---- Ticket decline -----------------------------------------------------
     if t in {"no", "n", "no thanks", "skip", "no ticket"}:
@@ -210,6 +277,15 @@ def process_user_input(user_message: str) -> str:
         return _format_clarification_response(user_message)
 
     rec = _MOCK_RECOMMENDATIONS[key]
+
+    # Store context so a subsequent "yes" can build the full Jira description
+    _last_recommendation.clear()
+    _last_recommendation.update({
+        "rec": rec,
+        "business_info": business_info,
+        "rec_key": key,
+    })
+
     return _format_recommendation_response(rec, business_info, rec_key=key)
 
 
@@ -234,12 +310,12 @@ _TECH_INFO_BY_KEY: Dict[str, Dict[str, str]] = {
 # Formatting helpers
 # ---------------------------------------------------------------------------
 
-def _format_jira_preview(rec: Dict[str, Any], info: Dict[str, Optional[str]], rec_key: str) -> str:
-    """Build the Jira ticket preview shown before asking the user to confirm."""
+def _build_jira_description(rec: Dict[str, Any], info: Dict[str, Optional[str]], rec_key: str) -> str:
+    """Build the full description text used in both the preview and the real Jira ticket."""
     tech = _TECH_INFO_BY_KEY.get(rec_key, {})
     biz  = info or {}
 
-    description = (
+    return (
         "Database choice analysis for the application\n\n"
         "Application Information:\n"
         f"  1. Application Architect/Owner: {biz.get('architect_name') or 'N/A'}\n"
@@ -258,10 +334,15 @@ def _format_jira_preview(rec: Dict[str, Any], info: Dict[str, Optional[str]], re
         f"  {rec.get('recommendation', 'N/A')}"
     )
 
+
+def _format_jira_preview(rec: Dict[str, Any], info: Dict[str, Optional[str]], rec_key: str) -> str:
+    """Build the Jira ticket preview shown before asking the user to confirm."""
+    description = _build_jira_description(rec, info, rec_key)
+
     return (
         "**Jira Ticket Preview:**\n"
         "```\n"
-        f"Summary    : Database choice analysis\n"
+        f"Summary: Database choice analysis\n"
         f"Description:\n{description}\n"
         "```"
     )

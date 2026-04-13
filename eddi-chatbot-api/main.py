@@ -3,6 +3,9 @@ import secrets
 import hashlib
 import base64
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from contextlib import asynccontextmanager
 from urllib.parse import urlencode
 
@@ -14,6 +17,7 @@ from starlette.middleware.sessions import SessionMiddleware
 import httpx
 
 from app.api.routes import chat_router
+from app.api.provision_routes import provision_router
 from app.worker import task_app
 
 @asynccontextmanager
@@ -43,6 +47,7 @@ app.add_middleware(
                    "http://localhost:3000",
                    "http://localhost:3001",
                    "http://localhost:43000",
+                   "https://hnb-dev.p2.paas.citizensbank.com",
                    "https://eddi-chatbot.p2.ocp.citizensbank.com", "https://dbq-dev-chatbot.p2.ocp.citizensbank.com"], 
     allow_credentials=True,
     allow_methods=["OPTIONS", "*"],  # Explicitly include OPTIONS
@@ -134,13 +139,9 @@ async def get_user(request: Request):
     try:
         async with httpx.AsyncClient(verify=False) as client:
             response = await client.get(user_info_url, headers=headers)
-            response.raise_for_status()  # Raise an exception for HTTP errors
+            response.raise_for_status()
             
-            print(response.status_code)
-            print(response.text)
             user_info = response.json()
-            
-            print(user_info)
             data = {
                 "name": user_info.get("name"),
                 "email": user_info.get("email"),
@@ -151,31 +152,26 @@ async def get_user(request: Request):
             
             return data
     except httpx.HTTPStatusError as http_err:
-        print(f"HTTP error occurred: {http_err.response.status_code} - {http_err.response.text}")
         return JSONResponse(
             content={"error": f"HTTP error occurred: {http_err.response.status_code} - {http_err.response.text}"},
             status_code=http_err.response.status_code
         )
     except httpx.RequestError as req_err:
-        print(f"Request error occurred: {str(req_err)}")
         return JSONResponse(
             content={"error": f"Request error occurred: {str(req_err)}"},
             status_code=500
         )
     except httpx.TimeoutException:
-        print("Request timed out")
         return JSONResponse(
             content={"error": "Request timed out"},
             status_code=504
         )
     except httpx.ConnectError:
-        print("Connection error occurred")
         return JSONResponse(
             content={"error": "Connection error occurred"},
             status_code=502
         )
     except Exception as err:
-        print(f"An error occurred: {str(err)}")
         return JSONResponse(
             content={"error": f"An error occurred: {str(err)}"},
             status_code=500
@@ -227,7 +223,6 @@ async def download_file(file_name: str):
     }
     media_type = media_types.get(ext, "application/octet-stream")
     
-    print(f"Downloading file: {file_name}, Path: {file_path}, Media Type: {media_type}")
 
     return FileResponse(
         path=file_path,
@@ -240,6 +235,7 @@ async def download_file(file_name: str):
 
 # Include routers
 app.include_router(chat_router, prefix="/api")
+app.include_router(provision_router, prefix="/api")
 
 if __name__ == "__main__":
     import uvicorn

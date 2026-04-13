@@ -88,8 +88,8 @@ export default function ChatNew() {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isTyping, setIsTyping] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typewriterRef = useRef<number | null>(null);
@@ -116,6 +116,7 @@ export default function ChatNew() {
     const fullMessage = selectedCategory ? `[${selectedCategory}] ${msg}` : msg;
     const response = await newConversation({ message: fullMessage });
     if (response.conversation_id) {
+      setRefreshTrigger((prev) => prev + 1);
       navigate(`/chat/${response.conversation_id}`);
     }
     setIsLoading(false);
@@ -151,7 +152,6 @@ export default function ChatNew() {
     if (userHasTyped.current) return;
 
     clearTypewriter();
-    setIsTyping(true);
     let i = 0;
     setMessage('');
 
@@ -169,13 +169,11 @@ export default function ChatNew() {
     if (userHasTyped.current) return;
 
     clearTypewriter();
-    setIsTyping(false);
     setMessage('');
   };
 
   const handleCategoryClick = (label: string) => {
     clearTypewriter();
-    setIsTyping(false);
     if (selectedCategory === label) {
       setSelectedCategory(null);
     } else {
@@ -187,7 +185,6 @@ export default function ChatNew() {
   const handleExampleClick = (prompt: string) => {
     clearTypewriter();
     userHasTyped.current = true;
-    setIsTyping(false);
     setMessage(prompt);
     textareaRef.current?.focus();
   };
@@ -195,9 +192,7 @@ export default function ChatNew() {
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
     userHasTyped.current = e.target.value.length > 0;
-    if (e.target.value.length > 0) {
-      setIsTyping(false);
-    }
+    // No setIsTyping needed here
   };
 
   const getGreeting = () => {
@@ -217,6 +212,7 @@ export default function ChatNew() {
       <SideNav
         activeChatId={chatId || currentChatId}
         onSelectChat={setCurrentChatId}
+        refreshTrigger={refreshTrigger}
       />
       <div className="flex-1 flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #F8FAFB 0%, #FFFFFF 100%)' }}>
         <div className="max-w-[820px] w-full px-6">

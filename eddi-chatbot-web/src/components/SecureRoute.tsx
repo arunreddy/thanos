@@ -1,18 +1,7 @@
 import { Outlet } from "react-router";
-import Loading from "@/components/Loading";
-import { useAppContext } from "@/AppContext";
-import { Navigate } from "react-router";
 
+// Authentication bypassed for local development
 export const RequiredAuth = () => {
-  const { loading, isAuthenticated } = useAppContext();
-
-  if (loading) {
-    return <Loading />;
-  }
-
-  // if (!isAuthenticated) {
-  //   return <Navigate to="/login" />;
-  // }
-
+  // Bypass authentication - go directly to the app
   return <Outlet />;
 };

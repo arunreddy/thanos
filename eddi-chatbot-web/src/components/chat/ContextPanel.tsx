@@ -90,7 +90,7 @@ function ContextContent({ context }: { context: ContextPanelData }) {
       return <SchemaDefinitionsVisualization data={context.data} />;
 
     case "health":
-      return <HealthDashboard data={context.data} />;
+      return <HealthDashboard key={context.data?.resource_id} data={context.data} />;
 
     default:
       return (

@@ -1,17 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare,
   Plus,
   Trash2,
-  MoreVertical,
   Search,
-  Settings,
   PanelLeftClose,
-  PanelLeft,
+  PanelLeftOpen,
   LogOut,
+  Database,
+  Server,
+  Zap,
+  Radio,
+  X,
+  MoreVertical,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 
 import { Button } from "../../ui/button";
 import { deleteConversation, getConversations } from "../../../lib/api";
@@ -28,6 +32,32 @@ import {
 import { useAppContext, User } from "@/AppContext";
 import { SystemStatusDot } from "../../StatusIndicator";
 
+const CATEGORY_STYLES: Record<string, { color: string; bg: string; icon: React.ElementType }> = {
+  "Recommend DB": { color: "#2563EB", bg: "#EFF6FF", icon: Database },
+  "Provision DB":  { color: "#008555", bg: "#E6F4EF", icon: Server },
+  "Health":        { color: "#D97706", bg: "#FEF3C7", icon: Zap },
+  "Kafka Assist":  { color: "#7C3AED", bg: "#F5F3FF", icon: Radio },
+};
+
+function parseChatCategory(title: string): { category: string | null; cleanTitle: string } {
+  const m = title?.match(/^\[([^\]]+)\]\s*/);
+  if (m && CATEGORY_STYLES[m[1]]) return { category: m[1], cleanTitle: title.slice(m[0].length) };
+  return { category: null, cleanTitle: title };
+}
+
+function timeAgo(dateStr: string): string {
+  if (!dateStr) return "";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
 interface ChatsListProps {
   activeChatId: string | null;
   onSelectChat: (id: string) => void;
@@ -35,38 +65,25 @@ interface ChatsListProps {
   newlyCreatedChatId?: string | null;
 }
 
-// For testing purposes only
 export const _testHandleDeleteConfirm = (id: string | null) => {
   if (!id) return false;
   return true;
 };
 
-export const _testActiveIdComparison = (
-  activeChatId: string | null,
-  id: string
-) => {
+export const _testActiveIdComparison = (activeChatId: string | null, id: string) => {
   if (activeChatId === id) return true;
   return false;
 };
 
 export const _testTryCatch = async (shouldThrow: boolean) => {
   try {
-    if (shouldThrow) {
-      throw new Error("Test error");
-    }
+    if (shouldThrow) throw new Error("Test error");
     return true;
   } catch (err) {
     console.error("Failed to delete chat:", err);
     return false;
   }
 };
-
-const NAV_ACTIONS = [
-  { id: "new", icon: Plus, label: "New Chat", href: "/new" },
-  { id: "search", icon: Search, label: "Search" },
-  { id: "chats", icon: MessageSquare, label: "Chats" },
-  { id: "settings", icon: Settings, label: "Settings" },
-];
 
 const SideNav: React.FC<ChatsListProps> = ({
   activeChatId,
@@ -80,18 +97,15 @@ const SideNav: React.FC<ChatsListProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loadingUser, setLoadingUser] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const { user, signOut } = useAppContext();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      setCurrentUser(user);
-      setLoadingUser(false);
-    }
+    if (user) setCurrentUser(user);
   }, [user]);
 
   const fetchChats = async () => {
@@ -116,14 +130,8 @@ const SideNav: React.FC<ChatsListProps> = ({
       setChats(data);
       setError(null);
       if (newlyCreatedChatId && data.length > 0) {
-        const newChat = data.find(
-          (chat: Chat) => chat.id === newlyCreatedChatId
-        );
-        if (newChat) {
-          setTimeout(() => {
-            onSelectChat(newlyCreatedChatId);
-          }, 100);
-        }
+        const newChat = data.find((chat: Chat) => chat.id === newlyCreatedChatId);
+        if (newChat) setTimeout(() => onSelectChat(newlyCreatedChatId), 100);
       }
     } catch (err) {
       console.error("Background refresh error:", err);
@@ -133,13 +141,15 @@ const SideNav: React.FC<ChatsListProps> = ({
   };
 
   useEffect(() => {
-    fetchChats();
+    if (user) fetchChats();
+  }, [user?.email]);
+
+  useEffect(() => {
+    if (!user) fetchChats();
   }, []);
 
   useEffect(() => {
-    if (refreshTrigger !== undefined && refreshTrigger > 0) {
-      refreshChatsInBackground();
-    }
+    if (refreshTrigger !== undefined && refreshTrigger > 0) refreshChatsInBackground();
   }, [refreshTrigger]);
 
   const handleDeleteClick = (id: string, e: React.MouseEvent) => {
@@ -152,7 +162,7 @@ const SideNav: React.FC<ChatsListProps> = ({
     if (!_checkIdExists(id)) return;
     try {
       await deleteConversation(id!);
-      setChats((prevChats) => prevChats.filter((chat) => chat.id !== id));
+      setChats((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       console.error("Failed to delete chat:", err);
     }
@@ -164,69 +174,101 @@ const SideNav: React.FC<ChatsListProps> = ({
     setCurrentUser(null);
   };
 
-  const handleNavAction = (id: string) => {
-    if (id === "new") {
-      navigate("/new");
-    }
-    // search, chats, settings can be expanded later
+  // Expand sidebar and optionally activate search
+  const expandWithSearch = () => {
+    setCollapsed(false);
+    setTimeout(() => searchInputRef.current?.focus(), 250);
   };
+
+  const expandSidebar = () => setCollapsed(false);
 
   const userName = currentUser?.name || "Dev User";
   const userEmail = currentUser?.email || "developer@example.com";
-  const userInitials =
-    userName
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "DU";
+  const userInitials = userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "DU";
 
-  // --- Collapsed sidebar ---
+  // Filter chats by search query
+  const filteredChats = searchQuery.trim()
+    ? chats.filter((c) => {
+        const { cleanTitle } = parseChatCategory(c.title);
+        return cleanTitle.toLowerCase().includes(searchQuery.toLowerCase());
+      })
+    : chats;
+
+  const deleteDialog = (
+    <Dialog open={chatToDelete !== null} onOpenChange={(open) => !open && setChatToDelete(null)}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Conversation</DialogTitle>
+          <DialogDescription>Are you sure you want to delete this conversation? This action cannot be undone.</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setChatToDelete(null)}>Cancel</Button>
+          <Button variant="destructive" onClick={handleDeleteConfirm}>Delete</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
+  // ── Collapsed sidebar ──────────────────────────────────────────────────────
   if (collapsed) {
     return (
       <>
         <motion.div
-          initial={{ width: 240 }}
+          initial={{ width: 260 }}
           animate={{ width: 56 }}
           transition={{ duration: 0.2, ease: "easeInOut" }}
-          className="flex flex-col items-center border-r h-full py-3 flex-shrink-0"
+          className="flex flex-col items-center border-r h-full py-3 gap-1 flex-shrink-0"
           style={{ background: '#F0F2F5', borderColor: '#DEE2E6' }}
         >
-          {/* Logo + Toggle */}
+          {/* Expand toggle */}
           <button
-            onClick={() => setCollapsed(false)}
-            className="p-1 rounded-lg mb-3 transition-colors cursor-pointer"
+            onClick={expandSidebar}
+            className="p-2 rounded-lg mb-1 transition-colors cursor-pointer"
             onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             title="Expand sidebar"
           >
-            <img src="/citizens-logo.png" alt="DB Agentic Ops" className="w-7 h-7" />
+            <PanelLeftOpen className="w-5 h-5" style={{ color: '#495057' }} />
           </button>
 
-          {/* Nav action icons */}
-          <div className="flex flex-col items-center gap-1">
-            {NAV_ACTIONS.map((action) => (
-              <button
-                key={action.id}
-                onClick={() => handleNavAction(action.id)}
-                className="p-2.5 rounded-lg transition-colors cursor-pointer"
-                style={{ color: '#495057' }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                title={action.label}
-              >
-                <action.icon className="w-5 h-5" />
-              </button>
-            ))}
-          </div>
+          {/* New Chat */}
+          <Link
+            to="/new"
+            className="p-2.5 rounded-lg transition-colors cursor-pointer"
+            style={{ color: '#495057' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            title="New Chat"
+          >
+            <Plus className="w-5 h-5" />
+          </Link>
 
-          {/* Spacer */}
+          {/* Search → expands sidebar */}
+          <button
+            onClick={expandWithSearch}
+            className="p-2.5 rounded-lg transition-colors cursor-pointer"
+            style={{ color: '#495057' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            title="Search conversations"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+
+          {/* Chats → expands sidebar */}
+          <button
+            onClick={expandSidebar}
+            className="p-2.5 rounded-lg transition-colors cursor-pointer"
+            style={{ color: '#495057' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            title="View conversations"
+          >
+            <MessageSquare className="w-5 h-5" />
+          </button>
+
           <div className="flex-1" />
-
-          {/* Status dot */}
-          <div className="mb-3">
-            <SystemStatusDot />
-          </div>
+          <div className="mb-2"><SystemStatusDot /></div>
 
           {/* User avatar */}
           <div className="relative">
@@ -239,61 +281,45 @@ const SideNav: React.FC<ChatsListProps> = ({
               {userInitials}
             </button>
             {showUserMenu && (
-              <div
-                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 bg-white rounded-lg py-1 z-50"
-                style={{ border: '1px solid #DEE2E6', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-              >
-                <button
-                  onClick={() => { onLogoutClicked(); setShowUserMenu(false); }}
-                  className="w-full px-3 py-2 text-left text-sm transition-colors flex items-center gap-2"
-                  style={{ color: '#DC3545' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = '#FEE8EA'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                >
-                  <LogOut className="w-4 h-4" />
-                  Logout
-                </button>
-              </div>
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
+                <div className="absolute bottom-full left-0 mb-2 w-40 bg-white rounded-lg py-1 z-50"
+                  style={{ border: '1px solid #DEE2E6', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                  <button
+                    onClick={() => { onLogoutClicked(); setShowUserMenu(false); }}
+                    className="w-full px-3 py-2 text-left text-sm flex items-center gap-2"
+                    style={{ color: '#DC3545' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#FEE8EA'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <LogOut className="w-4 h-4" /> Logout
+                  </button>
+                </div>
+              </>
             )}
           </div>
-          {showUserMenu && (
-            <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-          )}
         </motion.div>
-
-        <Dialog open={chatToDelete !== null} onOpenChange={(open) => !open && setChatToDelete(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete Conversation</DialogTitle>
-              <DialogDescription>Are you sure you want to delete this conversation? This action cannot be undone.</DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="ghost" onClick={() => setChatToDelete(null)}>Cancel</Button>
-              <Button variant="destructive" onClick={handleDeleteConfirm}>Delete</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {deleteDialog}
       </>
     );
   }
 
-  // --- Expanded sidebar ---
+  // ── Expanded sidebar ───────────────────────────────────────────────────────
   return (
     <>
       <motion.div
         initial={{ width: 56 }}
-        animate={{ width: 260 }}
+        animate={{ width: 268 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className="flex flex-col border-r h-full flex-shrink-0"
         style={{ background: '#F0F2F5', borderColor: '#DEE2E6' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #DEE2E6' }}>
+        <div className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+          style={{ borderBottom: '1px solid #DEE2E6' }}>
           <div className="flex items-center gap-2.5">
             <img src="/citizens-logo.png" alt="DB Agentic Ops" className="w-7 h-7" />
-            <span className="text-sm font-semibold" style={{ color: '#1A1E2E' }}>
-              DB Agentic Ops
-            </span>
+            <span className="text-sm font-semibold" style={{ color: '#1A1E2E' }}>DB Agentic Ops</span>
           </div>
           <button
             onClick={() => setCollapsed(true)}
@@ -307,211 +333,214 @@ const SideNav: React.FC<ChatsListProps> = ({
           </button>
         </div>
 
-        {/* Nav Actions */}
-        <div className="px-3 py-2 flex flex-col gap-0.5">
-          {NAV_ACTIONS.map((action) => {
-            if (action.href) {
-              return (
-                <Link
-                  key={action.id}
-                  to={action.href}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-                  style={{ color: '#495057' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                >
-                  <action.icon className="w-[18px] h-[18px]" />
-                  {action.label}
-                </Link>
-              );
-            }
-            return (
-              <button
-                key={action.id}
-                onClick={() => handleNavAction(action.id)}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left cursor-pointer"
-                style={{ color: '#495057' }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-              >
-                <action.icon className="w-[18px] h-[18px]" />
-                {action.label}
-              </button>
-            );
-          })}
+        {/* New Chat button */}
+        <div className="px-3 pt-3 pb-2 flex-shrink-0">
+          <Link
+            to="/new"
+            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-sm font-medium transition-all"
+            style={{ background: '#1A1E2E', color: '#FFFFFF' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#2D3348'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#1A1E2E'; }}
+          >
+            <Plus className="w-4 h-4" />
+            New Chat
+          </Link>
         </div>
 
-        {/* History Section */}
-        <div className="px-3 mt-2" style={{ borderTop: '1px solid #DEE2E6' }}>
-          <div className="px-3 pt-3 pb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#ADB5BD' }}>
-              History
-            </span>
+        {/* Search bar */}
+        <div className="px-3 pb-2 flex-shrink-0">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
+            style={{ background: '#FFFFFF', border: '1px solid #DEE2E6' }}>
+            <Search className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#ADB5BD' }} />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search conversations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 bg-transparent text-[13px] outline-none min-w-0"
+              style={{ color: '#1A1E2E' }}
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")} className="cursor-pointer flex-shrink-0">
+                <X className="w-3.5 h-3.5" style={{ color: '#ADB5BD' }} />
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="overflow-y-auto flex-1 px-3" style={{ scrollbarWidth: 'thin' }}>
+        {/* History label + count */}
+        <div className="px-4 pb-1.5 flex items-center justify-between flex-shrink-0">
+          <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#ADB5BD' }}>
+            {searchQuery ? `Results (${filteredChats.length})` : `History (${chats.length})`}
+          </span>
+          {isBackgroundLoading && (
+            <div className="w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
+              style={{ borderColor: '#ADB5BD', borderTopColor: 'transparent' }} />
+          )}
+        </div>
+
+        {/* Conversation list */}
+        <div className="overflow-y-auto flex-1 px-2 pb-2" style={{ scrollbarWidth: 'thin' }}>
           {isLoading ? (
-            <div className="space-y-1">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="py-2.5 px-3 rounded-lg">
-                  <div className="animate-pulse rounded h-4 w-3/4" style={{ background: '#E9ECEF' }} />
+            <div className="space-y-1.5 px-1 pt-1">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+                  style={{ background: '#EAEDF0' }}>
+                  <div className="w-6 h-6 rounded-md animate-pulse flex-shrink-0" style={{ background: '#DEE2E6' }} />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 rounded-md animate-pulse w-3/4" style={{ background: '#DEE2E6' }} />
+                    <div className="h-2.5 rounded-md animate-pulse w-1/2" style={{ background: '#E9ECEF' }} />
+                  </div>
                 </div>
               ))}
             </div>
           ) : error ? (
-            <div className="flex items-center justify-center py-6">
-              <p className="text-xs" style={{ color: '#DC3545' }}>{error}</p>
+            <div className="flex flex-col items-center justify-center py-8 gap-2 px-3">
+              <p className="text-xs text-center" style={{ color: '#DC3545' }}>{error}</p>
+              <button onClick={fetchChats}
+                className="text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                style={{ background: '#FEE8EA', color: '#DC3545' }}>
+                Retry
+              </button>
+            </div>
+          ) : filteredChats.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-2.5 px-4">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center"
+                style={{ background: '#E9ECEF' }}>
+                {searchQuery
+                  ? <Search className="w-5 h-5" style={{ color: '#ADB5BD' }} />
+                  : <MessageSquare className="w-5 h-5" style={{ color: '#ADB5BD' }} />}
+              </div>
+              <p className="text-[13px] font-medium text-center" style={{ color: '#495057' }}>
+                {searchQuery ? 'No matches found' : 'No conversations yet'}
+              </p>
+              <p className="text-[11px] text-center" style={{ color: '#ADB5BD' }}>
+                {searchQuery ? 'Try a different search term' : 'Start a new chat to get going'}
+              </p>
             </div>
           ) : (
             <AnimatePresence mode="popLayout">
-              <motion.div
-                className="space-y-0.5"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                {chats.length === 0 ? (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex flex-col items-center justify-center py-8 gap-2"
-                  >
-                    <MessageSquare className="w-6 h-6" style={{ color: '#CED4DA' }} />
-                    <p className="text-xs" style={{ color: '#ADB5BD' }}>No conversations yet</p>
-                  </motion.div>
-                ) : (
-                  chats.map((chat) => (
+              <div className="space-y-0.5 pt-0.5">
+                {filteredChats.map((chat) => {
+                  const { category, cleanTitle } = parseChatCategory(chat.title);
+                  const catStyle = category ? CATEGORY_STYLES[category] : null;
+                  const CatIcon = catStyle?.icon ?? MessageSquare;
+                  const isActive = activeChatId === chat.id;
+                  return (
                     <motion.div
                       layout
                       key={chat.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      onClick={() => {
-                        if (activeChatId !== chat.id) {
-                          onSelectChat(chat.id);
-                        }
-                      }}
-                      className="group flex justify-between items-center py-2 px-3 cursor-pointer rounded-lg transition-all duration-150"
+                      initial={{ opacity: 0, x: -6 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -6 }}
+                      transition={{ duration: 0.15 }}
+                      onClick={() => { if (!isActive) onSelectChat(chat.id); }}
+                      className="group flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all duration-150"
                       style={{
-                        background: activeChatId === chat.id ? '#E6F4EF' : 'transparent',
-                        color: activeChatId === chat.id ? '#008555' : '#495057',
+                        background: isActive ? '#FFFFFF' : 'transparent',
+                        boxShadow: isActive ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+                        border: isActive ? '1px solid #DEE2E6' : '1px solid transparent',
                       }}
                       onMouseEnter={(e) => {
-                        if (activeChatId !== chat.id) {
-                          e.currentTarget.style.background = '#E4E7EB';
-                        }
+                        if (!isActive) e.currentTarget.style.background = '#E8EAED';
                       }}
                       onMouseLeave={(e) => {
-                        if (activeChatId !== chat.id) {
-                          e.currentTarget.style.background = 'transparent';
-                        }
+                        if (!isActive) e.currentTarget.style.background = 'transparent';
                       }}
                     >
-                      <span className="text-sm truncate flex-1 font-medium">
-                        {chat.title}
-                      </span>
+                      {/* Category icon */}
+                      <div
+                        className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+                        style={{ background: catStyle?.bg ?? '#E9ECEF', color: catStyle?.color ?? '#868E96' }}
+                      >
+                        <CatIcon className="w-3 h-3" />
+                      </div>
+
+                      {/* Title + timestamp — all on one line */}
+                      <div className="flex-1 min-w-0 flex items-baseline gap-1.5 overflow-hidden">
+                        <p
+                          className="text-[12.5px] font-medium truncate flex-shrink"
+                          style={{ color: isActive ? '#1A1E2E' : '#343A40' }}
+                        >
+                          {cleanTitle || "New Conversation"}
+                        </p>
+                        {(chat as any).last_message_at && (
+                          <span className="text-[10px] flex-shrink-0" style={{ color: '#ADB5BD' }}>
+                            · {timeAgo((chat as any).last_message_at)}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Delete button — inline, visible on hover */}
                       <button
                         onClick={(e) => handleDeleteClick(chat.id, e)}
-                        className="ml-1 p-1 rounded transition-colors cursor-pointer"
-                        style={{
-                          opacity: activeChatId === chat.id ? 1 : 0,
-                          color: '#868E96',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = '#DC3545';
-                          e.currentTarget.style.background = 'rgba(220,53,69,0.1)';
-                          e.currentTarget.parentElement!.querySelector('button')!.style.opacity = '1';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = '#868E96';
-                          e.currentTarget.style.background = 'transparent';
-                        }}
+                        className="p-1 rounded transition-all cursor-pointer opacity-0 group-hover:opacity-100 flex-shrink-0"
+                        style={{ color: '#ADB5BD' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = '#DC3545'; e.currentTarget.style.background = 'rgba(220,53,69,0.08)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = '#ADB5BD'; e.currentTarget.style.background = 'transparent'; }}
                         aria-label="Delete conversation"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3 h-3" />
                       </button>
                     </motion.div>
-                  ))
-                )}
-              </motion.div>
+                  );
+                })}
+              </div>
             </AnimatePresence>
           )}
         </div>
 
-        {/* Status */}
-        <div className="px-4 py-2" style={{ borderTop: '1px solid #DEE2E6' }}>
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium" style={{ color: '#ADB5BD' }}>System Status</span>
+        {/* Footer: status + user */}
+        <div className="flex-shrink-0" style={{ borderTop: '1px solid #DEE2E6' }}>
+          <div className="flex items-center justify-between px-4 py-2">
+            <span className="text-[11px]" style={{ color: '#ADB5BD' }}>System</span>
             <SystemStatusDot />
           </div>
-        </div>
 
-        {/* User Profile */}
-        <div className="px-3 py-3 relative" style={{ borderTop: '1px solid #DEE2E6' }}>
-          <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0"
-              style={{ background: '#1A1E2E' }}
-            >
-              {userInitials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate" style={{ color: '#1A1E2E' }}>
-                {userName}
-              </p>
-              <p className="text-[11px] truncate" style={{ color: '#ADB5BD' }}>
-                {userEmail}
-              </p>
-            </div>
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="p-1 rounded-lg transition-colors cursor-pointer"
-              style={{ color: '#868E96' }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-              aria-label="User menu"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </button>
-          </div>
-
-          {showUserMenu && (
-            <div
-              className="absolute bottom-full right-3 mb-2 w-40 bg-white rounded-lg py-1 z-50"
-              style={{ border: '1px solid #DEE2E6', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-            >
+          <div className="px-3 pb-3 relative">
+            <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl"
+              style={{ background: '#E8EAED' }}>
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                style={{ background: '#1A1E2E' }}>
+                {userInitials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold truncate" style={{ color: '#1A1E2E' }}>{userName}</p>
+                <p className="text-[10px] truncate" style={{ color: '#ADB5BD' }}>{userEmail}</p>
+              </div>
               <button
-                onClick={() => { onLogoutClicked(); setShowUserMenu(false); }}
-                className="w-full px-3 py-2 text-left text-sm transition-colors flex items-center gap-2"
-                style={{ color: '#DC3545' }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#FEE8EA'; }}
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="p-1 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                style={{ color: '#868E96' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#DEE2E6'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
               >
-                <LogOut className="w-4 h-4" />
-                Logout
+                <MoreVertical className="w-3.5 h-3.5" />
               </button>
             </div>
-          )}
-          {showUserMenu && (
-            <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-          )}
+
+            {showUserMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
+                <div className="absolute bottom-full right-3 mb-1.5 w-40 bg-white rounded-xl py-1 z-50"
+                  style={{ border: '1px solid #DEE2E6', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
+                  <button
+                    onClick={() => { onLogoutClicked(); setShowUserMenu(false); }}
+                    className="w-full px-3 py-2.5 text-left text-[13px] flex items-center gap-2.5 transition-colors"
+                    style={{ color: '#DC3545' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#FEF2F2'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <LogOut className="w-3.5 h-3.5" /> Sign out
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </motion.div>
-
-      <Dialog open={chatToDelete !== null} onOpenChange={(open) => !open && setChatToDelete(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Conversation</DialogTitle>
-            <DialogDescription>Are you sure you want to delete this conversation? This action cannot be undone.</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setChatToDelete(null)} data-testid="cancel-delete-button" aria-label="Cancel deletion">Cancel</Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm} data-testid="confirm-delete-button" aria-label="Delete conversation">Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {deleteDialog}
     </>
   );
 };

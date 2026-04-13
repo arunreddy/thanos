@@ -1,6 +1,5 @@
 import React, {createContext, useContext, useState, useEffect, ReactNode} from 'react';
 import {setCurrentUser} from "@/lib/api";
-import { API_URL } from './lib/config';
 
 interface UserRole {
     id:string;
@@ -40,98 +39,53 @@ interface AppContextType {
 }
 
 interface AppProviderProps {
-    children: ReactNode;    
+    children: ReactNode;
 }
+
+// Mock user for local development (bypassing authentication)
+const MOCK_USER: User = {
+    id: 'dev-user-001',
+    sub: 'dev-user-001',
+    given_name: 'Dev',
+    family_name: 'User',
+    preffered_username: 'devuser',
+    email: 'dev.user@local.dev',
+    name: 'Dev User',
+    roles: [{ id: 'admin', name: 'admin' }],
+    groups: [{ id: 'developers', name: 'developers' }],
+};
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(true);
+    // Initialize with mock user for local development
+    const [user, setUser] = useState<User | null>(MOCK_USER);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchUser = async (force:boolean=false):Promise<User | null> => {
-        console.log("Fetching user data...");
-        console.log("Force: ", force);
-
-        const USER_API_URL = `${API_URL}/auth/user`;
-
-        if (!force && user && !loading) {
-            return user;
-        }
-
-        setLoading(true);
-        try {
-            const response = await fetch(USER_API_URL, {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            console.log("Response: ", response);
-            console.log("Response status: ", response.status);
-            if (response.ok) {
-                const data = await response.json();
-                setUser(data);
-                setIsAuthenticated(true);
-                setError(null);
-                
-                // Set current user in API client for automatic user context
-                setCurrentUser(data.email);
-                
-                return data.user;
-            } else {
-                setError('Failed to fetch user data');
-                setIsAuthenticated(false);
-                setUser(null);
-                
-                // Clear user from API client
-                setCurrentUser(null);
-                
-                return null;
-            }
-        } catch (error) {
-            setIsAuthenticated(false);
-            setUser(null);
-            // Clear user from API client
-            setCurrentUser(null);
-            
-        } finally {
-            setLoading(false); // Ensure loading is set to false
-        }
-        return null;
+    const fetchUser = async (_force:boolean=false):Promise<User | null> => {
+        // For local development, always return mock user
+        console.log("Using mock user for local development");
+        setUser(MOCK_USER);
+        setIsAuthenticated(true);
+        setLoading(false);
+        setCurrentUser(MOCK_USER.email);
+        return MOCK_USER;
     }
 
 
     const signOut = async () => {
-
-        try {
-            const SIGNOUT_API_URL = `${API_URL}/auth/logout`;
-            const response = await fetch(SIGNOUT_API_URL, {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            if (response.ok) {
-                setUser(null);
-                setIsAuthenticated(false);
-                // Clear user from API client
-                setCurrentUser(null);
-            } else {
-                console.error('Failed to sign out');
-            }
-        } catch (error) {
-            console.error('Error signing out:', error);
-        }
+        // For local development, just reset to mock user
+        console.log("Sign out called - resetting to mock user for local dev");
+        setUser(MOCK_USER);
+        setIsAuthenticated(true);
     };
 
 
-    useEffect( ()  =>{
-        fetchUser();
+    useEffect(() => {
+        // Set mock user on mount
+        setCurrentUser(MOCK_USER.email);
     }, [])
 
 
@@ -163,4 +117,3 @@ export const useAppContext = (): AppContextType => {
     }
     return context;
 }
-
