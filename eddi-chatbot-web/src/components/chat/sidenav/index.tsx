@@ -226,27 +226,27 @@ const SideNav: React.FC<ChatsListProps> = ({
           initial={{ width: 260 }}
           animate={{ width: 56 }}
           transition={{ duration: 0.2, ease: "easeInOut" }}
-          className="flex flex-col items-center border-r h-full py-3 gap-1 shrink-0"
+          className="flex flex-col items-center border-r h-full pb-3 gap-1 shrink-0"
           style={{ background: d.bg, borderColor: d.border }}
         >
-          {/* Expand toggle */}
-          <button
-            onClick={expandSidebar}
-            className="p-2 rounded-lg mb-1 transition-colors cursor-pointer"
-            onMouseEnter={(e) => { e.currentTarget.style.background = d.hoverBg; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-            title="Expand sidebar"
-          >
-            <PanelLeftOpen className="w-5 h-5" style={{ color: d.text }} />
-          </button>
+          {/* Logo + divider to match expanded header */}
+          <div className="w-full flex justify-center py-3 shrink-0" style={{ borderBottom: `1px solid ${d.headerBorder}` }}>
+            <img
+              src="/citizens-logo.png"
+              alt="DB Agentic Ops"
+              className="w-7 h-7 cursor-pointer"
+              onClick={expandSidebar}
+              title="Expand sidebar"
+            />
+          </div>
 
           {/* New Chat */}
           <Link
             to="/new"
-            className="p-2.5 rounded-lg transition-colors cursor-pointer"
-            style={{ color: d.text }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = d.hoverBg; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            className="p-2.5 mt-2 rounded-lg transition-colors cursor-pointer"
+            style={{ background: d.newChatBg, color: d.newChatText }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = d.newChatHoverBg; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = d.newChatBg; }}
             title="New Chat"
           >
             <Plus className="w-5 h-5" />

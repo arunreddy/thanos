@@ -1,7 +1,7 @@
 import { Share2, RotateCw, Copy, Check, MessageSquare } from "lucide-react";
 import { useState } from "react";
-import { useChatTheme } from "@/contexts/ChatThemeContext";
 import { CATEGORY_STYLES } from "@/lib/constants";
+import panelHeaderDesign from "@/lib/panelHeaderDesigns";
 
 interface TopNavProps {
   title: string | null;
@@ -11,9 +11,9 @@ interface TopNavProps {
 const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
   const [copied, setCopied] = useState(false);
   const [sessionCopied, setSessionCopied] = useState(false);
-  const { theme } = useChatTheme();
-
   if (!title) return null;
+
+  const hd = panelHeaderDesign;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -36,7 +36,6 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
   const catStyle = CATEGORY_STYLES[title];
   const CatIcon = catStyle?.icon ?? MessageSquare;
 
-  // Truncate session ID for display
   const sessionLabel = chatId && chatId !== "unknown"
     ? chatId.length > 12
       ? `${chatId.slice(0, 6)}...${chatId.slice(-4)}`
@@ -46,50 +45,46 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
   return (
     <div
       className="flex items-center justify-between px-5 h-13 shrink-0"
-      style={{
-        background: theme.topBar.bg,
-      }}
+      style={{ backgroundImage: hd.bg }}
     >
       <div className="flex items-center gap-3 min-w-0">
-        {/* Category badge */}
         {catStyle ? (
           <span
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0"
+            className="inline-flex items-center gap-2 h-7 px-3 rounded-lg text-xs font-semibold shrink-0"
             style={{ background: catStyle.bg, color: catStyle.color, border: `1px solid ${catStyle.border}` }}
           >
             <CatIcon className="w-3.5 h-3.5" />
             {title}
           </span>
         ) : (
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0"
-            style={{ background: theme.topBar.border, color: theme.topBar.text, border: `1px solid ${theme.topBar.border}` }}>
+          <span className="inline-flex items-center gap-2 h-7 px-3 rounded-lg text-xs font-semibold shrink-0"
+            style={{ background: hd.actionBg, color: hd.titleColor, border: `1px solid ${hd.actionBorder}` }}>
             <MessageSquare className="w-3.5 h-3.5" />
             {title}
           </span>
         )}
 
-        {/* Session ID pill with status dot */}
         {sessionLabel && (
           <button
             onClick={handleCopySession}
             title={sessionCopied ? "Copied!" : "Click to copy session ID"}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full shrink-0 cursor-pointer transition-all hover-surface"
+            className="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg shrink-0 cursor-pointer transition-all hover-surface"
             style={{
-              background: theme.topBar.border,
-              border: `1px solid ${theme.topBar.border}`,
+              background: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.25)",
               fontFamily: "'JetBrains Mono', monospace",
             }}
           >
             <div
               className="w-1.75 h-1.75 rounded-full shrink-0"
               style={{
-                background: theme.topBar.dotColor,
-                boxShadow: `0 0 0 2px ${theme.topBar.dotColor}50`,
+                background: "#FFFFFF",
+                boxShadow: "0 0 0 2px rgba(255,255,255,0.3)",
                 animation: "livePulse 2s infinite",
               }}
             />
-            <span className="text-[10px]" style={{ color: theme.topBar.textDim }}>Session</span>
-            <span className="text-[10px] font-medium" style={{ color: theme.topBar.text }}>
+            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.7)" }}>Session</span>
+            <span className="text-[10px] font-medium" style={{ color: "#FFFFFF" }}>
               {sessionCopied ? "Copied!" : sessionLabel}
             </span>
           </button>
@@ -97,12 +92,11 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
       </div>
 
       <div className="flex items-center gap-1">
-        <NavAction icon={copied ? Check : Copy} label={copied ? "Copied!" : "Copy link"} onClick={handleCopyLink} dimColor={theme.topBar.textDim} hoverColor={theme.topBar.text} />
-        <NavAction icon={Share2} label="Share" dimColor={theme.topBar.textDim} hoverColor={theme.topBar.text} />
-        <NavAction icon={RotateCw} label="Refresh" onClick={handleRefresh} dimColor={theme.topBar.textDim} hoverColor={theme.topBar.text} />
+        <NavAction icon={copied ? Check : Copy} label={copied ? "Copied!" : "Copy link"} onClick={handleCopyLink} dimColor={hd.subtitleColor} hoverColor={hd.titleColor} />
+        <NavAction icon={Share2} label="Share" dimColor={hd.subtitleColor} hoverColor={hd.titleColor} />
+        <NavAction icon={RotateCw} label="Refresh" onClick={handleRefresh} dimColor={hd.subtitleColor} hoverColor={hd.titleColor} />
       </div>
 
-      {/* Live pulse animation */}
       <style>{`
         @keyframes livePulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
