@@ -218,7 +218,7 @@ function ExportCards({ data, type }: { data: Record<string, unknown>; type: stri
   ];
 
   return (
-    <div className="shrink-0 px-4 pt-3 pb-6" style={{ background: "#ECEEF1" }}>
+    <div className="shrink-0 px-5 pt-3 pb-6" style={{ background: "#ECEEF1" }}>
       <div className="grid grid-cols-3 gap-2">
         {formats.map((f) => (
           <button
