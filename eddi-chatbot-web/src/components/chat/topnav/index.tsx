@@ -39,7 +39,6 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
       className="flex items-center justify-between px-5 h-13 shrink-0"
       style={{
         background: theme.topBar.bg,
-        boxShadow: SHADOWS.md,
       }}
     >
       <div className="flex items-center gap-3 min-w-0">

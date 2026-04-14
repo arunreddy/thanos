@@ -27,6 +27,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
 }, ref) => {
   const { theme } = useChatTheme();
   const [message, setMessage] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useImperativeHandle(ref, () => ({
@@ -108,11 +109,11 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
       </div>
 
       <div
-        className="rounded-2xl overflow-hidden"
+        className="rounded-2xl overflow-hidden transition-all duration-200"
         style={{
           background: theme.input.bg,
-          border: `1px solid ${theme.input.border}`,
-          boxShadow: SHADOWS.sm,
+          border: isFocused ? `1.5px solid ${theme.input.buttonBg}` : `1.5px solid ${theme.input.border}`,
+          boxShadow: isFocused ? `0 0 0 3px ${theme.input.buttonBg}15` : SHADOWS.sm,
         }}
       >
         {/* Textarea row */}
@@ -122,11 +123,13 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             placeholder="Ask a question, paste SQL, or request analysis..."
             rows={1}
             disabled={isLoading}
-            className="flex-1 resize-none bg-transparent text-sm focus:outline-none disabled:opacity-50 leading-5 py-0.5"
-            style={{ minHeight: "20px", maxHeight: "150px", color: theme.input.text }}
+            className="flex-1 resize-none bg-transparent text-sm focus:outline-none focus:ring-0 disabled:opacity-50 leading-5 py-0.5"
+            style={{ minHeight: "20px", maxHeight: "150px", color: theme.input.text, outline: "none" }}
           />
         </div>
 

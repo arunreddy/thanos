@@ -380,7 +380,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
         />
       <div
         ref={scrollContainerRef}
-        className="absolute inset-0 overflow-y-auto px-8 pt-6 pb-4"
+        className="absolute inset-0 overflow-y-auto px-8 pt-7 pb-4"
         onScroll={handleScroll}
       >
       <div className="max-w-6xl mx-auto">
@@ -453,7 +453,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
       {/* Fixed input at bottom */}
       <div
         className="shrink-0 px-8 pb-3 pt-3"
-        style={{ borderTop: `1px solid ${theme.input.border}`, background: theme.input.bg }}
+        style={{ background: theme.chatArea.bg }}
       >
         <div className="max-w-6xl mx-auto">
           <ChatInput

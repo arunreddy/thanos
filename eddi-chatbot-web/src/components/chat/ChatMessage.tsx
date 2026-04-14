@@ -535,7 +535,7 @@ export default function ChatMessage({
 
           <div className="flex-1 min-w-40 max-w-[80%]">
             <div
-              className="rounded-xl rounded-tl-sm px-4 py-3"
+              className="rounded-xl rounded-tl-sm px-4 pt-3 pb-3.5"
               style={{
                 background: theme.botCard.bg,
                 border: `1px solid ${theme.botCard.border}`,
