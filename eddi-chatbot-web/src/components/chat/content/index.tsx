@@ -346,87 +346,88 @@ const ChatContent: React.FC<ChatContentProps> = ({
   const conversationTitle = activeCategory ?? (chatId ? "Conversation" : null);
 
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className="flex flex-col h-full w-full" style={{ background: "#FFFFFF" }}>
       <TopNav title={conversationTitle} chatId={chatId} />
 
-      {/* Messages area + floating input */}
-      <div className="flex-1 relative overflow-hidden" style={{ background: "linear-gradient(180deg, #F8FAFB 0%, #FFFFFF 60%)" }}>
-        <div className="absolute inset-0 overflow-y-auto px-8 pt-6 pb-28">
-          {/* Loading screen */}
-          {showLoadingScreen && (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground pt-24">
-              <div className="flex items-center space-x-2">
-                {[0, 300, 600].map((delay, i) => (
-                  <div
-                    key={i}
-                    className="w-2.5 h-2.5 rounded-full animate-pulse"
-                    style={{ background: "#1A1E2E", animationDelay: `${delay}ms` }}
-                  />
-                ))}
-              </div>
-              <div className="mt-3 text-sm" style={{ color: "#ADB5BD" }}>Loading conversation...</div>
-            </div>
-          )}
-
-          {/* Message list */}
-          <div className="min-h-12.5">
-            <AnimatePresence initial={false} mode="popLayout">
-              {messages.map((message, index) => (
-                <ChatMessage
-                  key={
-                    message.id ||
-                    `msg-${index}-${message.timestamp || Date.now()}`
-                  }
-                  role={message.role}
-                  content={message.content}
-                  timestamp={message.timestamp || message.created_at}
-                  buttons={message.buttons}
-                  customForm={message.custom as unknown as CustomForm}
-                  messageId={message.id}
-                  activeCategory={activeCategory}
-                  feedbackState={
-                    typeof message.id === "string"
-                      ? feedbackStates[message.id] || "none"
-                      : "none"
-                  }
-                  onButtonClick={handleButtonClick}
-                  onShowContext={onShowContext}
-                  onFeedbackSubmit={handleFeedbackSubmit}
-                  onFeedbackRemove={handleFeedbackRemove}
-                  onRetry={() => handleRetry(index)}
+      {/* Scrollable messages area — darker bg creates depth against white message cards */}
+      <div
+        className="flex-1 overflow-y-auto px-8 pt-6 pb-4"
+        style={{ background: "#ECEEF1", boxShadow: "inset 0 2px 6px rgba(0,0,0,0.06)" }}
+      >
+        {/* Loading screen */}
+        {showLoadingScreen && (
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground pt-24">
+            <div className="flex items-center space-x-2">
+              {[0, 300, 600].map((delay, i) => (
+                <div
+                  key={i}
+                  className="w-2.5 h-2.5 rounded-full animate-pulse"
+                  style={{ background: "#1A1E2E", animationDelay: `${delay}ms` }}
                 />
               ))}
-            </AnimatePresence>
-          </div>
-
-          {/* Typing indicator */}
-          <AnimatePresence>
-            {showTypingIndicator && <TypingIndicator />}
-          </AnimatePresence>
-
-          {/* Error message */}
-          {error && (
-            <div className="flex justify-center my-3">
-              <span className="text-sm px-4 py-2 rounded-full" style={{ background: "#FFF5F5", color: "#E53E3E", border: "1px solid #FED7D7" }}>
-                {error}
-              </span>
             </div>
-          )}
+            <div className="mt-3 text-sm" style={{ color: "#ADB5BD" }}>Loading conversation...</div>
+          </div>
+        )}
 
-          <div ref={messagesEndRef} />
+        {/* Message list */}
+        <div className="min-h-12.5">
+          <AnimatePresence initial={false} mode="popLayout">
+            {messages.map((message, index) => (
+              <ChatMessage
+                key={
+                  message.id ||
+                  `msg-${index}-${message.timestamp || Date.now()}`
+                }
+                role={message.role}
+                content={message.content}
+                timestamp={message.timestamp || message.created_at}
+                buttons={message.buttons}
+                customForm={message.custom as unknown as CustomForm}
+                messageId={message.id}
+                activeCategory={activeCategory}
+                feedbackState={
+                  typeof message.id === "string"
+                    ? feedbackStates[message.id] || "none"
+                    : "none"
+                }
+                onButtonClick={handleButtonClick}
+                onShowContext={onShowContext}
+                onFeedbackSubmit={handleFeedbackSubmit}
+                onFeedbackRemove={handleFeedbackRemove}
+                onRetry={() => handleRetry(index)}
+              />
+            ))}
+          </AnimatePresence>
         </div>
 
-        {/* Floating input */}
-        <div
-          className="absolute bottom-0 left-0 right-0 px-8 pb-4 pt-6"
-          style={{ background: "linear-gradient(transparent, #ffffff 35%)" }}
-        >
-          <ChatInput
-            ref={chatInputRef}
-            onSendMessage={handleSendMessage}
-            isLoading={chatState !== ChatState.IDLE}
-          />
-        </div>
+        {/* Typing indicator */}
+        <AnimatePresence>
+          {showTypingIndicator && <TypingIndicator />}
+        </AnimatePresence>
+
+        {/* Error message */}
+        {error && (
+          <div className="flex justify-center my-3">
+            <span className="text-sm px-4 py-2 rounded-full" style={{ background: "#FFF5F5", color: "#E53E3E", border: "1px solid #FED7D7" }}>
+              {error}
+            </span>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Fixed input at bottom */}
+      <div
+        className="shrink-0 px-8 pb-4 pt-3"
+        style={{ borderTop: "1px solid #E9ECEF", background: "#FFFFFF" }}
+      >
+        <ChatInput
+          ref={chatInputRef}
+          onSendMessage={handleSendMessage}
+          isLoading={chatState !== ChatState.IDLE}
+        />
       </div>
     </div>
   );

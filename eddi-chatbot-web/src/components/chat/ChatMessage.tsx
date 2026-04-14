@@ -517,16 +517,14 @@ export default function ChatMessage({
       layout
     >
       {isUser ? (
-        /* ── User message: right-aligned, accent border on RIGHT ── */
+        /* ── User message: right-aligned, white card with accent border ── */
         <div className="flex items-start justify-end gap-2.5">
           <div
             className="max-w-[65%] min-w-20 px-4 py-2.5 rounded-2xl rounded-tr-sm"
             style={{
               background: "#FFFFFF",
-              border: "1px solid #E9ECEF",
-              borderRightWidth: "3px",
-              borderRightColor: "#7C3AED",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
+              border: "1px solid #E2E5E9",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
             }}
           >
             <p className="text-[14px] leading-relaxed" style={{ color: "#1A1E2E" }}>
@@ -541,31 +539,29 @@ export default function ChatMessage({
           {/* User avatar */}
           <div
             className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold mt-0.5"
-            style={{ background: "#7C3AED", color: "#fff" }}
+            style={{ background: accentColor, color: "#fff", border: "2px solid #fff", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
           >
             {userInitials}
           </div>
         </div>
       ) : (
-        /* ── Assistant message: card left-aligned with bot avatar ── */
+        /* ── Assistant message: tinted green card with bot avatar ── */
         <div className="flex items-start gap-2.5">
           {/* Bot avatar */}
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-0.5"
-            style={{ background: "#1A1E2E" }}
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+            style={{ background: "#008555", color: "#fff", border: "2px solid #fff", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
           >
-            <Bot className="w-4 h-4" style={{ color: "#fff" }} />
+            <Bot className="w-4 h-4" />
           </div>
 
           <div className="flex-1 min-w-0">
             <div
-              className="rounded-2xl rounded-tl-sm px-4 py-3 border-l-[3px]"
+              className="rounded-2xl rounded-tl-sm px-4 py-3"
               style={{
-                background: "#FFFFFF",
-                border: "1px solid #E9ECEF",
-                borderLeftWidth: "3px",
-                borderLeftColor: accentColor,
-                boxShadow: "0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
+                background: "#F0FBF5",
+                border: "1px solid #008555",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
               }}
             >
               {messageContent}
@@ -573,23 +569,19 @@ export default function ChatMessage({
 
             {/* Actions left, timestamp right */}
             <div className="flex items-center mt-1">
-              {!isUser && (
-                <>
-                  <MessageActions
-                    content={content}
-                    feedbackState={hasBackendId ? feedbackState : "none"}
-                    onFeedback={handleFeedbackClick}
-                    onRetry={onRetry}
-                    disabled={!hasBackendId}
-                  />
-                  <FeedbackDialog
-                    open={feedbackDialogOpen}
-                    onOpenChange={setFeedbackDialogOpen}
-                    feedbackType={feedbackDialogType}
-                    onSubmit={handleFeedbackDialogSubmit}
-                  />
-                </>
-              )}
+              <MessageActions
+                content={content}
+                feedbackState={hasBackendId ? feedbackState : "none"}
+                onFeedback={handleFeedbackClick}
+                onRetry={onRetry}
+                disabled={!hasBackendId}
+              />
+              <FeedbackDialog
+                open={feedbackDialogOpen}
+                onOpenChange={setFeedbackDialogOpen}
+                feedbackType={feedbackDialogType}
+                onSubmit={handleFeedbackDialogSubmit}
+              />
               {timestamp && (
                 <div className="text-[10px] ml-auto pl-2" style={{ color: "#ADB5BD", fontFamily: "'JetBrains Mono', monospace" }}>
                   {format(parseUTCTimestamp(timestamp), "h:mm a")}

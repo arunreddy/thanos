@@ -223,3 +223,25 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CED4DA;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ADB5BD;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #CED4DA transparent;
+}
