@@ -12,7 +12,7 @@ export function maskDatabaseUrls(text: string): string {
 
   // Pattern to match database URLs with credentials
   // Matches: protocol://username:password@host:port/database
-  const dbUrlPattern = /((?:postgres|postgresql|mysql|mongodb):\/\/)([^:]+):([^@]+)@([^\/\s]+)(\/?[^\s]*)/gi;
+  const dbUrlPattern = /((?:postgres|postgresql|mysql|mongodb):\/\/)([^:]+):([^@]+)@([^/\s]+)(\/?\S*)/gi;
   
   return text.replace(dbUrlPattern, (_, protocol, username, password, hostAndRest, pathAndQuery) => {
     const maskedUsername = maskString(username);

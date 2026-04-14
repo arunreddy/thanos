@@ -247,7 +247,7 @@ describe('Toast Component', () => {
     fireEvent.click(screen.getByText('Show Success'));
     
     const closeButton = screen.getByRole('button', { name: '' });
-    expect(closeButton).toHaveClass('flex-shrink-0', 'p-1', 'rounded-md');
+    expect(closeButton).toHaveClass('shrink-0', 'p-1', 'rounded-md');
   });
 
   test('generates unique IDs for toasts', () => {

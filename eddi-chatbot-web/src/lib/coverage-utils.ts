@@ -50,8 +50,8 @@ export const mockWindow = {
  */
 export function getTokenForTest(): string | null {
   if (typeof window !== "undefined") {
-    if ((window as any).token) {
-      return (window as any).token;
+    if ((window as unknown as Record<string, unknown>).token) {
+      return (window as unknown as Record<string, unknown>).token as string;
     }
     return window.localStorage.getItem("access_token");
   }
@@ -64,7 +64,7 @@ export function getTokenForTest(): string | null {
 export async function fetchWithAuthForTest(
   url: string,
   options: RequestInit = {}
-): Promise<any> {
+): Promise<Response> {
   const token = getTokenForTest();
 
   const headers = new Headers({

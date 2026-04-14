@@ -217,7 +217,7 @@ const SideNav: React.FC<ChatsListProps> = ({
           initial={{ width: 260 }}
           animate={{ width: 56 }}
           transition={{ duration: 0.2, ease: "easeInOut" }}
-          className="flex flex-col items-center border-r h-full py-3 gap-1 flex-shrink-0"
+          className="flex flex-col items-center border-r h-full py-3 gap-1 shrink-0"
           style={{ background: '#F0F2F5', borderColor: '#DEE2E6' }}
         >
           {/* Expand toggle */}
@@ -311,11 +311,11 @@ const SideNav: React.FC<ChatsListProps> = ({
         initial={{ width: 56 }}
         animate={{ width: 268 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
-        className="flex flex-col border-r h-full flex-shrink-0"
+        className="flex flex-col border-r h-full shrink-0"
         style={{ background: '#F0F2F5', borderColor: '#DEE2E6' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+        <div className="flex items-center justify-between px-4 py-3 shrink-0"
           style={{ borderBottom: '1px solid #DEE2E6' }}>
           <div className="flex items-center gap-2.5">
             <img src="/citizens-logo.png" alt="DB Agentic Ops" className="w-7 h-7" />
@@ -334,7 +334,7 @@ const SideNav: React.FC<ChatsListProps> = ({
         </div>
 
         {/* New Chat button */}
-        <div className="px-3 pt-3 pb-2 flex-shrink-0">
+        <div className="px-3 pt-3 pb-2 shrink-0">
           <Link
             to="/new"
             className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-sm font-medium transition-all"
@@ -348,10 +348,10 @@ const SideNav: React.FC<ChatsListProps> = ({
         </div>
 
         {/* Search bar */}
-        <div className="px-3 pb-2 flex-shrink-0">
+        <div className="px-3 pb-2 shrink-0">
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
             style={{ background: '#FFFFFF', border: '1px solid #DEE2E6' }}>
-            <Search className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#ADB5BD' }} />
+            <Search className="w-3.5 h-3.5 shrink-0" style={{ color: '#ADB5BD' }} />
             <input
               ref={searchInputRef}
               type="text"
@@ -362,7 +362,7 @@ const SideNav: React.FC<ChatsListProps> = ({
               style={{ color: '#1A1E2E' }}
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery("")} className="cursor-pointer flex-shrink-0">
+              <button onClick={() => setSearchQuery("")} className="cursor-pointer shrink-0">
                 <X className="w-3.5 h-3.5" style={{ color: '#ADB5BD' }} />
               </button>
             )}
@@ -370,7 +370,7 @@ const SideNav: React.FC<ChatsListProps> = ({
         </div>
 
         {/* History label + count */}
-        <div className="px-4 pb-1.5 flex items-center justify-between flex-shrink-0">
+        <div className="px-4 pb-1.5 flex items-center justify-between shrink-0">
           <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#ADB5BD' }}>
             {searchQuery ? `Results (${filteredChats.length})` : `History (${chats.length})`}
           </span>
@@ -387,7 +387,7 @@ const SideNav: React.FC<ChatsListProps> = ({
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
                   style={{ background: '#EAEDF0' }}>
-                  <div className="w-6 h-6 rounded-md animate-pulse flex-shrink-0" style={{ background: '#DEE2E6' }} />
+                  <div className="w-6 h-6 rounded-md animate-pulse shrink-0" style={{ background: '#DEE2E6' }} />
                   <div className="flex-1 space-y-1.5">
                     <div className="h-3 rounded-md animate-pulse w-3/4" style={{ background: '#DEE2E6' }} />
                     <div className="h-2.5 rounded-md animate-pulse w-1/2" style={{ background: '#E9ECEF' }} />
@@ -451,7 +451,7 @@ const SideNav: React.FC<ChatsListProps> = ({
                     >
                       {/* Category icon */}
                       <div
-                        className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+                        className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
                         style={{ background: catStyle?.bg ?? '#E9ECEF', color: catStyle?.color ?? '#868E96' }}
                       >
                         <CatIcon className="w-3 h-3" />
@@ -460,14 +460,14 @@ const SideNav: React.FC<ChatsListProps> = ({
                       {/* Title + timestamp — all on one line */}
                       <div className="flex-1 min-w-0 flex items-baseline gap-1.5 overflow-hidden">
                         <p
-                          className="text-[12.5px] font-medium truncate flex-shrink"
+                          className="text-[12.5px] font-medium truncate shrink"
                           style={{ color: isActive ? '#1A1E2E' : '#343A40' }}
                         >
                           {cleanTitle || "New Conversation"}
                         </p>
-                        {(chat as any).last_message_at && (
-                          <span className="text-[10px] flex-shrink-0" style={{ color: '#ADB5BD' }}>
-                            · {timeAgo((chat as any).last_message_at)}
+                        {chat.last_message_at && (
+                          <span className="text-[10px] shrink-0" style={{ color: '#ADB5BD' }}>
+                            · {timeAgo(chat.last_message_at)}
                           </span>
                         )}
                       </div>
@@ -475,7 +475,7 @@ const SideNav: React.FC<ChatsListProps> = ({
                       {/* Delete button — inline, visible on hover */}
                       <button
                         onClick={(e) => handleDeleteClick(chat.id, e)}
-                        className="p-1 rounded transition-all cursor-pointer opacity-0 group-hover:opacity-100 flex-shrink-0"
+                        className="p-1 rounded transition-all cursor-pointer opacity-0 group-hover:opacity-100 shrink-0"
                         style={{ color: '#ADB5BD' }}
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#DC3545'; e.currentTarget.style.background = 'rgba(220,53,69,0.08)'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = '#ADB5BD'; e.currentTarget.style.background = 'transparent'; }}
@@ -492,7 +492,7 @@ const SideNav: React.FC<ChatsListProps> = ({
         </div>
 
         {/* Footer: status + user */}
-        <div className="flex-shrink-0" style={{ borderTop: '1px solid #DEE2E6' }}>
+        <div className="shrink-0" style={{ borderTop: '1px solid #DEE2E6' }}>
           <div className="flex items-center justify-between px-4 py-2">
             <span className="text-[11px]" style={{ color: '#ADB5BD' }}>System</span>
             <SystemStatusDot />
@@ -501,7 +501,7 @@ const SideNav: React.FC<ChatsListProps> = ({
           <div className="px-3 pb-3 relative">
             <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl"
               style={{ background: '#E8EAED' }}>
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0"
                 style={{ background: '#1A1E2E' }}>
                 {userInitials}
               </div>
@@ -511,7 +511,7 @@ const SideNav: React.FC<ChatsListProps> = ({
               </div>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="p-1 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                className="p-1 rounded-lg transition-colors cursor-pointer shrink-0"
                 style={{ color: '#868E96' }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = '#DEE2E6'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}

@@ -27,7 +27,7 @@ export default function Chat() {
   };
 
   return (
-    <div className="bg-background text-foreground w-full h-[100vh] flex overflow-hidden">
+    <div className="bg-background text-foreground w-full h-screen flex overflow-hidden">
       <SideNav
         data-testid="sidenav"
         activeChatId={chatId || currentChatId || 'unknown'}
@@ -35,16 +35,16 @@ export default function Chat() {
         refreshTrigger={refreshTrigger}
       />
 
-      {/* Chat panel — animates width */}
+      {/* Chat panel — smoothly shares space with results panel */}
       <motion.div
         className="h-full overflow-hidden"
         animate={{
-          flex: contextPanel ? '0 0 420px' : '1 1 0%',
+          flex: contextPanel ? '1 1 50%' : '1 1 100%',
         }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         style={{
           borderRight: contextPanel ? '1px solid #E9ECEF' : undefined,
-          minWidth: 0,
+          minWidth: contextPanel ? 480 : 0,
         }}
       >
         <ChatContent
@@ -55,16 +55,17 @@ export default function Chat() {
         />
       </motion.div>
 
-      {/* Context panel — slides in */}
+      {/* Results panel — always-visible when context is set */}
       <AnimatePresence mode="wait">
         {contextPanel && (
           <motion.div
             key="context-panel"
-            className="h-full flex-1 min-w-0"
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: '100%' }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            className="h-full min-w-0"
+            style={{ flex: '1 1 50%' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
           >
             <ContextPanel
               context={contextPanel}

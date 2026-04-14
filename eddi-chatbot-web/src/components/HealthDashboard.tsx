@@ -124,10 +124,10 @@ const STATE_COLORS: Record<string, { bg: string; text: string }> = {
   IDLE: { bg: "#E2E8F0", text: "#4A5568" },
 };
 
-const SEVERITY_STYLES: Record<string, { border: string; bg: string; badge: string; badgeText: string }> = {
-  CRITICAL: { border: "#DC3545", bg: "#FFF5F5", badge: "#DC3545", badgeText: "#fff" },
-  HIGH: { border: "#FFC107", bg: "#FFFBEB", badge: "#F59E0B", badgeText: "#fff" },
-  MEDIUM: { border: "#3B82F6", bg: "#EFF6FF", badge: "#3B82F6", badgeText: "#fff" },
+const SEVERITY_STYLES: Record<string, { border: string; bg: string; badge: string; badgeText: string; badgeBg: string }> = {
+  CRITICAL: { border: "#DC3545", bg: "#FEE8EA", badge: "#DC3545", badgeText: "#DC3545", badgeBg: "#FEE8EA" },
+  HIGH:     { border: "#D97706", bg: "#FEF3C7", badge: "#D97706", badgeText: "#D97706", badgeBg: "#FEF3C7" },
+  MEDIUM:   { border: "#2563EB", bg: "#EFF6FF", badge: "#2563EB", badgeText: "#2563EB", badgeBg: "#EFF6FF" },
 };
 
 function formatMetricLabel(metric: string): string {
@@ -403,7 +403,7 @@ function ExpandedChart({ metric, onClose }: ExpandedChartProps) {
               showThresholds={true}
             />
           ) : (
-            <div className="h-[300px] flex items-center justify-center" style={{ color: "#868E96" }}>
+            <div className="h-75 flex items-center justify-center" style={{ color: "#868E96" }}>
               No historical data available
             </div>
           )}
@@ -497,7 +497,11 @@ function MetricsSelector({ available, selected, onChange }: MetricsSelectorProps
 
   function toggle(metric: string) {
     const next = new Set(selected);
-    next.has(metric) ? next.delete(metric) : next.add(metric);
+    if (next.has(metric)) {
+      next.delete(metric);
+    } else {
+      next.add(metric);
+    }
     onChange(next);
   }
 
@@ -533,7 +537,7 @@ function MetricsSelector({ available, selected, onChange }: MetricsSelectorProps
                 className="w-full flex items-start gap-2.5 px-3 py-2 text-left hover:bg-gray-50 transition-colors"
               >
                 <div
-                  className="mt-0.5 w-4 h-4 rounded flex-shrink-0 flex items-center justify-center"
+                  className="mt-0.5 w-4 h-4 rounded shrink-0 flex items-center justify-center"
                   style={{
                     border: checked ? "none" : "1.5px solid #ADB5BD",
                     background: checked ? "#228BE6" : "transparent",
@@ -764,7 +768,7 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
                       style={{ borderBottom: i < locks.length - 1 ? "1px solid #F1F3F5" : undefined }}
                     >
                       <td className="px-3 py-2 font-mono" style={{ color: "#495057" }}>{lock.pid}</td>
-                      <td className="px-3 py-2 font-mono truncate max-w-[200px]" style={{ color: "#495057" }}>{lock.query}</td>
+                      <td className="px-3 py-2 font-mono truncate max-w-50" style={{ color: "#495057" }}>{lock.query}</td>
                       <td className="px-3 py-2" style={{ color: "#868E96" }}>{lock.wait_type || "—"}</td>
                       <td className="px-3 py-2 font-mono" style={{ color: "#495057" }}>{lock.duration}</td>
                       <td className="px-3 py-2">
@@ -828,11 +832,16 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
                   style={{ background: style.bg, borderLeft: `4px solid ${style.border}` }}
                 >
                   <div className="flex items-start gap-3">
-                    <SevIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: style.border }} />
+                    <SevIcon className="w-4 h-4 shrink-0 mt-0.5" style={{ color: style.border }} />
                     <div className="flex-1 min-w-0">
                       <span
-                        className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded mr-2"
-                        style={{ background: style.badge, color: style.badgeText, letterSpacing: "0.05em" }}
+                        className="text-[9px] font-bold uppercase px-2 py-0.5 rounded mr-2 inline-block mb-1"
+                        style={{
+                          background: style.badgeBg,
+                          color: style.badgeText,
+                          border: `1px solid ${style.border}`,
+                          letterSpacing: "0.05em",
+                        }}
                       >
                         {suggestion.severity}
                       </span>

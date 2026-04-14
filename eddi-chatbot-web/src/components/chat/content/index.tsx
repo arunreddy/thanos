@@ -20,8 +20,8 @@ interface Message {
   content: string;
   created_at?: string;
   timestamp?: string;
-  buttons?: any;
-  custom?: any;
+  buttons?: Array<{ title: string; payload: string }>;
+  custom?: Record<string, unknown>;
 }
 
 enum ChatState {
@@ -89,7 +89,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
       const fetchConversation = async () => {
         try {
           const response = await getConversation(chatId);
-          const conversationMessages = (response.messages || []).map((m: any) => ({
+          const conversationMessages = (response.messages || []).map((m: Record<string, unknown>) => ({
             ...m,
             custom: m.custom || m.custom_data,
           }));
@@ -147,7 +147,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
     let processedContent = content;
     
     // If the last message had buttons and user entered a number
-    if (lastMessage?.buttons?.length > 0 && isNumberOption) {
+    if (lastMessage?.buttons && lastMessage.buttons.length > 0 && isNumberOption) {
       const optionIndex = parseInt(content.trim()) - 1;
       if (optionIndex >= 0 && optionIndex < lastMessage.buttons.length) {
         // Use the payload from the corresponding button
@@ -213,8 +213,8 @@ const ChatContent: React.FC<ChatContentProps> = ({
     let displayText = title;
     if (!displayText) {
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage?.buttons?.length > 0) {
-        const button = lastMessage.buttons.find((btn: any) => btn.payload === payload);
+      if (lastMessage?.buttons && lastMessage.buttons.length > 0) {
+        const button = lastMessage.buttons.find((btn: { title: string; payload: string }) => btn.payload === payload);
         displayText = button?.title || payload;
       } else {
         displayText = payload;
@@ -276,39 +276,61 @@ const ChatContent: React.FC<ChatContentProps> = ({
     }
   };
 
-  const TypingIndicator = () => (
-    <motion.div
-      className="flex mb-6 items-start gap-2.5"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      transition={{ duration: 0.2 }}
-    >
-      {/* Matching bot avatar */}
-      <div
-        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5"
-        style={{ background: "#1A1E2E" }}
+  // Contextual typing label based on conversation category
+  const TYPING_LABELS: Record<string, string> = {
+    "Recommend DB": "Analyzing requirements...",
+    "Provision DB": "Processing request...",
+    "Health": "Checking database health...",
+    "Kafka Assist": "Looking up Kafka docs...",
+  };
+
+  const TypingIndicator = () => {
+    const typingLabel = activeCategory
+      ? TYPING_LABELS[activeCategory] || "Thinking..."
+      : "Thinking...";
+
+    return (
+      <motion.div
+        className="flex mb-6 items-start gap-2.5"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
       >
-        <Bot className="w-4 h-4 text-white" />
-      </div>
-      <div
-        className="rounded-2xl rounded-tl-sm px-4 py-3 border shadow-sm"
-        style={{ background: "#F8F9FA", borderColor: "#E9ECEF" }}
-      >
-        <div className="flex space-x-1.5 items-center h-5">
-          {[0, 0.15, 0.3].map((delay, i) => (
-            <motion.div
-              key={i}
-              className="w-2 h-2 rounded-full"
-              style={{ background: "#ADB5BD" }}
-              animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
-              transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut", delay }}
-            />
-          ))}
+        {/* Matching bot avatar */}
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-0.5"
+          style={{ background: "#1A1E2E" }}
+        >
+          <Bot className="w-4 h-4 text-white" />
         </div>
-      </div>
-    </motion.div>
-  );
+        <div
+          className="rounded-2xl rounded-tl-sm px-4 py-3 border shadow-sm"
+          style={{ background: "#F8F9FA", borderColor: "#E9ECEF" }}
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="flex space-x-1.5 items-center h-5">
+              {[0, 0.15, 0.3].map((delay, i) => (
+                <motion.div
+                  key={i}
+                  className="w-2 h-2 rounded-full"
+                  style={{ background: "#ADB5BD" }}
+                  animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut", delay }}
+                />
+              ))}
+            </div>
+            <span
+              className="text-xs"
+              style={{ color: "#868E96", fontFamily: "'JetBrains Mono', monospace" }}
+            >
+              {typingLabel}
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
 
   const showLoadingScreen =
     chatState === ChatState.LOADING_CONVERSATION &&
@@ -325,7 +347,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
   return (
     <div className="flex flex-col h-full w-full">
-      <TopNav title={conversationTitle} />
+      <TopNav title={conversationTitle} chatId={chatId} />
 
       {/* Messages area + floating input */}
       <div className="flex-1 relative overflow-hidden" style={{ background: "linear-gradient(180deg, #F8FAFB 0%, #FFFFFF 60%)" }}>
@@ -347,7 +369,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
           )}
 
           {/* Message list */}
-          <div className="min-h-[50px]">
+          <div className="min-h-12.5">
             <AnimatePresence initial={false} mode="popLayout">
               {messages.map((message, index) => (
                 <ChatMessage
@@ -359,7 +381,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
                   content={message.content}
                   timestamp={message.timestamp || message.created_at}
                   buttons={message.buttons}
-                  customForm={message.custom as CustomForm}
+                  customForm={message.custom as unknown as CustomForm}
                   messageId={message.id}
                   activeCategory={activeCategory}
                   feedbackState={

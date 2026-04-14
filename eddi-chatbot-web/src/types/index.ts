@@ -2,6 +2,7 @@ export interface Chat {
   id: string;
   title: string;
   updated_at: string;
+  last_message_at?: string;
 }
 
 export interface Conversation {
@@ -20,8 +21,8 @@ export interface Conversation {
 export interface Message {
   role: string;
   content: string;
-  buttons?: any[];
-  custom?: any;
+  buttons?: Array<{ title: string; payload: string }>;
+  custom?: Record<string, unknown>;
 }
 
 export interface MessageRequest {
@@ -71,7 +72,7 @@ export interface FeedbackResponse {
 export interface CustomForm {
   text: string;
   form_type: "multiselect" | "download" | "execution_plan" | "health";
-  objects: Record<string, any>;
+  objects: Record<string, unknown>;
   file_name: string;
-  execution_plan_data?: any; // For execution plan visualization
+  execution_plan_data?: Record<string, unknown>; // For execution plan visualization
 }

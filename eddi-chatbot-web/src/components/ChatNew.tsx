@@ -208,14 +208,14 @@ export default function ChatNew() {
   };
 
   return (
-    <div className="bg-background text-foreground w-full h-[100vh] flex divide-x divide-border">
+    <div className="bg-background text-foreground w-full h-screen flex divide-x divide-border">
       <SideNav
         activeChatId={chatId || currentChatId}
         onSelectChat={setCurrentChatId}
         refreshTrigger={refreshTrigger}
       />
       <div className="flex-1 flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #F8FAFB 0%, #FFFFFF 100%)' }}>
-        <div className="max-w-[820px] w-full px-6">
+        <div className="max-w-205 w-full px-6">
           <div className="flex flex-col items-center gap-10">
 
             {/* Greeting */}
@@ -299,7 +299,7 @@ export default function ChatNew() {
             <div className="flex items-center gap-3 w-full overflow-visible">
               <button
                 onClick={() => scrollCategories('left')}
-                className="p-2 rounded-full transition-colors flex-shrink-0"
+                className="p-2 rounded-full transition-colors shrink-0"
                 style={{ color: '#ADB5BD' }}
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -317,7 +317,7 @@ export default function ChatNew() {
                       onClick={() => handleCategoryClick(cat.label)}
                       onMouseEnter={() => handleCategoryHover(cat.prompt)}
                       onMouseLeave={handleCategoryLeave}
-                      className="flex flex-col items-center gap-2.5 flex-shrink-0 group cursor-pointer"
+                      className="flex flex-col items-center gap-2.5 shrink-0 group cursor-pointer"
                     >
                       <div
                         className="w-16 h-16 rounded-2xl flex items-center justify-center transition-all group-hover:scale-105 group-hover:shadow-md"
@@ -347,7 +347,7 @@ export default function ChatNew() {
               </div>
               <button
                 onClick={() => scrollCategories('right')}
-                className="p-2 rounded-full transition-colors flex-shrink-0"
+                className="p-2 rounded-full transition-colors shrink-0"
                 style={{ color: '#ADB5BD' }}
               >
                 <ChevronRight className="w-5 h-5" />

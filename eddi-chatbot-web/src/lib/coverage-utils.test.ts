@@ -24,7 +24,7 @@ global.Headers = class {
   get(key: string) {
     return this.headers.get(key);
   }
-} as any;
+} as unknown as typeof Headers;
 
 // Mock fetch for tests
 const mockFetch = vi.fn();
@@ -58,13 +58,13 @@ describe("coverage utils", () => {
 
   describe("getTokenForTest", () => {
     it("should get token from window.token when available", () => {
-      (window as any).token = "window-token";
+      (window as unknown as Record<string, unknown>).token = "window-token";
       expect(getTokenForTest()).toBe("window-token");
       expect(window.localStorage.getItem).not.toHaveBeenCalled();
     });
 
     it("should get token from localStorage when window.token is undefined", () => {
-      delete (window as any).token;
+      delete (window as unknown as Record<string, unknown>).token;
       vi.spyOn(window.localStorage, "getItem").mockReturnValue("storage-token");
       expect(getTokenForTest()).toBe("storage-token");
       expect(window.localStorage.getItem).toHaveBeenCalledWith("access_token");
@@ -81,7 +81,7 @@ describe("coverage utils", () => {
       vi.clearAllMocks();
 
       // Ensure window is undefined
-      // @ts-ignore
+      // @ts-expect-error intentionally setting window to undefined for testing
       global.window = undefined;
 
       // Create a fresh mock storage
@@ -99,7 +99,7 @@ describe("coverage utils", () => {
     });
 
     it("should return null when no token is found in either source", () => {
-      delete (window as any).token;
+      delete (window as unknown as Record<string, unknown>).token;
       vi.spyOn(window.localStorage, "getItem").mockReturnValue(null);
       expect(getTokenForTest()).toBeNull();
     });
@@ -266,11 +266,11 @@ describe("coverage utils", () => {
     });
 
     it("should handle null payload", () => {
-      expect(processButtonPayload(null as any)).toBe("");
+      expect(processButtonPayload(null as unknown as string)).toBe("");
     });
 
     it("should handle undefined payload", () => {
-      expect(processButtonPayload(undefined as any)).toBe("");
+      expect(processButtonPayload(undefined as unknown as string)).toBe("");
     });
 
     it("should handle payload with only slash", () => {
@@ -347,7 +347,7 @@ describe("coverage utils", () => {
       expect(storage.key(2)).toBeNull();
       
       // Test edge case where key exists but value is undefined
-      storage.setItem("key3", undefined as any);
+      storage.setItem("key3", undefined as unknown as string);
       expect(storage.key(2)).toBe("key3");
       
       // Test edge case with empty key
@@ -357,8 +357,7 @@ describe("coverage utils", () => {
       
       // Test edge case with undefined key
       storage.clear();
-      const mockStorage = storage as any;
-      mockStorage.storage = new Map([[undefined, "test"]]);
+      (storage as unknown as { storage: Map<unknown, string> }).storage = new Map([[undefined, "test"]] as unknown as [string, string][]);
       expect(storage.key(0)).toBeNull();
     });
 

@@ -137,7 +137,7 @@ function ActionCard({
       onClick={onClick}
     >
       <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
         style={{ background: "#E9ECEF", color: "#495057" }}
       >
         <Icon className="w-4 h-4" />
@@ -152,7 +152,7 @@ function ActionCard({
           </div>
         )}
       </div>
-      <div className="text-[12px] font-medium flex-shrink-0" style={{ color: "#868E96" }}>
+      <div className="text-[12px] font-medium shrink-0" style={{ color: "#868E96" }}>
         Open
       </div>
     </div>
@@ -241,7 +241,7 @@ export default function ChatMessage({
     setShowSensitive(newValue);
     try {
       sessionStorage.setItem('showSensitiveInfo', newValue.toString());
-    } catch {}
+    } catch { /* storage access may fail in private browsing */ }
   };
 
   const containerVariants = {
@@ -369,17 +369,27 @@ export default function ChatMessage({
     ),
     table: ({ children }: React.ComponentProps<'table'>) => (
       <div className="overflow-x-auto my-4 rounded-xl border" style={{ borderColor: "#E2E8F0" }}>
-        <table className="min-w-full divide-y text-[13px]" style={{ borderColor: "#E2E8F0" }}>{children}</table>
+        <table className="min-w-full text-[13px]" style={{ fontFamily: "'JetBrains Mono', monospace", borderCollapse: "collapse" }}>{children}</table>
       </div>
     ),
     thead: ({ children }: React.ComponentProps<'thead'>) => (
       <thead style={{ background: "#F8FAFC" }}>{children}</thead>
     ),
+    tr: ({ children, ...props }: React.ComponentProps<'tr'>) => (
+      <tr
+        style={{ transition: "background 0.1s" }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#F8FAFB"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
+        {...props}
+      >
+        {children}
+      </tr>
+    ),
     th: ({ children }: React.ComponentProps<'th'>) => (
-      <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "#64748B" }}>{children}</th>
+      <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap" style={{ color: "#64748B", borderBottom: "1px solid #E2E8F0", letterSpacing: "0.06em" }}>{children}</th>
     ),
     td: ({ children }: React.ComponentProps<'td'>) => (
-      <td className="px-4 py-2.5 text-[13px]" style={{ color: "#374151", borderTop: "1px solid #F1F5F9" }}>{children}</td>
+      <td className="px-4 py-2.5 text-[12px]" style={{ color: "#374151", borderBottom: "1px solid #F1F5F9", maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{children}</td>
     ),
     hr: () => <hr className="my-4" style={{ borderColor: "#E2E8F0" }} />,
     strong: ({ children }: React.ComponentProps<'strong'>) => (
@@ -452,12 +462,12 @@ export default function ChatMessage({
         <MultiSelectForm customForm={customForm} onButtonClick={onButtonClick} />
       ) : customForm && (customForm.form_type === "download" || customForm.form_type === "execution_plan" || customForm.form_type === "health") ? (
         <div className="mt-3 space-y-2">
-          {(isSchemaDefinitions || (customForm.form_type === "download" && isSchemaDefinitions)) && (
+          {!!(isSchemaDefinitions || (customForm.form_type === "download" && isSchemaDefinitions)) && (
             <ActionCard
               icon={Database}
               label="Schema Definitions"
-              subtitle={customForm.objects?.database_name || "Database"}
-              onClick={() => onShowContext?.({ type: "schema", title: "Schema Definitions", data: customForm.objects })}
+              subtitle={(customForm.objects?.database_name as string) || "Database"}
+              onClick={() => onShowContext?.({ type: "schema", title: "Schema Definitions", data: customForm.objects as Record<string, unknown> })}
             />
           )}
           {(isExecutionPlan || customForm.form_type === "execution_plan") && (
@@ -465,15 +475,15 @@ export default function ChatMessage({
               icon={BarChart3}
               label="Execution Plan"
               subtitle={`${customForm.objects?.rows || 0} rows · ${customForm.objects?.execution_time || 0}ms`}
-              onClick={() => onShowContext?.({ type: "execution_plan", title: "Execution Plan", data: customForm.objects })}
+              onClick={() => onShowContext?.({ type: "execution_plan", title: "Execution Plan", data: customForm.objects as Record<string, unknown> })}
             />
           )}
           {customForm.form_type === "health" && (
             <ActionCard
               icon={Activity}
               label="Performance Snapshot"
-              subtitle={customForm.objects?.database_name || "Database"}
-              onClick={() => onShowContext?.({ type: "health", title: "Performance Snapshot", data: customForm.objects })}
+              subtitle={(customForm.objects?.database_name as string) || "Database"}
+              onClick={() => onShowContext?.({ type: "health", title: "Performance Snapshot", data: customForm.objects as Record<string, unknown> })}
             />
           )}
           {customForm.form_type === "download" && !isSchemaDefinitions && !isExecutionPlan && (
@@ -504,7 +514,7 @@ export default function ChatMessage({
         /* ── User message: right-aligned, accent border on RIGHT ── */
         <div className="flex items-start justify-end gap-2.5">
           <div
-            className="max-w-[65%] min-w-[80px] px-4 py-2.5 rounded-2xl rounded-tr-sm"
+            className="max-w-[65%] min-w-20 px-4 py-2.5 rounded-2xl rounded-tr-sm"
             style={{
               background: "#FFFFFF",
               border: "1px solid #E9ECEF",
@@ -524,7 +534,7 @@ export default function ChatMessage({
           </div>
           {/* User avatar */}
           <div
-            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold mt-0.5"
+            className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold mt-0.5"
             style={{ background: "#7C3AED", color: "#fff" }}
           >
             {userInitials}
@@ -535,7 +545,7 @@ export default function ChatMessage({
         <div className="flex items-start gap-2.5">
           {/* Bot avatar */}
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5"
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-0.5"
             style={{ background: "#1A1E2E" }}
           >
             <Bot className="w-4 h-4" style={{ color: "#fff" }} />
@@ -673,7 +683,7 @@ function MultiSelectForm({ customForm, onButtonClick }: { customForm: CustomForm
         <div key={type} className="mb-2">
           <div className="font-semibold mb-1">{type.charAt(0).toUpperCase() + type.slice(1)}</div>
           <div className="flex flex-wrap gap-2">
-            {customForm.objects[type].map((item: string) => (
+            {(customForm.objects[type] as string[]).map((item: string) => (
               <label key={item} className="flex items-center gap-1 cursor-pointer">
                 <input
                   type="checkbox"

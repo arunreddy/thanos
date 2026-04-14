@@ -62,9 +62,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(MOCK_USER);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error] = useState<string | null>(null);
 
-    const fetchUser = async (_force:boolean=false):Promise<User | null> => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const fetchUser = async (_force = false): Promise<User | null> => {
         // For local development, always return mock user
         console.log("Using mock user for local development");
         setUser(MOCK_USER);

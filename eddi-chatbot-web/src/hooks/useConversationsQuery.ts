@@ -11,7 +11,21 @@ import {
   sendMessage as apiSendMessage,
   newConversation as apiNewConversation
 } from '@/lib/api';
-import { Conversation } from '@/types';
+import { Conversation, Message } from '@/types';
+
+interface DetailMessage extends Message {
+  id?: string;
+  created_at?: string;
+  model_used?: string | null;
+  intent_name?: string | null;
+  confidence_score?: number | null;
+  response_time_ms?: number | null;
+  custom_data?: Record<string, unknown>;
+}
+
+interface ConversationDetail extends Conversation {
+  messages: DetailMessage[];
+}
 
 // Query keys for better cache management
 export const conversationKeys = {
@@ -113,7 +127,7 @@ export function useUpdateConversation() {
       // Update the conversation detail cache
       queryClient.setQueryData(
         conversationKeys.detail(id),
-        (old: any) => old ? { ...old, ...updatedConversation } : undefined
+        (old: ConversationDetail | undefined) => old ? { ...old, ...updatedConversation } : undefined
       );
       
       showToast('Conversation updated successfully', 'success');
@@ -191,7 +205,7 @@ export function useSendMessage() {
 
       queryClient.setQueryData(
         conversationKeys.detail(conversation_id),
-        (old: any) => {
+        (old: ConversationDetail | undefined) => {
           if (!old) return old;
           return {
             ...old,
@@ -207,12 +221,12 @@ export function useSendMessage() {
       // Replace optimistic user message and add assistant response
       queryClient.setQueryData(
         conversationKeys.detail(conversation_id),
-        (old: any) => {
+        (old: ConversationDetail | undefined) => {
           if (!old) return old;
-          
+
           // Remove optimistic user message
           const messagesWithoutOptimistic = old.messages.filter(
-            (msg: any) => !msg.id?.toString().startsWith('temp-')
+            (msg: DetailMessage) => !msg.id?.toString().startsWith('temp-')
           );
           
           // Create the real user message (based on what we sent)

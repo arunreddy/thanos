@@ -1,6 +1,15 @@
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Send, Plus, Paperclip } from "lucide-react";
 
+const QUICK_TAGS = [
+  { label: "Slow Query", prompt: "Check slow queries on ", dotColor: "#D97706" },
+  { label: "Explain Plan", prompt: "EXPLAIN ANALYZE: ", dotColor: "#2563EB" },
+  { label: "Index Check", prompt: "Check index usage for ", dotColor: "#0D9488" },
+  { label: "Query Tuning", prompt: "Tune this query: ", dotColor: "#7C3AED" },
+  { label: "Locks", prompt: "Check active locks on ", dotColor: "#DC3545" },
+  { label: "Performance", prompt: "Show performance metrics for ", dotColor: "#008555" },
+] as const;
+
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   isLoading: boolean;
@@ -52,10 +61,49 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
     }
   };
 
+  const handleQuickTag = (prompt: string) => {
+    setMessage(prompt);
+    textareaRef.current?.focus();
+  };
+
   const hasContent = message.trim().length > 0;
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
+      {/* Quick action tags */}
+      <div className="flex gap-1.5 mb-2 flex-wrap">
+        {QUICK_TAGS.map((tag) => (
+          <button
+            key={tag.label}
+            type="button"
+            onClick={() => handleQuickTag(tag.prompt)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] transition-all cursor-pointer"
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              color: "#495057",
+              background: "#F8F9FA",
+              border: "1px solid #DEE2E6",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#008555";
+              e.currentTarget.style.color = "#008555";
+              e.currentTarget.style.background = "#E6F4EF";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "#DEE2E6";
+              e.currentTarget.style.color = "#495057";
+              e.currentTarget.style.background = "#F8F9FA";
+            }}
+          >
+            <span
+              className="w-1.25 h-1.25 rounded-full shrink-0"
+              style={{ background: tag.dotColor }}
+            />
+            {tag.label}
+          </button>
+        ))}
+      </div>
+
       <div
         className="rounded-2xl overflow-hidden"
         style={{
@@ -71,7 +119,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Reply..."
+            placeholder="Ask a question, paste SQL, or request analysis..."
             rows={1}
             disabled={isLoading}
             className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50 leading-5 py-0.5"

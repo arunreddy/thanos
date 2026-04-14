@@ -35,7 +35,7 @@ describe("ThemeProvider", () => {
   });
 
   afterAll(() => {
-    delete (global as any).localStorage;
+    delete (global as unknown as Record<string, unknown>).localStorage;
   });
 
   beforeEach(() => {
@@ -85,14 +85,13 @@ describe("ThemeProvider", () => {
 
   it("throws an error when useTheme is used outside ThemeProvider", () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-    const InvalidComponent = () => {
-      expect(() => useTheme()).toThrowError(
-        "useTheme must be used within a ThemeProvider"
-      );
-      return <div />;
-    };
-
-    render(<InvalidComponent />);
+    expect(() => {
+      const InvalidComponent = () => {
+        useTheme();
+        return <div />;
+      };
+      render(<InvalidComponent />);
+    }).toThrowError("useTheme must be used within a ThemeProvider");
 
     consoleError.mockRestore();
   });
