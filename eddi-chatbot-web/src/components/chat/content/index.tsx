@@ -380,7 +380,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
         />
       <div
         ref={scrollContainerRef}
-        className="absolute inset-0 overflow-y-auto px-8 pt-7 pb-4"
+        className="absolute inset-0 overflow-y-auto pl-18 pr-18 pt-7 pb-4"
         onScroll={handleScroll}
       >
       <div className="max-w-6xl mx-auto">

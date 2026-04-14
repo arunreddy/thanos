@@ -493,9 +493,9 @@ export default function ChatMessage({
       layout
     >
       {isUser ? (
-        /* ── User message: right-aligned ── */
+        /* ── User message: right-aligned, avatar outside ── */
         <div className="group flex flex-col items-end">
-          <div className="flex items-start justify-end gap-2.5">
+          <div className="relative flex items-start justify-end">
             <div
               className="max-w-[65%] min-w-40 px-4 py-2.5 rounded-xl rounded-tr-sm"
               style={{
@@ -508,32 +508,32 @@ export default function ChatMessage({
                 {cleanContent}
               </p>
             </div>
-            {/* User avatar */}
+            {/* User avatar — positioned outside the card */}
             <div
-              className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold mt-0.5"
+              className="absolute -right-10 top-0.5 w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold"
               style={{ background: theme.userAvatar.bg, color: theme.userAvatar.text, border: `2px solid ${theme.input.bg}`, boxShadow: SHADOWS.sm }}
             >
               {userInitials}
             </div>
           </div>
           {timestamp && (
-            <div className="text-xs mt-1 mr-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ color: theme.actions.color, fontFamily: "'JetBrains Mono', monospace" }}>
+            <div className="text-xs mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ color: theme.actions.color, fontFamily: "'JetBrains Mono', monospace" }}>
               {format(parseUTCTimestamp(timestamp), "h:mm a")}
             </div>
           )}
         </div>
       ) : (
-        /* ── Assistant message ── */
-        <div className="group flex items-start gap-2.5">
-          {/* Bot avatar */}
+        /* ── Assistant message, avatar outside ── */
+        <div className="group relative">
+          {/* Bot avatar — positioned outside the card */}
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+            className="absolute -left-10 top-0.5 w-8 h-8 rounded-full flex items-center justify-center"
             style={{ background: theme.botAvatar.bg, color: theme.botAvatar.text, border: `2px solid ${theme.input.bg}`, boxShadow: SHADOWS.sm }}
           >
             <Bot className="w-4 h-4" />
           </div>
 
-          <div className="flex-1 min-w-40 max-w-[80%]">
+          <div className="min-w-40 max-w-[80%]">
             <div
               className="rounded-xl rounded-tl-sm px-4 pt-3 pb-3.5"
               style={{
