@@ -43,7 +43,7 @@ export default function Chat() {
         animate={{
           flex: contextPanel ? '1 1 50%' : '1 1 100%',
         }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
         style={{
           borderRight: contextPanel ? '2px solid #DEE2E6' : undefined,
           minWidth: contextPanel ? 480 : 0,
@@ -57,17 +57,17 @@ export default function Chat() {
         />
       </motion.div>
 
-      {/* Results panel — always-visible when context is set */}
+      {/* Results panel — slides in/out smoothly */}
       <AnimatePresence mode="wait">
         {contextPanel && (
           <motion.div
             key="context-panel"
-            className="h-full min-w-0"
-            style={{ flex: '1 1 50%' }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="h-full min-w-0 overflow-hidden"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: '50%', opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            style={{ flex: 'none' }}
           >
             <ContextPanel
               context={contextPanel}

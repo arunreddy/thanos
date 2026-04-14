@@ -199,7 +199,11 @@ function VitalCard({ metric, onClick, index }: VitalCardProps) {
       whileTap={{ scale: 0.97 }}
       className="rounded-xl p-3.5 cursor-pointer flex flex-col"
       style={{
-        background: "#FFFFFF",
+        background: color.text === "#DC3545" ? "#FFF5F5"
+          : color.text === "#E8A800" ? "#FFFDF5"
+          : color.text === "#28A745" ? "#F0FFF5"
+          : "#FFFFFF",
+        borderTop: `3px solid ${color.bar}`,
         boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
         minHeight: "180px",
       }}
