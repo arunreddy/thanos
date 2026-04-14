@@ -448,8 +448,6 @@ const SideNav: React.FC<ChatsListProps> = ({
                       className="group flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all duration-150"
                       style={{
                         background: isActive ? d.activeBg : 'transparent',
-                        boxShadow: isActive ? SHADOWS.sm : 'none',
-                        border: isActive ? `1px solid ${d.activeBorder}` : '1px solid transparent',
                       }}
                       onMouseEnter={(e) => {
                         if (!isActive) e.currentTarget.style.background = d.hoverBg;
@@ -484,7 +482,7 @@ const SideNav: React.FC<ChatsListProps> = ({
                       {/* Delete button — inline, visible on hover */}
                       <button
                         onClick={(e) => handleDeleteClick(chat.id, e)}
-                        className="p-1 rounded transition-all cursor-pointer opacity-0 group-hover:opacity-100 shrink-0"
+                        className={`p-1 rounded transition-all cursor-pointer shrink-0 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
                         style={{ color: d.textDim }}
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#DC3545'; e.currentTarget.style.background = 'rgba(220,53,69,0.08)'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = d.textDim; e.currentTarget.style.background = 'transparent'; }}

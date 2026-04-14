@@ -122,10 +122,38 @@ export default function ContextPanel({ context, onClose }: ContextPanelProps) {
 }
 
 function ExportCards({ data, type }: { data: Record<string, unknown>; type: string }) {
+  const CsvIcon = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="3" width="18" height="18" rx="3" stroke="#0D9488" strokeWidth="1.5" />
+      <line x1="3" y1="9" x2="21" y2="9" stroke="#0D9488" strokeWidth="1.5" />
+      <line x1="3" y1="15" x2="21" y2="15" stroke="#0D9488" strokeWidth="1.5" />
+      <line x1="9" y1="3" x2="9" y2="21" stroke="#0D9488" strokeWidth="1.5" />
+      <line x1="15" y1="3" x2="15" y2="21" stroke="#0D9488" strokeWidth="1.5" />
+    </svg>
+  );
+
+  const JsonIcon = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 4C6.5 4 5.5 5 5.5 6.5V9C5.5 10 5 11 3.5 11.5C5 12 5.5 13 5.5 14V17.5C5.5 19 6.5 20 8 20" stroke="#2563EB" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M16 4C17.5 4 18.5 5 18.5 6.5V9C18.5 10 19 11 20.5 11.5C19 12 18.5 13 18.5 14V17.5C18.5 19 17.5 20 16 20" stroke="#2563EB" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="9.5" cy="12" r="1" fill="#2563EB" />
+      <circle cx="14.5" cy="12" r="1" fill="#2563EB" />
+    </svg>
+  );
+
+  const TextIcon = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="3" width="16" height="18" rx="2" stroke="#7C3AED" strokeWidth="1.5" />
+      <line x1="8" y1="8" x2="16" y2="8" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="8" y1="12" x2="14" y2="12" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="8" y1="16" x2="12" y2="16" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+
   const formats = [
-    { label: "CSV", icon: "📊", color: "#0D9488", bg: "#F0FDFA", border: "#99F6E4", sub: "Excel-ready", format: "csv" as const },
-    { label: "JSON", icon: "{ }", color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE", sub: "API-ready", format: "json" as const },
-    { label: "Text", icon: "📄", color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", sub: "Tab-separated", format: "text" as const },
+    { label: "CSV", IconComponent: CsvIcon, color: "#0D9488", bg: "#F0FDFA", border: "#99F6E4", sub: "Excel-ready", format: "csv" as const },
+    { label: "JSON", IconComponent: JsonIcon, color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE", sub: "API-ready", format: "json" as const },
+    { label: "Plain Text", IconComponent: TextIcon, color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", sub: "Tab-separated", format: "text" as const },
   ];
 
   return (
@@ -140,7 +168,7 @@ function ExportCards({ data, type }: { data: Record<string, unknown>; type: stri
             onMouseEnter={(e) => { e.currentTarget.style.borderColor = f.color; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.borderColor = f.border; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
           >
-            <span className="text-base">{f.icon}</span>
+            <f.IconComponent />
             <span className="text-xs font-semibold" style={{ color: f.color }}>{f.label}</span>
             <span className="text-[10px]" style={{ color: "#868E96", fontFamily: "'JetBrains Mono', monospace" }}>{f.sub}</span>
           </button>
