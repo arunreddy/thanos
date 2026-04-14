@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Check, X, TrendingUp, TrendingDown, Minus, AlertCircle, AlertTriangle, Lightbulb, Lock, Activity } from "lucide-react";
+import { ChevronDown, Check, X, TrendingUp, TrendingDown, Minus, AlertCircle, AlertTriangle, Lightbulb, Lock } from "lucide-react";
 import MetricChart, { MetricDataPoint } from "./MetricChart";
 
 interface VitalMetric {
@@ -54,7 +54,11 @@ interface HealthDashboardProps {
     available_metrics?: AvailableMetric[];
     default_metrics?: string[];
   };
+  selectedMetrics?: Set<string>;
+  onSelectedMetricsChange?: (selected: Set<string>) => void;
 }
+
+export type { AvailableMetric };
 
 // Neutral color for metrics where thresholds aren't meaningful
 const NEUTRAL_COLOR = { text: "#495057", bar: "#ADB5BD" };
@@ -492,7 +496,7 @@ interface MetricsSelectorProps {
   onChange: (selected: Set<string>) => void;
 }
 
-function MetricsSelector({ available, selected, onChange }: MetricsSelectorProps) {
+export function MetricsSelector({ available, selected, onChange }: MetricsSelectorProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -578,7 +582,7 @@ function MetricsSelector({ available, selected, onChange }: MetricsSelectorProps
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function HealthDashboard({ data }: HealthDashboardProps) {
+export default function HealthDashboard({ data, selectedMetrics: externalSelected }: HealthDashboardProps) {
   const vitals = data.vitals || {};
   const locks = data.locks || [];
   const suggestions = data.suggestions || [];
@@ -593,14 +597,11 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
     "number_of_transactions_per_second",
   ];
 
-  const [selectedMetrics, setSelectedMetrics] = useState<Set<string>>(
+  const [internalSelected] = useState<Set<string>>(
     () => new Set(defaultMetrics)
   );
+  const selectedMetrics = externalSelected ?? internalSelected;
   const [expandedMetric, setExpandedMetric] = useState<VitalMetric | null>(null);
-
-  const timestamp = data.timestamp
-    ? new Date(data.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : null;
 
   // Use real metrics history only (no mock data in production)
   const effectiveMetricsHistory = metricsHistory;
@@ -666,44 +667,11 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
     });
 
   return (
-    <div className="p-5 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: "#FFFFFF", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#EFF6FF" }}>
-            <Activity className="w-4 h-4" style={{ color: "#2563EB" }} />
-          </div>
-          <h3 className="text-sm font-semibold" style={{ color: "#1A1E2E" }}>
-            Database Vitals
-          </h3>
-          {(data.database_name || data.resource_id) && (
-            <span
-              className="text-[11px] font-mono px-2 py-0.5 rounded-md"
-              style={{ background: "#E7F5FF", color: "#1971C2", border: "1px solid #D0EBFF" }}
-            >
-              {data.database_name || data.resource_id}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-3">
-          {timestamp && (
-            <span className="text-[11px]" style={{ color: "#ADB5BD" }}>
-              as of {timestamp}
-            </span>
-          )}
-          {availableMetrics.length > 0 && (
-            <MetricsSelector
-              available={availableMetrics}
-              selected={selectedMetrics}
-              onChange={setSelectedMetrics}
-            />
-          )}
-        </div>
-      </div>
+    <div className="px-5 pb-5 pt-4 space-y-4">
 
       {/* Vitals Grid */}
       {metrics.length > 0 ? (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {metrics.map((metric, i) => (
             <VitalCard
               key={metric.metricKey}

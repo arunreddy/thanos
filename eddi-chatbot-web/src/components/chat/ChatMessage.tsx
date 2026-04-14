@@ -485,7 +485,7 @@ export default function ChatMessage({
 
   return (
     <motion.div
-      className="mb-3"
+      className="mb-1"
       initial="hidden"
       animate="visible"
       exit="exit"

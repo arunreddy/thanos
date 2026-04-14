@@ -408,7 +408,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
         className="absolute inset-0 overflow-y-auto pl-18 pr-18 pt-7 pb-4"
         onScroll={handleScroll}
       >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Loading screen */}
         {showLoadingScreen && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground pt-24">
@@ -480,7 +480,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
         className="shrink-0 px-8 pb-6 pt-3"
         style={{ background: theme.chatArea.bg }}
       >
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <ChatInput
             ref={chatInputRef}
             onSendMessage={handleSendMessage}

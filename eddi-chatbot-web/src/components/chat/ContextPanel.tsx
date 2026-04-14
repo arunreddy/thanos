@@ -4,7 +4,8 @@ import { useState, useRef } from "react";
 import { downloadAs } from "../../utils/export";
 import ExecutionPlanVisualization from "../ExecutionPlanVisualization";
 import SchemaDefinitionsVisualization from "../SchemaDefinitionsVisualization";
-import HealthDashboard from "../HealthDashboard";
+import HealthDashboard, { MetricsSelector, type AvailableMetric } from "../HealthDashboard";
+import { PANEL_HEADER_DESIGNS, type PanelHeaderDesign } from "@/lib/panelHeaderDesigns";
 
 export interface ContextPanelData {
   type: "execution_plan" | "schema" | "health" | "custom";
@@ -27,11 +28,32 @@ const PANEL_ICONS: Record<string, React.ElementType> = {
 
 export default function ContextPanel({ context, onClose }: ContextPanelProps) {
   const [copied, setCopied] = useState(false);
+  const [headerDesignId, setHeaderDesignId] = useState(
+    () => localStorage.getItem("panel-header-design") || "minimal"
+  );
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Metrics selector state (for health panels)
+  const defaultMetrics = (context?.data?.default_metrics as string[]) || [
+    "cpu_utilization", "disk_space_usage", "freeable_memory",
+    "number_of_active_connections", "percentage_of_read_requests_served_by_the_buffer_cache",
+    "number_of_transactions_per_second",
+  ];
+  const [selectedMetrics, setSelectedMetrics] = useState<Set<string>>(() => new Set(defaultMetrics));
+  const availableMetrics = ((context?.data?.available_metrics) || []) as AvailableMetric[];
 
   if (!context) return null;
 
   const Icon = PANEL_ICONS[context.type] || FileText;
+  const hd: PanelHeaderDesign = PANEL_HEADER_DESIGNS.find((d) => d.id === headerDesignId) || PANEL_HEADER_DESIGNS[0];
+
+  // Extract subtitle info from data
+  const dbName = (context.data?.database_name || context.data?.resource_id) as string | undefined;
+  const timestamp = context.data?.timestamp
+    ? new Date(context.data.timestamp as string).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : null;
+
+  const isGradient = hd.bg.startsWith("linear-gradient");
 
   const handleCopy = () => {
     const text = contentRef.current?.innerText || JSON.stringify(context.data, null, 2);
@@ -39,7 +61,6 @@ export default function ContextPanel({ context, onClose }: ContextPanelProps) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
 
   return (
     <AnimatePresence mode="wait">
@@ -49,56 +70,71 @@ export default function ContextPanel({ context, onClose }: ContextPanelProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className="flex flex-col h-full overflow-hidden"
+        className="flex flex-col h-full overflow-hidden relative"
         style={{ background: "#ECEEF1" }}
       >
-        {/* Header */}
+        {/* Combined Header */}
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, delay: 0.1 }}
-          className="flex items-center justify-between px-5 h-13 shrink-0"
-          style={{ background: "#ECEEF1" }}
+          className={`shrink-0 px-5 py-3 ${hd.rounded ? 'mx-3 mt-3 rounded-xl' : ''}`}
+          style={{
+            background: isGradient ? undefined : hd.bg,
+            backgroundImage: isGradient ? hd.bg : undefined,
+            boxShadow: hd.shadow,
+            borderBottom: hd.divider ? `2px solid ${hd.dividerColor}` : undefined,
+          }}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div
-              className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-              style={{ background: "#E6F4EF", color: "#008555" }}
-            >
-              <Icon className="w-3.5 h-3.5" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: hd.iconBg, color: hd.iconColor }}
+              >
+                <Icon className="w-4 h-4" />
+              </div>
+              <h2 className="text-sm font-semibold truncate" style={{ color: hd.titleColor }}>
+                {context.title}
+              </h2>
+              {dbName && (
+                <span
+                  className="text-[11px] font-mono px-2 py-0.5 rounded-md shrink-0"
+                  style={{ background: hd.badgeBg, color: hd.badgeColor, border: `1px solid ${hd.badgeBorder}` }}
+                >
+                  {dbName}
+                </span>
+              )}
             </div>
-            <h2
-              className="text-sm font-semibold truncate"
-              style={{ color: "#1A1E2E" }}
-            >
-              {context.title}
-            </h2>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer"
-              style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                color: "#495057",
-                border: "1px solid #DEE2E6",
-                background: "#FFFFFF",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#CED4DA"; e.currentTarget.style.color = "#1A1E2E"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#DEE2E6"; e.currentTarget.style.color = "#495057"; }}
-            >
-              {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-              {copied ? "Copied" : "Copy"}
-            </button>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg transition-colors cursor-pointer ml-1"
-              style={{ color: "#868E96" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#E9ECEF"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {timestamp && (
+                <span className="text-[11px] mr-1" style={{ color: hd.subtitleColor, fontFamily: "'JetBrains Mono', monospace" }}>
+                  as of {timestamp}
+                </span>
+              )}
+              {context.type === "health" && availableMetrics.length > 0 && (
+                <MetricsSelector
+                  available={availableMetrics}
+                  selected={selectedMetrics}
+                  onChange={setSelectedMetrics}
+                />
+              )}
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer hover-surface"
+                style={{ fontFamily: "'JetBrains Mono', monospace", color: hd.actionColor, border: `1px solid ${hd.actionBorder}`, background: hd.actionBg }}
+              >
+                {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                {copied ? "Copied" : "Copy"}
+              </button>
+              <button
+                onClick={onClose}
+                className="p-1.5 rounded-lg transition-colors cursor-pointer hover-surface"
+                style={{ color: hd.closeColor }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -110,11 +146,36 @@ export default function ContextPanel({ context, onClose }: ContextPanelProps) {
           className="flex-1 overflow-y-auto pb-6"
           ref={contentRef}
         >
-          <ContextContent context={context} />
+          <ContextContent context={context} selectedMetrics={selectedMetrics} onSelectedMetricsChange={setSelectedMetrics} />
         </motion.div>
 
         {/* Export footer */}
         <ExportCards data={context.data} type={context.type} />
+
+        {/* Floating design switcher (dev only) */}
+        <div
+          className="absolute bottom-20 right-3 flex flex-col gap-1 p-1.5 rounded-lg z-30"
+          style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)" }}
+        >
+          {PANEL_HEADER_DESIGNS.map((design) => (
+            <button
+              key={design.id}
+              onClick={() => { setHeaderDesignId(design.id); localStorage.setItem("panel-header-design", design.id); }}
+              title={design.name}
+              className="w-4 h-4 rounded-full transition-all cursor-pointer"
+              style={{
+                background: design.id === "gradient" ? "#008555"
+                  : design.id === "dark" ? "#1A1E2E"
+                  : design.id === "glass" ? "#7C3AED"
+                  : design.id === "bordered" ? "#FFFFFF"
+                  : design.id === "card" ? "#DEE2E6"
+                  : "#ECEEF1",
+                border: headerDesignId === design.id ? "2px solid #FFFFFF" : "1px solid rgba(255,255,255,0.3)",
+                transform: headerDesignId === design.id ? "scale(1.2)" : "scale(1)",
+              }}
+            />
+          ))}
+        </div>
 
       </motion.div>
     </AnimatePresence>
@@ -178,7 +239,7 @@ function ExportCards({ data, type }: { data: Record<string, unknown>; type: stri
   );
 }
 
-function ContextContent({ context }: { context: ContextPanelData }) {
+function ContextContent({ context, selectedMetrics, onSelectedMetricsChange }: { context: ContextPanelData; selectedMetrics: Set<string>; onSelectedMetricsChange: (s: Set<string>) => void }) {
   const data = context.data;
 
   switch (context.type) {
@@ -187,7 +248,7 @@ function ContextContent({ context }: { context: ContextPanelData }) {
     case "schema":
       return <SchemaDefinitionsVisualization data={data as unknown as React.ComponentProps<typeof SchemaDefinitionsVisualization>["data"]} />;
     case "health":
-      return <HealthDashboard key={data?.resource_id as string} data={data as React.ComponentProps<typeof HealthDashboard>["data"]} />;
+      return <HealthDashboard key={data?.resource_id as string} data={data as React.ComponentProps<typeof HealthDashboard>["data"]} selectedMetrics={selectedMetrics} onSelectedMetricsChange={onSelectedMetricsChange} />;
     default:
       return (
         <div className="p-6">
@@ -198,4 +259,3 @@ function ContextContent({ context }: { context: ContextPanelData }) {
       );
   }
 }
-
