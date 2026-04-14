@@ -212,10 +212,15 @@ const SideNav: React.FC<ChatsListProps> = ({
     </Dialog>
   );
 
+  const placeholderStyle = (
+    <style>{`.sidenav-search::placeholder { color: ${d.textDim}; }`}</style>
+  );
+
   // ── Collapsed sidebar ──────────────────────────────────────────────────────
   if (collapsed) {
     return (
       <>
+        {placeholderStyle}
         <motion.div
           initial={{ width: 260 }}
           animate={{ width: 56 }}
@@ -310,6 +315,7 @@ const SideNav: React.FC<ChatsListProps> = ({
   // ── Expanded sidebar ───────────────────────────────────────────────────────
   return (
     <>
+      {placeholderStyle}
       <motion.div
         initial={{ width: 56 }}
         animate={{ width: 268 }}
@@ -361,7 +367,7 @@ const SideNav: React.FC<ChatsListProps> = ({
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 bg-transparent text-[13px] outline-none min-w-0"
+              className="sidenav-search flex-1 bg-transparent text-[13px] outline-none min-w-0"
               style={{ color: d.text }}
             />
             {searchQuery && (
