@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Send, Plus, Paperclip } from "lucide-react";
 import { useChatTheme } from "@/contexts/ChatThemeContext";
+import { SHADOWS } from "@/lib/constants";
 
 const QUICK_TAGS = [
   { label: "Slow Query", prompt: "Check slow queries on ", dotColor: "#D97706" },
@@ -79,7 +80,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
             key={tag.label}
             type="button"
             onClick={() => handleQuickTag(tag.prompt)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-all cursor-pointer"
             style={{
               fontFamily: "'JetBrains Mono', monospace",
               color: theme.tags.text,
@@ -111,7 +112,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
         style={{
           background: theme.input.bg,
           border: `1px solid ${theme.input.border}`,
-          boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
+          boxShadow: SHADOWS.sm,
         }}
       >
         {/* Textarea row */}
@@ -134,23 +135,23 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
           <div className="flex items-center gap-1">
             <button
               type="button"
-              className="p-1.5 rounded-lg transition-colors cursor-pointer"
-              style={{ color: "#868E96" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "#495057"; e.currentTarget.style.background = "#F1F3F5"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "#868E96"; e.currentTarget.style.background = "transparent"; }}
+              className="p-1.5 rounded-lg transition-colors cursor-pointer hover-surface"
+              style={{ color: theme.actions.color }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = theme.actions.hoverColor; e.currentTarget.style.background = theme.sidebar.hoverBg; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = theme.actions.color; e.currentTarget.style.background = "transparent"; }}
               title="Add context"
             >
               <Plus className="w-4 h-4" />
             </button>
             <button
               type="button"
-              className="p-1.5 rounded-lg transition-colors cursor-pointer"
-              style={{ color: "#868E96" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "#495057"; e.currentTarget.style.background = "#F1F3F5"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "#868E96"; e.currentTarget.style.background = "transparent"; }}
+              className="p-1.5 rounded-lg transition-colors cursor-pointer hover-surface"
+              style={{ color: theme.actions.color }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = theme.actions.hoverColor; e.currentTarget.style.background = theme.sidebar.hoverBg; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = theme.actions.color; e.currentTarget.style.background = "transparent"; }}
               title="Attach file"
             >
-              <Paperclip className="w-3.5 h-3.5" />
+              <Paperclip className="w-4 h-4" />
             </button>
           </div>
 

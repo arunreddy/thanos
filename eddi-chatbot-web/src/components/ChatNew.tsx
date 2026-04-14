@@ -6,10 +6,6 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
-  Database,
-  Activity,
-  Server,
-  Radio,
   RefreshCw,
   ArrowUp,
   Plus,
@@ -19,68 +15,8 @@ import {
 } from 'lucide-react';
 import { newConversation } from '@/lib/api';
 import { useAppContext, User } from '@/AppContext';
-
-const CATEGORIES = [
-  {
-    label: 'Recommend DB',
-    icon: Database,
-    prompt: 'Recommend a database for ',
-    color: '#2563EB',
-    bgColor: '#EFF6FF',
-    borderColor: '#BFDBFE',
-    examples: [
-      'I need a database for a new microservice, transactional and structured data, ACID compliant, open source',
-      'We have a vendor application that needs a database with Microsoft licensing',
-      'Recommend a database for structured analytics data, large dataset over 300 GB',
-    ],
-  },
-  {
-    label: 'Provision DB',
-    icon: Server,
-    prompt: 'Provision a new database ',
-    color: '#008555',
-    bgColor: '#E6F4EF',
-    borderColor: '#B3D9CC',
-    examples: [
-      'Provision a PostgreSQL database for the payments team',
-      'Create a new MySQL instance for staging',
-      'Set up a MongoDB cluster for analytics',
-    ],
-  },
-  {
-    label: 'Health',
-    icon: Activity,
-    prompt: 'Run a health check on ',
-    color: '#D97706',
-    bgColor: '#FEF3C7',
-    borderColor: '#FDE68A',
-    examples: [
-      'Check health of production PostgreSQL cluster',
-      'Show me slow queries on the transactions DB',
-      'Are there any connection pool issues right now?',
-    ],
-  },
-  {
-    label: 'Kafka Assist',
-    icon: Radio,
-    prompt: 'Help me with Kafka ',
-    color: '#7C3AED',
-    bgColor: '#F5F3FF',
-    borderColor: '#DDD6FE',
-    examples: [
-      'How do I create or modify a topic in the Kafka portal?',
-      'I need a service account and API key for my Kafka application',
-      'How does authentication and authorization work for Kafka?',
-      'I have a Kafka integration issue, how do I get help?',
-    ],
-  },
-];
-
-const DEFAULT_EXAMPLES = [
-  'Show me slow queries on production',
-  'Explore schema for employee database',
-  'Check index usage on transactions table',
-];
+import { CATEGORIES, DEFAULT_EXAMPLES, SHADOWS } from '@/lib/constants';
+import theme from '@/lib/chatThemes';
 
 export default function ChatNew() {
   const { chatId } = useParams();
@@ -214,18 +150,18 @@ export default function ChatNew() {
         onSelectChat={setCurrentChatId}
         refreshTrigger={refreshTrigger}
       />
-      <div className="flex-1 flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #F8FAFB 0%, #FFFFFF 100%)' }}>
+      <div className="flex-1 flex items-center justify-center" style={{ background: `linear-gradient(180deg, ${theme.landing.bg} 0%, ${theme.landing.gradientTo} 100%)` }}>
         <div className="max-w-205 w-full px-6">
           <div className="flex flex-col items-center gap-10">
 
             {/* Greeting */}
             <div className="text-center">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-4"
-                style={{ background: '#E6F4EF', color: '#008555', border: '1px solid #B3D9CC' }}>
+                style={{ background: theme.landing.badgeBg, color: theme.landing.badgeText, border: `1px solid ${theme.landing.badgeBorder}` }}>
                 <Sparkles className="w-3 h-3" />
                 Database Operations Assistant
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight" style={{ color: '#1A1E2E', lineHeight: '1.3' }}>
+              <h1 className="text-2xl font-semibold tracking-tight" style={{ color: theme.sidebar.text, lineHeight: '1.3' }}>
                 {getGreeting()}
               </h1>
             </div>
@@ -234,13 +170,13 @@ export default function ChatNew() {
             <div className="w-full">
               <div className="relative w-full rounded-2xl bg-white"
                 style={{
-                  border: '1px solid #DEE2E6',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)',
+                  border: `1px solid ${theme.input.border}`,
+                  boxShadow: SHADOWS.md,
                 }}>
                 <textarea
                   ref={textareaRef}
                   className="w-full p-5 pb-16 rounded-2xl bg-transparent resize-none focus:outline-none text-[15px]"
-                  style={{ color: '#1A1E2E', fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                  style={{ color: theme.sidebar.text }}
                   placeholder="Describe your task, paste a query, or ask a question..."
                   rows={3}
                   value={message}
@@ -249,7 +185,7 @@ export default function ChatNew() {
                 />
                 <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors" style={{ color: '#868E96' }}>
+                    <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors" style={{ color: theme.actions.color }}>
                       <Plus className="w-5 h-5" />
                     </button>
                     {selectedCategory && (() => {
@@ -258,7 +194,7 @@ export default function ChatNew() {
                       return (
                         <span
                           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
-                          style={{ background: cat.bgColor, color: cat.color, border: `1px solid ${cat.borderColor}` }}
+                          style={{ background: cat.bg, color: cat.color, border: `1px solid ${cat.border}` }}
                         >
                           <cat.icon className="w-3.5 h-3.5" />
                           {cat.label}
@@ -274,12 +210,12 @@ export default function ChatNew() {
                   </div>
                   <div className="flex items-center gap-3">
                     {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" style={{ color: '#008555' }} />
+                      <Loader2 className="w-5 h-5 animate-spin" style={{ color: theme.input.buttonBg }} />
                     ) : (
                       <button
                         className="p-2.5 rounded-xl transition-all cursor-pointer"
                         style={{
-                          background: message.trim() ? '#008555' : '#E9ECEF',
+                          background: message.trim() ? theme.input.buttonBg : theme.input.border,
                           color: message.trim() ? '#FFFFFF' : '#ADB5BD',
                           boxShadow: message.trim() ? '0 2px 6px rgba(0,133,85,0.3)' : 'none',
                           cursor: message.trim() ? 'pointer' : 'not-allowed',
@@ -322,8 +258,8 @@ export default function ChatNew() {
                       <div
                         className="w-16 h-16 rounded-2xl flex items-center justify-center transition-all group-hover:scale-105 group-hover:shadow-md"
                         style={{
-                          background: isSelected ? cat.color : cat.bgColor,
-                          border: `1.5px solid ${isSelected ? cat.color : cat.borderColor}`,
+                          background: isSelected ? cat.color : cat.bg,
+                          border: `1.5px solid ${isSelected ? cat.color : cat.border}`,
                         }}
                       >
                         {isSelected ? (
@@ -368,9 +304,9 @@ export default function ChatNew() {
                   const activeCat = selectedCategory
                     ? CATEGORIES.find(c => c.label === selectedCategory)
                     : null;
-                  const hoverColor = activeCat?.color ?? '#008555';
-                  const hoverBg = activeCat?.bgColor ?? '#E6F4EF';
-                  const hoverBorder = activeCat?.borderColor ?? '#B3D9CC';
+                  const hoverColor = activeCat?.color ?? theme.input.buttonBg;
+                  const hoverBg = activeCat?.bg ?? theme.landing.badgeBg;
+                  const hoverBorder = activeCat?.border ?? theme.landing.badgeBorder;
                   return (
                     <button
                       key={prompt}
@@ -379,8 +315,7 @@ export default function ChatNew() {
                       style={{
                         background: '#FFFFFF',
                         color: '#495057',
-                        border: '1px solid #DEE2E6',
-                        fontFamily: "'DM Sans', system-ui, sans-serif",
+                        border: `1px solid ${theme.input.border}`,
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.borderColor = hoverBorder;
@@ -388,7 +323,7 @@ export default function ChatNew() {
                         e.currentTarget.style.background = hoverBg;
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = '#DEE2E6';
+                        e.currentTarget.style.borderColor = theme.input.border;
                         e.currentTarget.style.color = '#495057';
                         e.currentTarget.style.background = '#FFFFFF';
                       }}

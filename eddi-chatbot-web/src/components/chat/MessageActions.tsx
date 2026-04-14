@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Copy, Check, ThumbsUp, ThumbsDown, RotateCcw } from "lucide-react";
 import type { FeedbackType } from "@/types";
+import theme from "@/lib/chatThemes";
 
 interface MessageActionsProps {
   content: string;
@@ -79,24 +80,24 @@ function ActionButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="p-1.5 rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-      style={{ color: active ? activeColor : "#ADB5BD" }}
+      className="p-1.5 rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover-surface"
+      style={{ color: active ? activeColor : theme.actions.color }}
       onMouseEnter={(e) => {
         if (!disabled && !active) {
-          e.currentTarget.style.color = "#495057";
-          e.currentTarget.style.background = "#F1F3F5";
+          e.currentTarget.style.color = theme.actions.hoverColor;
+          e.currentTarget.style.background = theme.sidebar.hoverBg;
         }
       }}
       onMouseLeave={(e) => {
         if (!active) {
-          e.currentTarget.style.color = "#ADB5BD";
+          e.currentTarget.style.color = theme.actions.color;
         }
         e.currentTarget.style.background = "transparent";
       }}
       title={label}
     >
       <Icon
-        className="w-3.5 h-3.5"
+        className="w-4 h-4"
         fill={active ? "currentColor" : "none"}
         strokeWidth={active ? 0 : 2}
       />

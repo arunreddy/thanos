@@ -60,7 +60,7 @@ export default function ContextPanel({ context, onClose }: ContextPanelProps) {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
         className="flex flex-col h-full overflow-hidden"
-        style={{ background: "#FAFBFC" }}
+        style={{ background: "#ECEEF1" }}
       >
         {/* Header */}
         <div

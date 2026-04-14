@@ -1,13 +1,7 @@
-import { Share2, RotateCw, Copy, Check, Database, Server, Zap, Radio, MessageSquare } from "lucide-react";
+import { Share2, RotateCw, Copy, Check, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { useChatTheme } from "@/contexts/ChatThemeContext";
-
-const CATEGORY_STYLES: Record<string, { color: string; bg: string; border: string; icon: React.ElementType }> = {
-  "Recommend DB": { color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE", icon: Database },
-  "Provision DB":  { color: "#008555", bg: "#E6F4EF", border: "#B3D9CC", icon: Server },
-  "Health":        { color: "#D97706", bg: "#FEF3C7", border: "#FDE68A", icon: Zap },
-  "Kafka Assist":  { color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", icon: Radio },
-};
+import { CATEGORY_STYLES, SHADOWS } from "@/lib/constants";
 
 interface TopNavProps {
   title: string | null;
@@ -45,7 +39,7 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
       className="flex items-center justify-between px-5 h-13 shrink-0"
       style={{
         background: theme.topBar.bg,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+        boxShadow: SHADOWS.md,
       }}
     >
       <div className="flex items-center gap-3 min-w-0">

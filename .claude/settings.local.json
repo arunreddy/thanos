@@ -20,7 +20,8 @@
       "Bash(docker ps:*)",
       "Bash(pnpm lint:*)",
       "Bash(npx eslint:*)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }

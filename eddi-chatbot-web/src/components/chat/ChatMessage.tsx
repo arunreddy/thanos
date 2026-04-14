@@ -13,7 +13,8 @@ import { API_URL } from "@/lib/config";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { maskSensitiveInfo, containsSensitiveInfo } from "@/utils/maskSensitiveInfo";
-import { BarChart3, Database, Activity, Bot, Radio, Server, Zap } from "lucide-react";
+import { BarChart3, Activity, Bot } from "lucide-react";
+import { CATEGORY_STYLES, Database, SHADOWS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import SyntaxHighlighter from "@/components/ui/SyntaxHighlighter";
@@ -22,14 +23,6 @@ import MessageActions from "./MessageActions";
 import FeedbackDialog from "./FeedbackDialog";
 import { useAppContext } from "@/AppContext";
 import { useChatTheme } from "@/contexts/ChatThemeContext";
-
-// Category badge config — must match ChatNew.tsx CATEGORIES
-const CATEGORY_STYLES: Record<string, { color: string; bg: string; border: string; icon: React.ElementType }> = {
-  "Recommend DB": { color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE", icon: Database },
-  "Provision DB":  { color: "#008555", bg: "#E6F4EF", border: "#B3D9CC", icon: Server },
-  "Health":        { color: "#D97706", bg: "#FEF3C7", border: "#FDE68A", icon: Zap },
-  "Kafka Assist":  { color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", icon: Radio },
-};
 
 // Parse [Category] prefix from user message — returns { category, text }
 function parseCategoryPrefix(content: string): { category: string | null; text: string } {
@@ -127,7 +120,7 @@ function ActionCard({
 }) {
   const content = (
     <span
-      className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-md text-[12px] font-medium cursor-pointer transition-all"
+      className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all"
       style={{
         fontFamily: "'JetBrains Mono', monospace",
         color: "#008555",
@@ -303,7 +296,7 @@ export default function ChatMessage({
         return isMultiLine ? (
           // Multi-line: full width block with monospace
           <pre
-            className="my-2 px-3 py-2.5 rounded-lg text-[12.5px] leading-5 overflow-x-auto font-mono"
+            className="my-2 px-3 py-2.5 rounded-lg text-xs leading-5 overflow-x-auto font-mono"
             style={{ background: "#F1F5F9", color: "#334155", border: "1px solid #E2E8F0" }}
           >
             {codeContent}
@@ -311,7 +304,7 @@ export default function ChatMessage({
         ) : (
           // Single-line: inline-block, fits content width
           <code
-            className="inline-block my-0.5 px-1.5 py-0.5 rounded text-[12px] font-mono"
+            className="inline-block my-0.5 px-1.5 py-0.5 rounded text-xs font-mono"
             style={{ background: "#F1F5F9", color: "#334155", border: "1px solid #E2E8F0" }}
           >
             {codeContent}
@@ -320,7 +313,7 @@ export default function ChatMessage({
       }
       // Inline code
       return (
-        <code className="px-1 py-px rounded text-[12px] font-mono" style={{ background: "#EEF2FF", color: "#4F46E5" }} {...props}>
+        <code className="px-1 py-px rounded text-xs font-mono" style={{ background: "#EEF2FF", color: "#4F46E5" }} {...props}>
           {children}
         </code>
       );
@@ -331,16 +324,16 @@ export default function ChatMessage({
       </a>
     ),
     h1: ({ children }: React.ComponentProps<'h1'>) => (
-      <h1 className="text-[17px] font-semibold mt-4 mb-2 pb-1.5 border-b" style={{ color: "#111827", borderColor: "#E5E7EB" }}>{children}</h1>
+      <h1 className="text-base font-bold mt-4 mb-2 pb-1.5 border-b" style={{ color: "#111827", borderColor: "#E5E7EB" }}>{children}</h1>
     ),
     h2: ({ children }: React.ComponentProps<'h2'>) => (
-      <h2 className="text-[15px] font-semibold mt-4 mb-1.5" style={{ color: "#1F2937" }}>{children}</h2>
+      <h2 className="text-sm font-semibold mt-4 mb-1.5" style={{ color: "#1F2937" }}>{children}</h2>
     ),
     h3: ({ children }: React.ComponentProps<'h3'>) => (
-      <h3 className="text-[14px] font-semibold mt-0.5 mb-0" style={{ color: "#374151" }}>{children}</h3>
+      <h3 className="text-sm font-semibold mt-0.5 mb-0" style={{ color: "#374151" }}>{children}</h3>
     ),
     p: ({ children }: React.ComponentProps<'p'>) => (
-      <p className="mb-0.5 last:mb-0 leading-snug text-[14px]" style={{ color: "#374151" }}>{children}</p>
+      <p className="mb-0.5 last:mb-0 leading-snug text-sm" style={{ color: "#374151" }}>{children}</p>
     ),
     ul: ({ children }: React.ComponentProps<'ul'>) => (
       <ul className="list-disc list-outside ml-5 mb-0.5 space-y-0">{children}</ul>
@@ -349,16 +342,16 @@ export default function ChatMessage({
       <ol className="list-decimal list-outside ml-5 mb-0.5 space-y-0">{children}</ol>
     ),
     li: ({ children }: React.ComponentProps<'li'>) => (
-      <li className="leading-relaxed text-[15px]" style={{ color: "#374151" }}>{children}</li>
+      <li className="leading-relaxed text-sm" style={{ color: "#374151" }}>{children}</li>
     ),
     blockquote: ({ children }: React.ComponentProps<'blockquote'>) => (
-      <blockquote className="pl-4 py-2 my-3 rounded-r-lg italic text-[14px]" style={{ borderLeft: `3px solid ${accentColor}`, background: "#F8FAFC", color: "#64748B" }}>
+      <blockquote className="pl-4 py-2 my-3 rounded-r-lg italic text-sm" style={{ borderLeft: `3px solid ${accentColor}`, background: "#F8FAFC", color: "#64748B" }}>
         {children}
       </blockquote>
     ),
     table: ({ children }: React.ComponentProps<'table'>) => (
       <div className="overflow-x-auto my-4 rounded-xl border" style={{ borderColor: "#E2E8F0" }}>
-        <table className="min-w-full text-[13px]" style={{ fontFamily: "'JetBrains Mono', monospace", borderCollapse: "collapse" }}>{children}</table>
+        <table className="min-w-full text-xs" style={{ fontFamily: "'JetBrains Mono', monospace", borderCollapse: "collapse" }}>{children}</table>
       </div>
     ),
     thead: ({ children }: React.ComponentProps<'thead'>) => (
@@ -375,10 +368,10 @@ export default function ChatMessage({
       </tr>
     ),
     th: ({ children }: React.ComponentProps<'th'>) => (
-      <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap" style={{ color: "#64748B", borderBottom: "1px solid #E2E8F0", letterSpacing: "0.06em" }}>{children}</th>
+      <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap" style={{ color: "#64748B", borderBottom: "1px solid #E2E8F0", letterSpacing: "0.06em" }}>{children}</th>
     ),
     td: ({ children }: React.ComponentProps<'td'>) => (
-      <td className="px-4 py-2.5 text-[12px]" style={{ color: "#374151", borderBottom: "1px solid #F1F5F9", maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{children}</td>
+      <td className="px-4 py-2.5 text-xs" style={{ color: "#374151", borderBottom: "1px solid #F1F5F9", maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{children}</td>
     ),
     hr: () => <hr className="my-4" style={{ borderColor: "#E2E8F0" }} />,
     strong: ({ children }: React.ComponentProps<'strong'>) => (
@@ -504,27 +497,27 @@ export default function ChatMessage({
         <div className="group flex flex-col items-end">
           <div className="flex items-start justify-end gap-2.5">
             <div
-              className="max-w-[65%] min-w-40 px-4 py-2.5 rounded-2xl rounded-tr-sm"
+              className="max-w-[65%] min-w-40 px-4 py-2.5 rounded-xl rounded-tr-sm"
               style={{
                 background: theme.userCard.bg,
                 border: `1px solid ${theme.userCard.border}`,
-                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                boxShadow: SHADOWS.sm,
               }}
             >
-              <p className="text-[14px] leading-relaxed" style={{ color: theme.userCard.text }}>
+              <p className="text-sm leading-relaxed" style={{ color: theme.userCard.text }}>
                 {cleanContent}
               </p>
             </div>
             {/* User avatar */}
             <div
               className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold mt-0.5"
-              style={{ background: theme.userAvatar.bg, color: theme.userAvatar.text, border: `2px solid ${theme.input.bg}`, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
+              style={{ background: theme.userAvatar.bg, color: theme.userAvatar.text, border: `2px solid ${theme.input.bg}`, boxShadow: SHADOWS.sm }}
             >
               {userInitials}
             </div>
           </div>
           {timestamp && (
-            <div className="text-[10px] mt-1 mr-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ color: theme.actions.color, fontFamily: "'JetBrains Mono', monospace" }}>
+            <div className="text-xs mt-1 mr-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ color: theme.actions.color, fontFamily: "'JetBrains Mono', monospace" }}>
               {format(parseUTCTimestamp(timestamp), "h:mm a")}
             </div>
           )}
@@ -535,18 +528,18 @@ export default function ChatMessage({
           {/* Bot avatar */}
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-            style={{ background: theme.botAvatar.bg, color: theme.botAvatar.text, border: `2px solid ${theme.input.bg}`, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
+            style={{ background: theme.botAvatar.bg, color: theme.botAvatar.text, border: `2px solid ${theme.input.bg}`, boxShadow: SHADOWS.sm }}
           >
             <Bot className="w-4 h-4" />
           </div>
 
           <div className="flex-1 min-w-40 max-w-[80%]">
             <div
-              className="rounded-2xl rounded-tl-sm px-4 py-3"
+              className="rounded-xl rounded-tl-sm px-4 py-3"
               style={{
                 background: theme.botCard.bg,
                 border: `1px solid ${theme.botCard.border}`,
-                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                boxShadow: SHADOWS.sm,
               }}
             >
               {messageContent}
@@ -568,7 +561,7 @@ export default function ChatMessage({
                 onSubmit={handleFeedbackDialogSubmit}
               />
               {timestamp && (
-                <div className="text-[10px] ml-auto pl-2" style={{ color: theme.actions.color, fontFamily: "'JetBrains Mono', monospace" }}>
+                <div className="text-xs ml-auto pl-2" style={{ color: theme.actions.color, fontFamily: "'JetBrains Mono', monospace" }}>
                   {format(parseUTCTimestamp(timestamp), "h:mm a")}
                 </div>
               )}
@@ -591,7 +584,7 @@ function SourcesCard({ sources, accentColor }: { sources: { label: string; url: 
         onMouseEnter={e => { e.currentTarget.style.background = "#E9ECEF"; }}
         onMouseLeave={e => { e.currentTarget.style.background = "#F1F3F5"; }}
       >
-        <div className="flex items-center gap-2 text-[12px] font-semibold" style={{ color: accentColor }}>
+        <div className="flex items-center gap-2 text-xs font-semibold" style={{ color: accentColor }}>
           <span>📎</span>
           <span>Sources ({sources.length})</span>
         </div>
@@ -606,15 +599,15 @@ function SourcesCard({ sources, accentColor }: { sources: { label: string; url: 
                 href={s.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[13px] hover:underline"
+                className="flex items-center gap-2 text-xs hover:underline"
                 style={{ color: accentColor }}
               >
-                <span className="text-[10px]" style={{ color: "#ADB5BD" }}>{i + 1}.</span>
+                <span className="text-xs" style={{ color: "#ADB5BD" }}>{i + 1}.</span>
                 {s.label}
               </a>
             ) : (
-              <span key={i} className="flex items-center gap-2 text-[13px]" style={{ color: "#495057" }}>
-                <span className="text-[10px]" style={{ color: "#ADB5BD" }}>{i + 1}.</span>
+              <span key={i} className="flex items-center gap-2 text-xs" style={{ color: "#495057" }}>
+                <span className="text-xs" style={{ color: "#ADB5BD" }}>{i + 1}.</span>
                 {s.label}
               </span>
             )
