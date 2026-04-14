@@ -137,24 +137,24 @@
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CED4DA;
-  border-radius: 3px;
+  background: #868E96;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #ADB5BD;
+  background: #495057;
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #CED4DA transparent;
+  scrollbar-color: #868E96 transparent;
 }
 
 /* Focus states */

@@ -109,11 +109,15 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
       </div>
 
       <div
-        className="rounded-2xl overflow-hidden transition-all duration-200"
+        className="rounded-2xl overflow-hidden transition-all duration-200 cursor-text"
         style={{
           background: theme.input.bg,
           border: isFocused ? `1.5px solid ${theme.input.buttonBg}` : `1.5px solid ${theme.input.border}`,
           boxShadow: isFocused ? `0 0 0 3px ${theme.input.buttonBg}15` : SHADOWS.sm,
+        }}
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest("button")) return;
+          textareaRef.current?.focus();
         }}
       >
         {/* Textarea row */}

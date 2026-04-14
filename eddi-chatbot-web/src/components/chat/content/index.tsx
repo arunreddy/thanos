@@ -4,7 +4,7 @@ import ChatMessage from "../ChatMessage";
 import ChatInput, { ChatInputRef } from "../ChatInput";
 import TopNav from "../topnav";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot } from "lucide-react";
+import { Bot, ArrowDown } from "lucide-react";
 import { CustomForm, FeedbackType, FeedbackRequest } from "@/types";
 import type { ContextPanelData } from "../ContextPanel";
 import { useChatTheme } from "@/contexts/ChatThemeContext";
@@ -53,6 +53,10 @@ const ChatContent: React.FC<ChatContentProps> = ({
     if (!el) return;
     setCanScrollUp(el.scrollTop > 10);
     setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 10);
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleFeedbackSubmit = async (messageId: string, data: FeedbackRequest) => {
@@ -378,6 +382,27 @@ const ChatContent: React.FC<ChatContentProps> = ({
             opacity: canScrollDown ? 1 : 0,
           }}
         />
+        {/* Scroll to bottom arrow */}
+        <AnimatePresence>
+          {canScrollDown && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.15 }}
+              onClick={scrollToBottom}
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer"
+              style={{
+                background: theme.input.bg,
+                color: theme.actions.hoverColor,
+                border: `1px solid ${theme.input.border}`,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+              }}
+            >
+              <ArrowDown className="w-4 h-4" />
+            </motion.button>
+          )}
+        </AnimatePresence>
       <div
         ref={scrollContainerRef}
         className="absolute inset-0 overflow-y-auto pl-18 pr-18 pt-7 pb-4"
@@ -452,7 +477,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
       {/* Fixed input at bottom */}
       <div
-        className="shrink-0 px-8 pb-3 pt-3"
+        className="shrink-0 px-8 pb-6 pt-3"
         style={{ background: theme.chatArea.bg }}
       >
         <div className="max-w-6xl mx-auto">
