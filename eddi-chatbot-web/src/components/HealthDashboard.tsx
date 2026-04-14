@@ -197,18 +197,19 @@ function VitalCard({ metric, onClick, index }: VitalCardProps) {
       transition={{ duration: 0.3, ease: "easeOut", delay: index * 0.06 }}
       whileHover={{ y: -3, boxShadow: "0 8px 20px rgba(0,0,0,0.12)", transition: { duration: 0.2 } }}
       whileTap={{ scale: 0.97 }}
-      className="rounded-xl p-3.5 cursor-pointer"
+      className="rounded-xl p-3.5 cursor-pointer flex flex-col"
       style={{
         background: "#FFFFFF",
         boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+        minHeight: "180px",
       }}
       onClick={onClick}
     >
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "#868E96" }}>
+        <span className="text-xs font-medium uppercase tracking-wide truncate" style={{ color: "#868E96" }}>
           {metric.label}
         </span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           {trend === "up" && <TrendingUp className="w-3.5 h-3.5" style={{ color: thresholdDef?.invert ? "#DC3545" : "#10B981" }} />}
           {trend === "down" && <TrendingDown className="w-3.5 h-3.5" style={{ color: thresholdDef?.invert ? "#10B981" : "#DC3545" }} />}
           {trend === "stable" && <Minus className="w-3.5 h-3.5" style={{ color: "#868E96" }} />}
@@ -221,7 +222,7 @@ function VitalCard({ metric, onClick, index }: VitalCardProps) {
         </div>
         {avgStats && (
           <div
-            className="text-xs font-semibold px-1.5 py-0.5 rounded"
+            className="text-xs font-semibold px-1.5 py-0.5 rounded shrink-0"
             style={{
               background: avgStats.deviation >= 0 ? "#ECFDF5" : "#FEF2F2",
               color: avgStats.deviation >= 0 ? "#059669" : "#DC2626",
@@ -249,26 +250,28 @@ function VitalCard({ metric, onClick, index }: VitalCardProps) {
         </div>
       )}
 
-      {/* Sparkline chart */}
-      {hasHistory ? (
-        <div className="mt-3 h-12">
-          <MetricChart
-            data={metric.history!}
-            metricKey={metric.metricKey}
-            unit={metric.unit}
-            color={chartColor}
-            mode="sparkline"
-            height={48}
-          />
-        </div>
-      ) : isPercentage ? (
-        <div className="mt-3 h-2 rounded-full overflow-hidden" style={{ background: "#E9ECEF" }}>
-          <div
-            className="h-full rounded-full transition-all"
-            style={{ width: `${Math.min(numValue, 100)}%`, background: color.bar }}
-          />
-        </div>
-      ) : null}
+      {/* Sparkline chart — pinned to bottom */}
+      <div className="mt-auto pt-2">
+        {hasHistory ? (
+          <div className="h-12">
+            <MetricChart
+              data={metric.history!}
+              metricKey={metric.metricKey}
+              unit={metric.unit}
+              color={chartColor}
+              mode="sparkline"
+              height={48}
+            />
+          </div>
+        ) : isPercentage ? (
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: "#E9ECEF" }}>
+            <div
+              className="h-full rounded-full transition-all"
+              style={{ width: `${Math.min(numValue, 100)}%`, background: color.bar }}
+            />
+          </div>
+        ) : <div className="h-12" />}
+      </div>
 
       {hasHistory && (
         <div className="mt-1 flex items-center justify-between text-[9px]" style={{ color: "#ADB5BD" }}>
