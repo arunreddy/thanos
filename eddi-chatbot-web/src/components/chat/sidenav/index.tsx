@@ -186,7 +186,10 @@ const SideNav: React.FC<ChatsListProps> = ({
 
   const userName = currentUser?.name || "Dev User";
   const userEmail = currentUser?.email || "developer@example.com";
-  const userInitials = userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "DU";
+  const userInitials = currentUser
+    ? `${currentUser.given_name?.[0] ?? ""}${currentUser.family_name?.[0] ?? ""}`.toUpperCase() || "U"
+    : "DU";
+  const userAvatarColor = "#7C3AED";
 
   // Filter chats by search query
   const filteredChats = searchQuery.trim()
@@ -276,8 +279,8 @@ const SideNav: React.FC<ChatsListProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold cursor-pointer"
-              style={{ background: '#1A1E2E' }}
+              className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold cursor-pointer shrink-0"
+              style={{ background: userAvatarColor, border: '2px solid #fff', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
               title={userName}
             >
               {userInitials}
@@ -503,8 +506,8 @@ const SideNav: React.FC<ChatsListProps> = ({
           <div className="px-3 pb-3 relative">
             <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl"
               style={{ background: '#E8EAED' }}>
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0"
-                style={{ background: '#1A1E2E' }}>
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0"
+                style={{ background: userAvatarColor, border: '2px solid #fff', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 {userInitials}
               </div>
               <div className="flex-1 min-w-0">

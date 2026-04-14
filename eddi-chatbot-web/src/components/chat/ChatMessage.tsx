@@ -199,8 +199,8 @@ export default function ChatMessage({
     ? `${user.given_name?.[0] ?? ""}${user.family_name?.[0] ?? ""}`.toUpperCase() || "U"
     : "U";
 
-  // Parse category accent color
-  const accentColor = activeCategory ? (CATEGORY_STYLES[activeCategory]?.color ?? "#1A1E2E") : "#1A1E2E";
+  // Parse category accent color — default purple matches sidenav avatar
+  const accentColor = activeCategory ? (CATEGORY_STYLES[activeCategory]?.color ?? "#7C3AED") : "#7C3AED";
 
   // Parse sources out of assistant content
   const { mainContent, sources } = !isUser ? parseSourcesSection(cleanContent) : { mainContent: cleanContent, sources: [] };
