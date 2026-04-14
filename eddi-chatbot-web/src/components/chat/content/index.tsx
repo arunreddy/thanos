@@ -383,6 +383,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
         className="absolute inset-0 overflow-y-auto px-8 pt-6 pb-4"
         onScroll={handleScroll}
       >
+      <div className="max-w-6xl mx-auto">
         {/* Loading screen */}
         {showLoadingScreen && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground pt-24">
@@ -447,17 +448,20 @@ const ChatContent: React.FC<ChatContentProps> = ({
         <div ref={messagesEndRef} />
       </div>
       </div>
+      </div>
 
-      {/* Fixed input at bottom with theme toggle */}
+      {/* Fixed input at bottom */}
       <div
         className="shrink-0 px-8 pb-3 pt-3"
         style={{ borderTop: `1px solid ${theme.input.border}`, background: theme.input.bg }}
       >
-        <ChatInput
-          ref={chatInputRef}
-          onSendMessage={handleSendMessage}
-          isLoading={chatState !== ChatState.IDLE}
-        />
+        <div className="max-w-6xl mx-auto">
+          <ChatInput
+            ref={chatInputRef}
+            onSendMessage={handleSendMessage}
+            isLoading={chatState !== ChatState.IDLE}
+          />
+        </div>
       </div>
     </div>
   );
