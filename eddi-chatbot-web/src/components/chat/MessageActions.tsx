@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Copy, Check, ThumbsUp, ThumbsDown, RotateCcw } from "lucide-react";
 import type { FeedbackType } from "@/types";
 import theme from "@/lib/chatThemes";
@@ -77,7 +78,7 @@ function ActionButton({
   disabled?: boolean;
 }) {
   return (
-    <button
+    <motion.button
       onClick={onClick}
       disabled={disabled}
       className="p-1.5 rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover-surface"
@@ -95,12 +96,14 @@ function ActionButton({
         e.currentTarget.style.background = "transparent";
       }}
       title={label}
+      whileTap={{ scale: 0.85 }}
+      transition={{ type: "spring", stiffness: 500, damping: 30 }}
     >
       <Icon
         className="w-4 h-4"
         fill={active ? "currentColor" : "none"}
         strokeWidth={active ? 0 : 2}
       />
-    </button>
+    </motion.button>
   );
 }

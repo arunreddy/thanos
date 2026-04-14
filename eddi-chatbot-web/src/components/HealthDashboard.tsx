@@ -195,30 +195,33 @@ function VitalCard({ metric, onClick, index }: VitalCardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut", delay: index * 0.06 }}
-      whileHover={{ boxShadow: "0 4px 14px rgba(0,0,0,0.08)", borderColor: "#93C5FD", transition: { duration: 0.15 } }}
+      whileHover={{ y: -3, boxShadow: "0 8px 20px rgba(0,0,0,0.12)", transition: { duration: 0.2 } }}
       whileTap={{ scale: 0.97 }}
-      className="rounded-lg p-3 cursor-pointer"
-      style={{ background: "#fff", border: "1px solid #E9ECEF" }}
+      className="rounded-xl p-3.5 cursor-pointer"
+      style={{
+        background: "#FFFFFF",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+      }}
       onClick={onClick}
     >
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: "#868E96" }}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "#868E96" }}>
           {metric.label}
         </span>
         <div className="flex items-center gap-1">
-          {trend === "up" && <TrendingUp className="w-3 h-3" style={{ color: thresholdDef?.invert ? "#DC3545" : "#10B981" }} />}
-          {trend === "down" && <TrendingDown className="w-3 h-3" style={{ color: thresholdDef?.invert ? "#10B981" : "#DC3545" }} />}
-          {trend === "stable" && <Minus className="w-3 h-3" style={{ color: "#868E96" }} />}
+          {trend === "up" && <TrendingUp className="w-3.5 h-3.5" style={{ color: thresholdDef?.invert ? "#DC3545" : "#10B981" }} />}
+          {trend === "down" && <TrendingDown className="w-3.5 h-3.5" style={{ color: thresholdDef?.invert ? "#10B981" : "#DC3545" }} />}
+          {trend === "stable" && <Minus className="w-3.5 h-3.5" style={{ color: "#868E96" }} />}
         </div>
       </div>
 
       <div className="flex items-end justify-between">
-        <div className="text-xl font-bold" style={{ color: color.text }}>
+        <div className="text-2xl font-bold font-mono" style={{ color: color.text }}>
           {displayValue}
         </div>
         {avgStats && (
           <div
-            className="text-[11px] font-semibold px-1.5 py-0.5 rounded"
+            className="text-xs font-semibold px-1.5 py-0.5 rounded"
             style={{
               background: avgStats.deviation >= 0 ? "#ECFDF5" : "#FEF2F2",
               color: avgStats.deviation >= 0 ? "#059669" : "#DC2626",
@@ -231,9 +234,9 @@ function VitalCard({ metric, onClick, index }: VitalCardProps) {
 
       {/* Status label */}
       {thresholdDef && (
-        <div className="mt-1">
+        <div className="mt-1.5">
           <span
-            className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+            className="text-xs font-semibold px-2 py-0.5 rounded-full"
             style={{
               background:
                 color.text === "#DC3545" ? "#FEE8EA" :
@@ -248,18 +251,18 @@ function VitalCard({ metric, onClick, index }: VitalCardProps) {
 
       {/* Sparkline chart */}
       {hasHistory ? (
-        <div className="mt-2 h-10">
+        <div className="mt-3 h-12">
           <MetricChart
             data={metric.history!}
             metricKey={metric.metricKey}
             unit={metric.unit}
             color={chartColor}
             mode="sparkline"
-            height={40}
+            height={48}
           />
         </div>
       ) : isPercentage ? (
-        <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: "#E9ECEF" }}>
+        <div className="mt-3 h-2 rounded-full overflow-hidden" style={{ background: "#E9ECEF" }}>
           <div
             className="h-full rounded-full transition-all"
             style={{ width: `${Math.min(numValue, 100)}%`, background: color.bar }}
@@ -656,12 +659,14 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
     });
 
   return (
-    <div className="p-5 space-y-6">
+    <div className="p-5 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: "#FFFFFF", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4" style={{ color: "#228BE6" }} />
-          <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "#495057" }}>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#EFF6FF" }}>
+            <Activity className="w-4 h-4" style={{ color: "#2563EB" }} />
+          </div>
+          <h3 className="text-sm font-semibold" style={{ color: "#1A1E2E" }}>
             Database Vitals
           </h3>
           {(data.database_name || data.resource_id) && (
@@ -724,11 +729,13 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
           return acc;
         }, {} as Record<string, number>);
         return (
-        <div>
-          <div className="flex items-center justify-between mb-3">
+        <div className="rounded-xl overflow-hidden" style={{ background: "#FFFFFF", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+          <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4" style={{ color: "#495057" }} />
-              <span className="text-sm font-semibold" style={{ color: "#495057" }}>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#FEF3C7" }}>
+                <Lock className="w-4 h-4" style={{ color: "#D97706" }} />
+              </div>
+              <span className="text-sm font-semibold" style={{ color: "#1A1E2E" }}>
                 Lock & Wait Events
               </span>
               {Object.entries(lockStateCounts).map(([state, count]) => {
@@ -748,7 +755,7 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
               {locks.length} active process{locks.length !== 1 ? "es" : ""}
             </span>
           </div>
-          <div className="rounded-lg overflow-hidden" style={{ border: "1px solid #E9ECEF" }}>
+          <div className="overflow-hidden" style={{ borderTop: "1px solid #E9ECEF" }}>
             <table className="w-full text-[12px]">
               <thead>
                 <tr style={{ background: "#F8F9FA", borderBottom: "1px solid #E9ECEF" }}>
@@ -791,11 +798,13 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
 
       {/* Suggestions */}
       {suggestions.length > 0 && (
-        <div>
+        <div className="rounded-xl p-4" style={{ background: "#FFFFFF", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Lightbulb className="w-4 h-4" style={{ color: "#F59E0B" }} />
-              <span className="text-sm font-semibold" style={{ color: "#495057" }}>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#FEF3C7" }}>
+                <Lightbulb className="w-4 h-4" style={{ color: "#D97706" }} />
+              </div>
+              <span className="text-sm font-semibold" style={{ color: "#1A1E2E" }}>
                 Suggestions
               </span>
               <span

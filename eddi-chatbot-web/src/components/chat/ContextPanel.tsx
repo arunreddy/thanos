@@ -63,7 +63,10 @@ export default function ContextPanel({ context, onClose }: ContextPanelProps) {
         style={{ background: "#ECEEF1" }}
       >
         {/* Header */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.1 }}
           className="flex items-center justify-between px-5 h-13 shrink-0"
           style={{ borderBottom: "1px solid #E9ECEF", background: "#FFFFFF" }}
         >
@@ -133,12 +136,18 @@ export default function ContextPanel({ context, onClose }: ContextPanelProps) {
               <X className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto" ref={contentRef}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+          className="flex-1 overflow-y-auto"
+          ref={contentRef}
+        >
           <ContextContent context={context} />
-        </div>
+        </motion.div>
 
         {/* Export Footer */}
         <ExportFooter context={context} />
@@ -159,14 +168,19 @@ function ExportFooter({ context }: { context: ContextPanelData }) {
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, delay: 0.2 }}
       className="shrink-0 px-4 py-3"
       style={{ borderTop: "1px solid #E9ECEF", background: "#FFFFFF" }}
     >
       <div className="grid grid-cols-3 gap-2">
         {formats.map((f) => (
-          <button
+          <motion.button
             key={f.label}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => handleExport(f.label)}
             className="flex flex-col items-center gap-1 py-2.5 rounded-lg transition-all cursor-pointer"
             style={{ border: `1px solid ${f.border}`, background: f.bg }}
@@ -176,10 +190,10 @@ function ExportFooter({ context }: { context: ContextPanelData }) {
             <span className="text-base">{f.icon}</span>
             <span className="text-xs font-semibold" style={{ color: f.color }}>{f.label}</span>
             <span className="text-[10px]" style={{ color: "#868E96", fontFamily: "'JetBrains Mono', monospace" }}>{f.sub}</span>
-          </button>
+          </motion.button>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 

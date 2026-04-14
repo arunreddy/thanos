@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router';
+import { motion } from 'framer-motion';
 import SideNav from './chat/sidenav';
 import { useChat } from '../hooks/useChat';
 import {
@@ -155,7 +156,12 @@ export default function ChatNew() {
           <div className="flex flex-col items-center gap-10">
 
             {/* Greeting */}
-            <div className="text-center">
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-4"
                 style={{ background: theme.landing.badgeBg, color: theme.landing.badgeText, border: `1px solid ${theme.landing.badgeBorder}` }}>
                 <Sparkles className="w-3 h-3" />
@@ -164,10 +170,15 @@ export default function ChatNew() {
               <h1 className="text-2xl font-semibold tracking-tight" style={{ color: theme.sidebar.text, lineHeight: '1.3' }}>
                 {getGreeting()}
               </h1>
-            </div>
+            </motion.div>
 
             {/* Input Area */}
-            <div className="w-full">
+            <motion.div
+              className="w-full"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut", delay: 0.15 }}
+            >
               <div className="relative w-full rounded-2xl bg-white"
                 style={{
                   border: `1px solid ${theme.input.border}`,
@@ -229,7 +240,7 @@ export default function ChatNew() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Category Buttons */}
             <div className="flex items-center gap-3 w-full overflow-visible">
@@ -248,15 +259,18 @@ export default function ChatNew() {
                 {CATEGORIES.map((cat) => {
                   const isSelected = selectedCategory === cat.label;
                   return (
-                    <button
+                    <motion.button
                       key={cat.label}
                       onClick={() => handleCategoryClick(cat.label)}
                       onMouseEnter={() => handleCategoryHover(cat.prompt)}
                       onMouseLeave={handleCategoryLeave}
                       className="flex flex-col items-center gap-2.5 shrink-0 group cursor-pointer"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
                       <div
-                        className="w-16 h-16 rounded-2xl flex items-center justify-center transition-all group-hover:scale-105 group-hover:shadow-md"
+                        className="w-16 h-16 rounded-2xl flex items-center justify-center transition-all group-hover:shadow-md"
                         style={{
                           background: isSelected ? cat.color : cat.bg,
                           border: `1.5px solid ${isSelected ? cat.color : cat.border}`,
@@ -277,7 +291,7 @@ export default function ChatNew() {
                       >
                         {cat.label}
                       </span>
-                    </button>
+                    </motion.button>
                   );
                 })}
               </div>
@@ -291,7 +305,12 @@ export default function ChatNew() {
             </div>
 
             {/* Example Prompts */}
-            <div className="flex flex-col items-center gap-3">
+            <motion.div
+              className="flex flex-col items-center gap-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
+            >
               <span className="text-sm flex items-center gap-2" style={{ color: '#868E96', fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
                 {selectedCategory ? `Try a ${selectedCategory} prompt` : 'Try an example prompt'}
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -333,7 +352,7 @@ export default function ChatNew() {
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
 
           </div>
         </div>
