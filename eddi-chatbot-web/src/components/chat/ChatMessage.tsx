@@ -120,7 +120,7 @@ function ActionCard({
 }) {
   const content = (
     <span
-      className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all"
+      className="inline-flex items-center gap-1.5 mt-2 mb-3 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all"
       style={{
         fontFamily: "'JetBrains Mono', monospace",
         color: "#008555",
@@ -381,7 +381,7 @@ export default function ChatMessage({
 
   const messageContent = (
     <>
-      <div className="prose prose-sm max-w-none">
+      <div className="max-w-none [&>*:last-child]:mb-0! [&>*:last-child>*:last-child]:mb-0!">
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
           {formatContent(role, mainContent)}
         </ReactMarkdown>
@@ -394,7 +394,7 @@ export default function ChatMessage({
 
       {hasSensitiveInfo && (
         <motion.div
-          className="mt-3 flex items-center gap-3"
+          className="mt-2 flex items-center gap-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -412,7 +412,7 @@ export default function ChatMessage({
 
       {buttons && buttons.length > 0 && (
         <motion.div
-          className="mt-3 pl-2 border-l-2 border-muted"
+          className="mt-2 pl-2 border-l-2 border-muted"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -443,7 +443,7 @@ export default function ChatMessage({
       {customForm && customForm.form_type === "multiselect" ? (
         <MultiSelectForm customForm={customForm} onButtonClick={onButtonClick} />
       ) : customForm && (customForm.form_type === "download" || customForm.form_type === "execution_plan" || customForm.form_type === "health") ? (
-        <div className="mt-3 space-y-2">
+        <div className="mt-2 space-y-2">
           {!!(isSchemaDefinitions || (customForm.form_type === "download" && isSchemaDefinitions)) && (
             <ActionCard
               icon={Database}
@@ -494,8 +494,8 @@ export default function ChatMessage({
     >
       {isUser ? (
         /* ── User message: right-aligned, avatar outside ── */
-        <div className="group flex flex-col items-end">
-          <div className="relative flex items-start justify-end">
+        <div className="group flex flex-col items-end w-full">
+          <div className="relative flex items-start justify-end w-full">
             <div
               className="max-w-[65%] min-w-40 px-4 py-2.5 rounded-xl rounded-tr-sm"
               style={{
@@ -535,7 +535,7 @@ export default function ChatMessage({
 
           <div className="min-w-40 max-w-[80%]">
             <div
-              className="rounded-xl rounded-tl-sm px-4 pt-3 pb-3.5"
+              className="rounded-xl rounded-tl-sm px-4 pt-3 pb-1"
               style={{
                 background: theme.botCard.bg,
                 border: `1px solid ${theme.botCard.border}`,
@@ -576,7 +576,7 @@ export default function ChatMessage({
 function SourcesCard({ sources, accentColor }: { sources: { label: string; url: string }[]; accentColor: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="mt-3 rounded-xl overflow-hidden border" style={{ borderColor: "#E9ECEF" }}>
+    <div className="mt-2 rounded-xl overflow-hidden border" style={{ borderColor: "#E9ECEF" }}>
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-3 py-2 text-left transition-colors"
