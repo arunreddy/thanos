@@ -10,6 +10,7 @@ interface TopNavProps {
 
 const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
   const [copied, setCopied] = useState(false);
+  const [sessionCopied, setSessionCopied] = useState(false);
   const { theme } = useChatTheme();
 
   if (!title) return null;
@@ -18,6 +19,14 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopySession = () => {
+    if (chatId) {
+      navigator.clipboard.writeText(chatId);
+      setSessionCopied(true);
+      setTimeout(() => setSessionCopied(false), 2000);
+    }
   };
 
   const handleRefresh = () => {
@@ -59,40 +68,31 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
           </span>
         )}
 
-        {/* Separator */}
-        <div className="w-px h-5 shrink-0" style={{ background: theme.topBar.border }} />
-
-        {/* Connection status */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <div
-            className="w-1.75 h-1.75 rounded-full shrink-0"
-            style={{
-              background: theme.topBar.dotColor,
-              boxShadow: `0 0 0 2px ${theme.topBar.dotColor}50`,
-              animation: "livePulse 2s infinite",
-            }}
-          />
-          <span
-            className="text-[11px]"
-            style={{ color: theme.topBar.textDim, fontFamily: "'JetBrains Mono', monospace" }}
-          >
-            Connected
-          </span>
-        </div>
-
-        {/* Session ID pill */}
+        {/* Session ID pill with status dot */}
         {sessionLabel && (
-          <div
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full shrink-0"
+          <button
+            onClick={handleCopySession}
+            title={sessionCopied ? "Copied!" : "Click to copy session ID"}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full shrink-0 cursor-pointer transition-all hover-surface"
             style={{
               background: theme.topBar.border,
               border: `1px solid ${theme.topBar.border}`,
               fontFamily: "'JetBrains Mono', monospace",
             }}
           >
+            <div
+              className="w-1.75 h-1.75 rounded-full shrink-0"
+              style={{
+                background: theme.topBar.dotColor,
+                boxShadow: `0 0 0 2px ${theme.topBar.dotColor}50`,
+                animation: "livePulse 2s infinite",
+              }}
+            />
             <span className="text-[10px]" style={{ color: theme.topBar.textDim }}>Session</span>
-            <span className="text-[10px] font-medium" style={{ color: theme.topBar.text }}>{sessionLabel}</span>
-          </div>
+            <span className="text-[10px] font-medium" style={{ color: theme.topBar.text }}>
+              {sessionCopied ? "Copied!" : sessionLabel}
+            </span>
+          </button>
         )}
       </div>
 

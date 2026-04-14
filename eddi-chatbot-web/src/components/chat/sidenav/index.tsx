@@ -93,6 +93,7 @@ const SideNav: React.FC<ChatsListProps> = ({
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -291,16 +292,20 @@ const SideNav: React.FC<ChatsListProps> = ({
             {showUserMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                <div className="absolute bottom-full left-0 mb-2 w-40 bg-white rounded-lg py-1 z-50"
-                  style={{ border: `1px solid ${d.border}`, boxShadow: SHADOWS.lg }}>
+                <div className="absolute bottom-full left-0 mb-2 w-52 rounded-xl z-50 overflow-hidden"
+                  style={{ background: d.bg, border: `1px solid ${d.border}`, boxShadow: SHADOWS.lg }}>
+                  <div className="px-3 py-2.5" style={{ borderBottom: `1px solid ${d.border}` }}>
+                    <p className="text-xs font-semibold truncate" style={{ color: d.text }}>{userName}</p>
+                    <p className="text-[10px] truncate mt-0.5" style={{ color: d.textDim }}>{userEmail}</p>
+                  </div>
                   <button
-                    onClick={() => { onLogoutClicked(); setShowUserMenu(false); }}
-                    className="w-full px-3 py-2 text-left text-sm flex items-center gap-2"
-                    style={{ color: '#DC3545' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#FEE8EA'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                    onClick={() => { setShowUserMenu(false); setShowSignOutConfirm(true); }}
+                    className="w-full px-3 py-2.5 text-left text-xs flex items-center gap-2.5 transition-colors cursor-pointer hover-surface"
+                    style={{ color: d.textDim }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = '#DC3545'; e.currentTarget.style.background = '#FEF2F2'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = d.textDim; e.currentTarget.style.background = 'transparent'; }}
                   >
-                    <LogOut className="w-4 h-4" /> Logout
+                    <LogOut className="w-3.5 h-3.5" /> Sign out
                   </button>
                 </div>
               </>
@@ -550,14 +555,20 @@ const SideNav: React.FC<ChatsListProps> = ({
             {showUserMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                <div className="absolute bottom-full right-3 mb-1.5 w-40 bg-white rounded-xl py-1 z-50"
-                  style={{ border: `1px solid ${d.border}`, boxShadow: SHADOWS.lg }}>
+                <div className="absolute bottom-full right-3 mb-2 w-52 rounded-xl z-50 overflow-hidden"
+                  style={{ background: d.bg, border: `1px solid ${d.border}`, boxShadow: SHADOWS.lg }}>
+                  {/* User info header */}
+                  <div className="px-3 py-2.5" style={{ borderBottom: `1px solid ${d.border}` }}>
+                    <p className="text-xs font-semibold truncate" style={{ color: d.text }}>{userName}</p>
+                    <p className="text-[10px] truncate mt-0.5" style={{ color: d.textDim }}>{userEmail}</p>
+                  </div>
+                  {/* Sign out */}
                   <button
-                    onClick={() => { onLogoutClicked(); setShowUserMenu(false); }}
-                    className="w-full px-3 py-2.5 text-left text-[13px] flex items-center gap-2.5 transition-colors"
-                    style={{ color: '#DC3545' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#FEF2F2'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                    onClick={() => { setShowUserMenu(false); setShowSignOutConfirm(true); }}
+                    className="w-full px-3 py-2.5 text-left text-xs flex items-center gap-2.5 transition-colors cursor-pointer hover-surface"
+                    style={{ color: d.textDim }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = '#DC3545'; e.currentTarget.style.background = '#FEF2F2'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = d.textDim; e.currentTarget.style.background = 'transparent'; }}
                   >
                     <LogOut className="w-3.5 h-3.5" /> Sign out
                   </button>
@@ -568,6 +579,20 @@ const SideNav: React.FC<ChatsListProps> = ({
         </div>
       </motion.div>
       {deleteDialog}
+
+      {/* Sign out confirmation */}
+      <Dialog open={showSignOutConfirm} onOpenChange={(open) => !open && setShowSignOutConfirm(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sign Out</DialogTitle>
+            <DialogDescription>Are you sure you want to sign out? You will need to log in again to continue.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowSignOutConfirm(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => { setShowSignOutConfirm(false); onLogoutClicked(); }}>Sign out</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
