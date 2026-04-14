@@ -173,7 +173,7 @@ function ExportFooter({ context }: { context: ContextPanelData }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: 0.2 }}
       className="shrink-0 px-4 py-3"
-      style={{ borderTop: "1px solid #E9ECEF", background: "#FFFFFF" }}
+      style={{ background: "#ECEEF1" }}
     >
       <div className="grid grid-cols-3 gap-2">
         {formats.map((f) => (

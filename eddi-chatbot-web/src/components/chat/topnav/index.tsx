@@ -1,7 +1,7 @@
 import { Share2, RotateCw, Copy, Check, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { useChatTheme } from "@/contexts/ChatThemeContext";
-import { CATEGORY_STYLES, SHADOWS } from "@/lib/constants";
+import { CATEGORY_STYLES } from "@/lib/constants";
 
 interface TopNavProps {
   title: string | null;

@@ -15,6 +15,7 @@ import { Link } from "react-router";
 
 import { CATEGORY_STYLES, SHADOWS } from "@/lib/constants";
 import theme from "@/lib/chatThemes";
+import { SIDENAV_DESIGNS, type SidenavDesign } from "@/lib/sidenavThemes";
 
 import { Button } from "../../ui/button";
 import { deleteConversation, getConversations } from "../../../lib/api";
@@ -95,6 +96,11 @@ const SideNav: React.FC<ChatsListProps> = ({
   const [collapsed, setCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [sidenavDesignId, setSidenavDesignId] = useState(
+    () => localStorage.getItem("sidenav-design") || "clean"
+  );
+  const d: SidenavDesign = SIDENAV_DESIGNS.find((x) => x.id === sidenavDesignId) || SIDENAV_DESIGNS[0];
+  void 0; // design toggle is inline in the footer
 
   const { user, signOut } = useAppContext();
 
@@ -215,25 +221,25 @@ const SideNav: React.FC<ChatsListProps> = ({
           animate={{ width: 56 }}
           transition={{ duration: 0.2, ease: "easeInOut" }}
           className="flex flex-col items-center border-r h-full py-3 gap-1 shrink-0"
-          style={{ background: theme.sidebar.activeBg, borderColor: theme.sidebar.border }}
+          style={{ background: d.bg, borderColor: d.border }}
         >
           {/* Expand toggle */}
           <button
             onClick={expandSidebar}
             className="p-2 rounded-lg mb-1 transition-colors cursor-pointer"
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = d.hoverBg; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             title="Expand sidebar"
           >
-            <PanelLeftOpen className="w-5 h-5" style={{ color: '#495057' }} />
+            <PanelLeftOpen className="w-5 h-5" style={{ color: d.text }} />
           </button>
 
           {/* New Chat */}
           <Link
             to="/new"
             className="p-2.5 rounded-lg transition-colors cursor-pointer"
-            style={{ color: '#495057' }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
+            style={{ color: d.text }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = d.hoverBg; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             title="New Chat"
           >
@@ -244,8 +250,8 @@ const SideNav: React.FC<ChatsListProps> = ({
           <button
             onClick={expandWithSearch}
             className="p-2.5 rounded-lg transition-colors cursor-pointer"
-            style={{ color: '#495057' }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
+            style={{ color: d.text }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = d.hoverBg; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             title="Search conversations"
           >
@@ -256,8 +262,8 @@ const SideNav: React.FC<ChatsListProps> = ({
           <button
             onClick={expandSidebar}
             className="p-2.5 rounded-lg transition-colors cursor-pointer"
-            style={{ color: '#495057' }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#E4E7EB'; }}
+            style={{ color: d.text }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = d.hoverBg; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             title="View conversations"
           >
@@ -281,7 +287,7 @@ const SideNav: React.FC<ChatsListProps> = ({
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
                 <div className="absolute bottom-full left-0 mb-2 w-40 bg-white rounded-lg py-1 z-50"
-                  style={{ border: `1px solid ${theme.sidebar.border}`, boxShadow: SHADOWS.lg }}>
+                  style={{ border: `1px solid ${d.border}`, boxShadow: SHADOWS.lg }}>
                   <button
                     onClick={() => { onLogoutClicked(); setShowUserMenu(false); }}
                     className="w-full px-3 py-2 text-left text-sm flex items-center gap-2"
@@ -309,20 +315,20 @@ const SideNav: React.FC<ChatsListProps> = ({
         animate={{ width: 268 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className="flex flex-col border-r h-full shrink-0"
-        style={{ background: theme.sidebar.activeBg, borderColor: theme.sidebar.border }}
+        style={{ background: d.bg, borderColor: d.border }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 shrink-0"
-          style={{ borderBottom: `1px solid ${theme.sidebar.border}` }}>
+          style={{ borderBottom: `1px solid ${d.headerBorder}` }}>
           <div className="flex items-center gap-2.5">
             <img src="/citizens-logo.png" alt="DB Agentic Ops" className="w-7 h-7" />
-            <span className="text-sm font-semibold" style={{ color: theme.sidebar.text }}>DB Agentic Ops</span>
+            <span className="text-sm font-semibold" style={{ color: d.text }}>DB Agentic Ops</span>
           </div>
           <button
             onClick={() => setCollapsed(true)}
             className="p-1.5 rounded-lg transition-colors cursor-pointer"
-            style={{ color: theme.sidebar.textDim }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = theme.sidebar.hoverBg; }}
+            style={{ color: d.textDim }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = d.hoverBg; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             title="Collapse sidebar"
           >
@@ -335,9 +341,9 @@ const SideNav: React.FC<ChatsListProps> = ({
           <Link
             to="/new"
             className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-sm font-medium transition-all"
-            style={{ background: theme.sidebar.newChatBg, color: theme.sidebar.newChatText }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#2D3348'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = theme.sidebar.newChatBg; }}
+            style={{ background: d.newChatBg, color: d.newChatText }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = d.newChatHoverBg; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = d.newChatBg; }}
           >
             <Plus className="w-4 h-4" />
             New Chat
@@ -347,8 +353,8 @@ const SideNav: React.FC<ChatsListProps> = ({
         {/* Search bar */}
         <div className="px-3 pb-2 shrink-0">
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
-            style={{ background: theme.sidebar.bg, border: `1px solid ${theme.sidebar.border}` }}>
-            <Search className="w-3.5 h-3.5 shrink-0" style={{ color: theme.sidebar.textDim }} />
+            style={{ background: d.searchBg, border: `1px solid ${d.border}` }}>
+            <Search className="w-3.5 h-3.5 shrink-0" style={{ color: d.textDim }} />
             <input
               ref={searchInputRef}
               type="text"
@@ -356,11 +362,11 @@ const SideNav: React.FC<ChatsListProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 bg-transparent text-[13px] outline-none min-w-0"
-              style={{ color: theme.sidebar.text }}
+              style={{ color: d.text }}
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery("")} className="cursor-pointer shrink-0">
-                <X className="w-3.5 h-3.5" style={{ color: theme.sidebar.textDim }} />
+                <X className="w-3.5 h-3.5" style={{ color: d.textDim }} />
               </button>
             )}
           </div>
@@ -368,12 +374,12 @@ const SideNav: React.FC<ChatsListProps> = ({
 
         {/* History label + count */}
         <div className="px-4 pb-1.5 flex items-center justify-between shrink-0">
-          <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: theme.sidebar.textDim }}>
+          <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: d.textDim }}>
             {searchQuery ? `Results (${filteredChats.length})` : `History (${chats.length})`}
           </span>
           {isBackgroundLoading && (
             <div className="w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
-              style={{ borderColor: theme.sidebar.textDim, borderTopColor: 'transparent' }} />
+              style={{ borderColor: d.textDim, borderTopColor: 'transparent' }} />
           )}
         </div>
 
@@ -404,15 +410,15 @@ const SideNav: React.FC<ChatsListProps> = ({
           ) : filteredChats.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 gap-2.5 px-4">
               <div className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ background: theme.sidebar.border }}>
+                style={{ background: d.border }}>
                 {searchQuery
-                  ? <Search className="w-5 h-5" style={{ color: theme.sidebar.textDim }} />
-                  : <MessageSquare className="w-5 h-5" style={{ color: theme.sidebar.textDim }} />}
+                  ? <Search className="w-5 h-5" style={{ color: d.textDim }} />
+                  : <MessageSquare className="w-5 h-5" style={{ color: d.textDim }} />}
               </div>
-              <p className="text-[13px] font-medium text-center" style={{ color: theme.sidebar.text }}>
+              <p className="text-[13px] font-medium text-center" style={{ color: d.text }}>
                 {searchQuery ? 'No matches found' : 'No conversations yet'}
               </p>
-              <p className="text-[11px] text-center" style={{ color: theme.sidebar.textDim }}>
+              <p className="text-[11px] text-center" style={{ color: d.textDim }}>
                 {searchQuery ? 'Try a different search term' : 'Start a new chat to get going'}
               </p>
             </div>
@@ -435,12 +441,12 @@ const SideNav: React.FC<ChatsListProps> = ({
                       onClick={() => { if (!isActive) onSelectChat(chat.id); }}
                       className="group flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all duration-150"
                       style={{
-                        background: isActive ? theme.sidebar.activeBg : 'transparent',
+                        background: isActive ? d.activeBg : 'transparent',
                         boxShadow: isActive ? SHADOWS.sm : 'none',
-                        border: isActive ? `1px solid ${theme.sidebar.border}` : '1px solid transparent',
+                        border: isActive ? `1px solid ${d.activeBorder}` : '1px solid transparent',
                       }}
                       onMouseEnter={(e) => {
-                        if (!isActive) e.currentTarget.style.background = theme.sidebar.hoverBg;
+                        if (!isActive) e.currentTarget.style.background = d.hoverBg;
                       }}
                       onMouseLeave={(e) => {
                         if (!isActive) e.currentTarget.style.background = 'transparent';
@@ -449,7 +455,7 @@ const SideNav: React.FC<ChatsListProps> = ({
                       {/* Category icon */}
                       <div
                         className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-                        style={{ background: catStyle?.bg ?? theme.sidebar.border, color: catStyle?.color ?? theme.sidebar.textDim }}
+                        style={{ background: catStyle?.bg ?? d.border, color: catStyle?.color ?? d.textDim }}
                       >
                         <CatIcon className="w-3 h-3" />
                       </div>
@@ -458,12 +464,12 @@ const SideNav: React.FC<ChatsListProps> = ({
                       <div className="flex-1 min-w-0 flex items-baseline gap-1.5 overflow-hidden">
                         <p
                           className="text-[12.5px] font-medium truncate shrink"
-                          style={{ color: isActive ? theme.sidebar.text : '#343A40' }}
+                          style={{ color: isActive ? d.activeText : d.text }}
                         >
                           {cleanTitle || "New Conversation"}
                         </p>
                         {chat.last_message_at && (
-                          <span className="text-[10px] shrink-0" style={{ color: theme.sidebar.textDim }}>
+                          <span className="text-[10px] shrink-0" style={{ color: d.textDim }}>
                             · {timeAgo(chat.last_message_at)}
                           </span>
                         )}
@@ -473,9 +479,9 @@ const SideNav: React.FC<ChatsListProps> = ({
                       <button
                         onClick={(e) => handleDeleteClick(chat.id, e)}
                         className="p-1 rounded transition-all cursor-pointer opacity-0 group-hover:opacity-100 shrink-0"
-                        style={{ color: theme.sidebar.textDim }}
+                        style={{ color: d.textDim }}
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#DC3545'; e.currentTarget.style.background = 'rgba(220,53,69,0.08)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = theme.sidebar.textDim; e.currentTarget.style.background = 'transparent'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = d.textDim; e.currentTarget.style.background = 'transparent'; }}
                         aria-label="Delete conversation"
                       >
                         <Trash2 className="w-3 h-3" />
@@ -488,29 +494,49 @@ const SideNav: React.FC<ChatsListProps> = ({
           )}
         </div>
 
-        {/* Footer: status + user */}
-        <div className="shrink-0" style={{ borderTop: `1px solid ${theme.sidebar.border}` }}>
+        {/* Footer: theme toggle + status + user */}
+        <div className="shrink-0" style={{ borderTop: `1px solid ${d.border}` }}>
+          {/* Design toggle */}
+          <div className="px-3 pt-2.5 pb-1">
+            <div className="flex items-center gap-1 justify-center">
+              {SIDENAV_DESIGNS.map((design) => (
+                <button
+                  key={design.id}
+                  onClick={() => { setSidenavDesignId(design.id); localStorage.setItem("sidenav-design", design.id); }}
+                  title={design.name}
+                  className="w-5 h-5 rounded-full transition-all cursor-pointer"
+                  style={{
+                    background: design.newChatBg,
+                    border: sidenavDesignId === design.id ? `2px solid ${d.text}` : '2px solid transparent',
+                    opacity: sidenavDesignId === design.id ? 1 : 0.4,
+                    transform: sidenavDesignId === design.id ? 'scale(1.15)' : 'scale(1)',
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between px-4 py-2">
-            <span className="text-[11px]" style={{ color: theme.sidebar.textDim }}>System</span>
+            <span className="text-[11px]" style={{ color: d.textDim }}>System</span>
             <SystemStatusDot />
           </div>
 
           <div className="px-3 pb-3 relative">
             <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl"
-              style={{ background: theme.sidebar.hoverBg }}>
+              style={{ background: d.userCardBg }}>
               <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0"
                 style={{ background: userAvatarColor, border: '2px solid #fff', boxShadow: SHADOWS.sm }}>
                 {userInitials}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-semibold truncate" style={{ color: theme.sidebar.text }}>{userName}</p>
-                <p className="text-[10px] truncate" style={{ color: theme.sidebar.textDim }}>{userEmail}</p>
+                <p className="text-[12px] font-semibold truncate" style={{ color: d.text }}>{userName}</p>
+                <p className="text-[10px] truncate" style={{ color: d.textDim }}>{userEmail}</p>
               </div>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="p-1 rounded-lg transition-colors cursor-pointer shrink-0"
-                style={{ color: theme.sidebar.textDim }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = theme.sidebar.border; }}
+                style={{ color: d.textDim }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = d.border; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
               >
                 <MoreVertical className="w-3.5 h-3.5" />
@@ -521,7 +547,7 @@ const SideNav: React.FC<ChatsListProps> = ({
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
                 <div className="absolute bottom-full right-3 mb-1.5 w-40 bg-white rounded-xl py-1 z-50"
-                  style={{ border: `1px solid ${theme.sidebar.border}`, boxShadow: SHADOWS.lg }}>
+                  style={{ border: `1px solid ${d.border}`, boxShadow: SHADOWS.lg }}>
                   <button
                     onClick={() => { onLogoutClicked(); setShowUserMenu(false); }}
                     className="w-full px-3 py-2.5 text-left text-[13px] flex items-center gap-2.5 transition-colors"

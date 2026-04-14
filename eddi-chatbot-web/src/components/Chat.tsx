@@ -45,7 +45,7 @@ export default function Chat() {
         }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         style={{
-          borderRight: contextPanel ? '1px solid #E9ECEF' : undefined,
+          borderRight: contextPanel ? '2px solid #DEE2E6' : undefined,
           minWidth: contextPanel ? 480 : 0,
         }}
       >
