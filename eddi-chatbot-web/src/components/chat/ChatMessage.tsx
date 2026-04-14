@@ -21,6 +21,7 @@ import type { ContextPanelData } from "./ContextPanel";
 import MessageActions from "./MessageActions";
 import FeedbackDialog from "./FeedbackDialog";
 import { useAppContext } from "@/AppContext";
+import { useChatTheme } from "@/contexts/ChatThemeContext";
 
 // Category badge config — must match ChatNew.tsx CATEGORIES
 const CATEGORY_STYLES: Record<string, { color: string; bg: string; border: string; icon: React.ElementType }> = {
@@ -113,7 +114,6 @@ interface ChatMessageProps {
 }
 
 function ActionCard({
-  icon: Icon,
   label,
   subtitle,
   onClick,
@@ -126,42 +126,24 @@ function ActionCard({
   href?: string;
 }) {
   const content = (
-    <div
-      className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl cursor-pointer transition-colors"
+    <span
+      className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-md text-[12px] font-medium cursor-pointer transition-all"
       style={{
-        background: "#F8F9FA",
-        border: "1px solid #E9ECEF",
+        fontFamily: "'JetBrains Mono', monospace",
+        color: "#008555",
+        background: "#E6F4EF",
+        border: "1px solid #B3D9CC",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = "#F1F3F5";
-        e.currentTarget.style.borderColor = "#DEE2E6";
+        e.currentTarget.style.background = "#B3D9CC";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = "#F8F9FA";
-        e.currentTarget.style.borderColor = "#E9ECEF";
+        e.currentTarget.style.background = "#E6F4EF";
       }}
       onClick={onClick}
     >
-      <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-        style={{ background: "#E9ECEF", color: "#495057" }}
-      >
-        <Icon className="w-4 h-4" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-[13px] font-medium truncate" style={{ color: "#1A1E2E" }}>
-          {label}
-        </div>
-        {subtitle && (
-          <div className="text-[11px] truncate" style={{ color: "#868E96" }}>
-            {subtitle}
-          </div>
-        )}
-      </div>
-      <div className="text-[12px] font-medium shrink-0" style={{ color: "#868E96" }}>
-        Open
-      </div>
-    </div>
+      ↗ {label}{subtitle ? ` · ${subtitle}` : ""}
+    </span>
   );
 
   if (href) {
@@ -190,6 +172,7 @@ export default function ChatMessage({
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [feedbackDialogType, setFeedbackDialogType] = useState<FeedbackType>("positive");
   const { user } = useAppContext();
+  const { theme } = useChatTheme();
 
   // Parse category prefix from user messages e.g. "[Kafka Assist] How do I..."
   const { text: cleanContent } = isUser ? parseCategoryPrefix(content) : { text: content };
@@ -328,7 +311,7 @@ export default function ChatMessage({
         ) : (
           // Single-line: inline-block, fits content width
           <code
-            className="inline-block my-1 px-2.5 py-1 rounded-md text-[12.5px] font-mono"
+            className="inline-block my-0.5 px-1.5 py-0.5 rounded text-[12px] font-mono"
             style={{ background: "#F1F5F9", color: "#334155", border: "1px solid #E2E8F0" }}
           >
             {codeContent}
@@ -337,7 +320,7 @@ export default function ChatMessage({
       }
       // Inline code
       return (
-        <code className="px-1.5 py-0.5 rounded text-[13px] font-mono" style={{ background: "#EEF2FF", color: "#4F46E5" }} {...props}>
+        <code className="px-1 py-px rounded text-[12px] font-mono" style={{ background: "#EEF2FF", color: "#4F46E5" }} {...props}>
           {children}
         </code>
       );
@@ -354,16 +337,16 @@ export default function ChatMessage({
       <h2 className="text-[15px] font-semibold mt-4 mb-1.5" style={{ color: "#1F2937" }}>{children}</h2>
     ),
     h3: ({ children }: React.ComponentProps<'h3'>) => (
-      <h3 className="text-[14px] font-semibold mt-3 mb-1" style={{ color: "#374151" }}>{children}</h3>
+      <h3 className="text-[14px] font-semibold mt-0.5 mb-0" style={{ color: "#374151" }}>{children}</h3>
     ),
     p: ({ children }: React.ComponentProps<'p'>) => (
-      <p className="mb-3 last:mb-0 leading-relaxed text-[15px]" style={{ color: "#374151" }}>{children}</p>
+      <p className="mb-0.5 last:mb-0 leading-snug text-[14px]" style={{ color: "#374151" }}>{children}</p>
     ),
     ul: ({ children }: React.ComponentProps<'ul'>) => (
-      <ul className="list-disc list-outside ml-5 mb-3 space-y-1">{children}</ul>
+      <ul className="list-disc list-outside ml-5 mb-0.5 space-y-0">{children}</ul>
     ),
     ol: ({ children }: React.ComponentProps<'ol'>) => (
-      <ol className="list-decimal list-outside ml-5 mb-3 space-y-1">{children}</ol>
+      <ol className="list-decimal list-outside ml-5 mb-0.5 space-y-0">{children}</ol>
     ),
     li: ({ children }: React.ComponentProps<'li'>) => (
       <li className="leading-relaxed text-[15px]" style={{ color: "#374151" }}>{children}</li>
@@ -509,7 +492,7 @@ export default function ChatMessage({
 
   return (
     <motion.div
-      className="mb-3"
+      className="mb-5"
       initial="hidden"
       animate="visible"
       exit="exit"
@@ -517,58 +500,60 @@ export default function ChatMessage({
       layout
     >
       {isUser ? (
-        /* ── User message: right-aligned, white card with accent border ── */
-        <div className="flex items-start justify-end gap-2.5">
-          <div
-            className="max-w-[65%] min-w-20 px-4 py-2.5 rounded-2xl rounded-tr-sm"
-            style={{
-              background: "#FFFFFF",
-              border: "1px solid #E2E5E9",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-            }}
-          >
-            <p className="text-[14px] leading-relaxed" style={{ color: "#1A1E2E" }}>
-              {cleanContent}
-            </p>
-            {timestamp && (
-              <div className="text-[10px] mt-1 text-right" style={{ color: "#ADB5BD", fontFamily: "'JetBrains Mono', monospace" }}>
-                {format(parseUTCTimestamp(timestamp), "h:mm a")}
-              </div>
-            )}
+        /* ── User message: right-aligned ── */
+        <div className="group flex flex-col items-end">
+          <div className="flex items-start justify-end gap-2.5">
+            <div
+              className="max-w-[65%] min-w-40 px-4 py-2.5 rounded-2xl rounded-tr-sm"
+              style={{
+                background: theme.userCard.bg,
+                border: `1px solid ${theme.userCard.border}`,
+                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+              }}
+            >
+              <p className="text-[14px] leading-relaxed" style={{ color: theme.userCard.text }}>
+                {cleanContent}
+              </p>
+            </div>
+            {/* User avatar */}
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold mt-0.5"
+              style={{ background: theme.userAvatar.bg, color: theme.userAvatar.text, border: `2px solid ${theme.input.bg}`, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
+            >
+              {userInitials}
+            </div>
           </div>
-          {/* User avatar */}
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold mt-0.5"
-            style={{ background: accentColor, color: "#fff", border: "2px solid #fff", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
-          >
-            {userInitials}
-          </div>
+          {timestamp && (
+            <div className="text-[10px] mt-1 mr-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ color: theme.actions.color, fontFamily: "'JetBrains Mono', monospace" }}>
+              {format(parseUTCTimestamp(timestamp), "h:mm a")}
+            </div>
+          )}
         </div>
       ) : (
-        /* ── Assistant message: tinted green card with bot avatar ── */
-        <div className="flex items-start gap-2.5">
+        /* ── Assistant message ── */
+        <div className="group flex items-start gap-2.5">
           {/* Bot avatar */}
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-            style={{ background: "#008555", color: "#fff", border: "2px solid #fff", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
+            style={{ background: theme.botAvatar.bg, color: theme.botAvatar.text, border: `2px solid ${theme.input.bg}`, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
           >
             <Bot className="w-4 h-4" />
           </div>
 
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-40 max-w-[80%]">
             <div
               className="rounded-2xl rounded-tl-sm px-4 py-3"
               style={{
-                background: "#F0FBF5",
-                border: "1px solid #008555",
+                background: theme.botCard.bg,
+                border: `1px solid ${theme.botCard.border}`,
                 boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
               }}
             >
               {messageContent}
             </div>
 
-            {/* Actions left, timestamp right */}
-            <div className="flex items-center mt-1">
+            {/* Actions + timestamp — hidden until hover */}
+            <div className="flex items-center mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <MessageActions
                 content={content}
                 feedbackState={hasBackendId ? feedbackState : "none"}
@@ -583,7 +568,7 @@ export default function ChatMessage({
                 onSubmit={handleFeedbackDialogSubmit}
               />
               {timestamp && (
-                <div className="text-[10px] ml-auto pl-2" style={{ color: "#ADB5BD", fontFamily: "'JetBrains Mono', monospace" }}>
+                <div className="text-[10px] ml-auto pl-2" style={{ color: theme.actions.color, fontFamily: "'JetBrains Mono', monospace" }}>
                   {format(parseUTCTimestamp(timestamp), "h:mm a")}
                 </div>
               )}

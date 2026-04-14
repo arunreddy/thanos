@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Send, Plus, Paperclip } from "lucide-react";
+import { useChatTheme } from "@/contexts/ChatThemeContext";
 
 const QUICK_TAGS = [
   { label: "Slow Query", prompt: "Check slow queries on ", dotColor: "#D97706" },
@@ -23,6 +24,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
   onSendMessage,
   isLoading,
 }, ref) => {
+  const { theme } = useChatTheme();
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -80,19 +82,19 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] transition-all cursor-pointer"
             style={{
               fontFamily: "'JetBrains Mono', monospace",
-              color: "#495057",
-              background: "#F8F9FA",
-              border: "1px solid #DEE2E6",
+              color: theme.tags.text,
+              background: theme.tags.bg,
+              border: `1px solid ${theme.tags.border}`,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#008555";
-              e.currentTarget.style.color = "#008555";
-              e.currentTarget.style.background = "#E6F4EF";
+              e.currentTarget.style.borderColor = theme.tags.hoverBorder;
+              e.currentTarget.style.color = theme.tags.hoverText;
+              e.currentTarget.style.background = theme.tags.hoverBg;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "#DEE2E6";
-              e.currentTarget.style.color = "#495057";
-              e.currentTarget.style.background = "#F8F9FA";
+              e.currentTarget.style.borderColor = theme.tags.border;
+              e.currentTarget.style.color = theme.tags.text;
+              e.currentTarget.style.background = theme.tags.bg;
             }}
           >
             <span
@@ -107,9 +109,9 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: "#fff",
-          border: "1px solid #E2E5E9",
-          boxShadow: "0 1px 6px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02)",
+          background: theme.input.bg,
+          border: `1px solid ${theme.input.border}`,
+          boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
         }}
       >
         {/* Textarea row */}
@@ -122,8 +124,8 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
             placeholder="Ask a question, paste SQL, or request analysis..."
             rows={1}
             disabled={isLoading}
-            className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50 leading-5 py-0.5"
-            style={{ minHeight: "20px", maxHeight: "150px" }}
+            className="flex-1 resize-none bg-transparent text-sm focus:outline-none disabled:opacity-50 leading-5 py-0.5"
+            style={{ minHeight: "20px", maxHeight: "150px", color: theme.input.text }}
           />
         </div>
 
@@ -157,8 +159,8 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(({
             disabled={!hasContent || isLoading}
             className="p-1.5 rounded-lg transition-all cursor-pointer disabled:cursor-default"
             style={{
-              background: hasContent ? "#0B84F3" : "transparent",
-              color: hasContent ? "#fff" : "#C1C7CD",
+              background: hasContent ? theme.input.buttonBg : "transparent",
+              color: hasContent ? theme.input.buttonText : theme.actions.color,
               opacity: isLoading ? 0.5 : 1,
             }}
           >

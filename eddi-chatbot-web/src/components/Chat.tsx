@@ -5,6 +5,7 @@ import ChatContent from './chat/content';
 import SideNav from './chat/sidenav';
 import ContextPanel, { ContextPanelData } from './chat/ContextPanel';
 import { useChat } from '../hooks/useChat';
+import { ChatThemeProvider } from '../contexts/ChatThemeContext';
 
 export default function Chat() {
   const { chatId } = useParams();
@@ -27,6 +28,7 @@ export default function Chat() {
   };
 
   return (
+    <ChatThemeProvider>
     <div className="bg-background text-foreground w-full h-screen flex overflow-hidden">
       <SideNav
         data-testid="sidenav"
@@ -75,5 +77,6 @@ export default function Chat() {
         )}
       </AnimatePresence>
     </div>
+    </ChatThemeProvider>
   );
 }

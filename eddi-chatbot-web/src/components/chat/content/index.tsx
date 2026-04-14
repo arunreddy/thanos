@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Bot } from "lucide-react";
 import { CustomForm, FeedbackType, FeedbackRequest } from "@/types";
 import type { ContextPanelData } from "../ContextPanel";
+import { useChatTheme } from "@/contexts/ChatThemeContext";
 
 interface ChatContentProps {
   chatId: string | null;
@@ -35,13 +36,24 @@ const ChatContent: React.FC<ChatContentProps> = ({
   setActiveChatId,
   onShowContext,
 }) => {
+  const { theme } = useChatTheme();
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatState, setChatState] = useState<ChatState>(ChatState.IDLE);
   const [error, setError] = useState<string | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<ChatInputRef>(null);
   const [feedbackStates, setFeedbackStates] = useState<Record<string, FeedbackType | "none">>({});
+  const [canScrollUp, setCanScrollUp] = useState(false);
+  const [canScrollDown, setCanScrollDown] = useState(false);
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setCanScrollUp(el.scrollTop > 10);
+    setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 10);
+  };
 
   const handleFeedbackSubmit = async (messageId: string, data: FeedbackRequest) => {
     // Optimistic update
@@ -129,10 +141,9 @@ const ChatContent: React.FC<ChatContentProps> = ({
   }, [chatId]);
 
   useEffect(() => {
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Re-check fades after scroll settles
+    setTimeout(handleScroll, 350);
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
@@ -299,14 +310,14 @@ const ChatContent: React.FC<ChatContentProps> = ({
       >
         {/* Matching bot avatar */}
         <div
-          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm mt-0.5"
-          style={{ background: "#1A1E2E" }}
+          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+          style={{ background: theme.botAvatar.bg, color: theme.botAvatar.text, border: "2px solid " + theme.input.bg, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
         >
-          <Bot className="w-4 h-4 text-white" />
+          <Bot className="w-4 h-4" />
         </div>
         <div
-          className="rounded-2xl rounded-tl-sm px-4 py-3 border shadow-sm"
-          style={{ background: "#F8F9FA", borderColor: "#E9ECEF" }}
+          className="rounded-2xl rounded-tl-sm px-4 py-3"
+          style={{ background: theme.botCard.bg, border: `1px solid ${theme.botCard.border}` }}
         >
           <div className="flex items-center gap-2.5">
             <div className="flex space-x-1.5 items-center h-5">
@@ -346,13 +357,31 @@ const ChatContent: React.FC<ChatContentProps> = ({
   const conversationTitle = activeCategory ?? (chatId ? "Conversation" : null);
 
   return (
-    <div className="flex flex-col h-full w-full" style={{ background: "#FFFFFF" }}>
+    <div className="flex flex-col h-full w-full" style={{ background: theme.input.bg }}>
       <TopNav title={conversationTitle} chatId={chatId} />
 
-      {/* Scrollable messages area — darker bg creates depth against white message cards */}
+      {/* Scrollable messages area with fade overlays */}
+      <div className="flex-1 relative overflow-hidden" style={{ background: theme.chatArea.bg, boxShadow: theme.chatArea.shadow }}>
+        {/* Top fade */}
+        <div
+          className="absolute top-0 left-0 right-0 h-8 z-10 pointer-events-none transition-opacity duration-300"
+          style={{
+            background: `linear-gradient(${theme.chatArea.bg}, transparent)`,
+            opacity: canScrollUp ? 1 : 0,
+          }}
+        />
+        {/* Bottom fade */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-8 z-10 pointer-events-none transition-opacity duration-300"
+          style={{
+            background: `linear-gradient(transparent, ${theme.chatArea.bg})`,
+            opacity: canScrollDown ? 1 : 0,
+          }}
+        />
       <div
-        className="flex-1 overflow-y-auto px-8 pt-6 pb-4"
-        style={{ background: "#ECEEF1", boxShadow: "inset 0 2px 6px rgba(0,0,0,0.06)" }}
+        ref={scrollContainerRef}
+        className="absolute inset-0 overflow-y-auto px-8 pt-6 pb-4"
+        onScroll={handleScroll}
       >
         {/* Loading screen */}
         {showLoadingScreen && (
@@ -417,11 +446,12 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
         <div ref={messagesEndRef} />
       </div>
+      </div>
 
-      {/* Fixed input at bottom */}
+      {/* Fixed input at bottom with theme toggle */}
       <div
-        className="shrink-0 px-8 pb-4 pt-3"
-        style={{ borderTop: "1px solid #E9ECEF", background: "#FFFFFF" }}
+        className="shrink-0 px-8 pb-3 pt-3"
+        style={{ borderTop: `1px solid ${theme.input.border}`, background: theme.input.bg }}
       >
         <ChatInput
           ref={chatInputRef}

@@ -1,5 +1,6 @@
 import { Share2, RotateCw, Copy, Check, Database, Server, Zap, Radio, MessageSquare } from "lucide-react";
 import { useState } from "react";
+import { useChatTheme } from "@/contexts/ChatThemeContext";
 
 const CATEGORY_STYLES: Record<string, { color: string; bg: string; border: string; icon: React.ElementType }> = {
   "Recommend DB": { color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE", icon: Database },
@@ -15,6 +16,7 @@ interface TopNavProps {
 
 const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
   const [copied, setCopied] = useState(false);
+  const { theme } = useChatTheme();
 
   if (!title) return null;
 
@@ -42,7 +44,7 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
     <div
       className="flex items-center justify-between px-5 h-13 shrink-0"
       style={{
-        background: "#1A1E2E",
+        background: theme.topBar.bg,
         boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
       }}
     >
@@ -58,28 +60,28 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
           </span>
         ) : (
           <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0"
-            style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.12)" }}>
+            style={{ background: theme.topBar.border, color: theme.topBar.text, border: `1px solid ${theme.topBar.border}` }}>
             <MessageSquare className="w-3.5 h-3.5" />
             {title}
           </span>
         )}
 
         {/* Separator */}
-        <div className="w-px h-5 shrink-0" style={{ background: "rgba(255,255,255,0.12)" }} />
+        <div className="w-px h-5 shrink-0" style={{ background: theme.topBar.border }} />
 
         {/* Connection status */}
         <div className="flex items-center gap-1.5 shrink-0">
           <div
             className="w-1.75 h-1.75 rounded-full shrink-0"
             style={{
-              background: "#22C55E",
-              boxShadow: "0 0 0 2px rgba(34,197,94,0.3)",
+              background: theme.topBar.dotColor,
+              boxShadow: `0 0 0 2px ${theme.topBar.dotColor}50`,
               animation: "livePulse 2s infinite",
             }}
           />
           <span
             className="text-[11px]"
-            style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'JetBrains Mono', monospace" }}
+            style={{ color: theme.topBar.textDim, fontFamily: "'JetBrains Mono', monospace" }}
           >
             Connected
           </span>
@@ -90,21 +92,21 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
           <div
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full shrink-0"
             style={{
-              background: "rgba(255,255,255,0.07)",
-              border: "1px solid rgba(255,255,255,0.12)",
+              background: theme.topBar.border,
+              border: `1px solid ${theme.topBar.border}`,
               fontFamily: "'JetBrains Mono', monospace",
             }}
           >
-            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>Session</span>
-            <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.85)" }}>{sessionLabel}</span>
+            <span className="text-[10px]" style={{ color: theme.topBar.textDim }}>Session</span>
+            <span className="text-[10px] font-medium" style={{ color: theme.topBar.text }}>{sessionLabel}</span>
           </div>
         )}
       </div>
 
       <div className="flex items-center gap-1">
-        <NavAction icon={copied ? Check : Copy} label={copied ? "Copied!" : "Copy link"} onClick={handleCopyLink} />
-        <NavAction icon={Share2} label="Share" />
-        <NavAction icon={RotateCw} label="Refresh" onClick={handleRefresh} />
+        <NavAction icon={copied ? Check : Copy} label={copied ? "Copied!" : "Copy link"} onClick={handleCopyLink} dimColor={theme.topBar.textDim} hoverColor={theme.topBar.text} />
+        <NavAction icon={Share2} label="Share" dimColor={theme.topBar.textDim} hoverColor={theme.topBar.text} />
+        <NavAction icon={RotateCw} label="Refresh" onClick={handleRefresh} dimColor={theme.topBar.textDim} hoverColor={theme.topBar.text} />
       </div>
 
       {/* Live pulse animation */}
@@ -118,14 +120,14 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
   );
 };
 
-function NavAction({ icon: Icon, label, onClick }: { icon: React.ElementType; label: string; onClick?: () => void }) {
+function NavAction({ icon: Icon, label, onClick, dimColor, hoverColor }: { icon: React.ElementType; label: string; onClick?: () => void; dimColor: string; hoverColor: string }) {
   return (
     <button
       onClick={onClick}
       className="p-1.5 rounded-md transition-colors cursor-pointer"
-      style={{ color: "rgba(255,255,255,0.4)" }}
-      onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.9)"; e.currentTarget.style.background = "rgba(255,255,255,0.07)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.4)"; e.currentTarget.style.background = "transparent"; }}
+      style={{ color: dimColor }}
+      onMouseEnter={(e) => { e.currentTarget.style.color = hoverColor; }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = dimColor; }}
       title={label}
     >
       <Icon className="w-3.5 h-3.5" />
