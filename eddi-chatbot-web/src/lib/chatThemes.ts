@@ -18,7 +18,7 @@ const theme: ChatTheme = {
   id: "emerald",
   name: "Emerald",
   topBar: { bg: "#ECEEF1", text: "#1A1E2E", textDim: "#868E96", border: "#E2E5E9", dotColor: "#22C55E" },
-  chatArea: { bg: "#ECEEF1", shadow: "inset 0 2px 6px rgba(0,0,0,0.06)" },
+  chatArea: { bg: "#ECEEF1", shadow: "none" },
   userCard: { bg: "#FFFFFF", border: "#E2E5E9", text: "#1A1E2E", timeDim: "#ADB5BD" },
   userAvatar: { bg: "#7C3AED", text: "#fff" },
   botCard: { bg: "#F0FBF5", border: "#C8E6DC", text: "#1A1E2E" },
