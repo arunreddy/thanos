@@ -47,7 +47,9 @@ function parseChatCategory(title: string): { category: string | null; cleanTitle
 
 function timeAgo(dateStr: string): string {
   if (!dateStr) return "";
-  const diff = Date.now() - new Date(dateStr).getTime();
+  // Backend returns UTC timestamps without timezone suffix — ensure they parse as UTC
+  const normalized = dateStr.endsWith("Z") || dateStr.includes("+") ? dateStr : dateStr + "Z";
+  const diff = Date.now() - new Date(normalized).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "Just now";
   if (mins < 60) return `${mins}m ago`;
@@ -55,7 +57,7 @@ function timeAgo(dateStr: string): string {
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   if (days < 7) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString();
+  return new Date(normalized).toLocaleDateString();
 }
 
 interface ChatsListProps {

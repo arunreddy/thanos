@@ -1,5 +1,11 @@
 // src/components/ChatMessage.tsx (updated)
 import { format } from "date-fns";
+
+/** Ensure timezone-naive backend timestamps are parsed as UTC */
+function parseUTCTimestamp(dateStr: string): Date {
+  const normalized = dateStr.endsWith("Z") || dateStr.includes("+") ? dateStr : dateStr + "Z";
+  return new Date(normalized);
+}
 import { motion } from "framer-motion";
 import { CustomForm, FeedbackType, FeedbackRequest } from "@/types";
 import { useState } from "react";
@@ -527,8 +533,8 @@ export default function ChatMessage({
               {cleanContent}
             </p>
             {timestamp && (
-              <div className="text-[10px] mt-1 text-right" style={{ color: "#ADB5BD" }}>
-                {format(new Date(timestamp), "h:mm a")}
+              <div className="text-[10px] mt-1 text-right" style={{ color: "#ADB5BD", fontFamily: "'JetBrains Mono', monospace" }}>
+                {format(parseUTCTimestamp(timestamp), "h:mm a")}
               </div>
             )}
           </div>
@@ -565,29 +571,31 @@ export default function ChatMessage({
               {messageContent}
             </div>
 
-            {timestamp && (
-              <div className="text-[11px] mt-1 pl-1" style={{ color: "#ADB5BD" }}>
-                {format(new Date(timestamp), "h:mm a")}
-              </div>
-            )}
-
-            {!isUser && (
-              <>
-                <MessageActions
-                  content={content}
-                  feedbackState={hasBackendId ? feedbackState : "none"}
-                  onFeedback={handleFeedbackClick}
-                  onRetry={onRetry}
-                  disabled={!hasBackendId}
-                />
-                <FeedbackDialog
-                  open={feedbackDialogOpen}
-                  onOpenChange={setFeedbackDialogOpen}
-                  feedbackType={feedbackDialogType}
-                  onSubmit={handleFeedbackDialogSubmit}
-                />
-              </>
-            )}
+            {/* Actions left, timestamp right */}
+            <div className="flex items-center mt-1">
+              {!isUser && (
+                <>
+                  <MessageActions
+                    content={content}
+                    feedbackState={hasBackendId ? feedbackState : "none"}
+                    onFeedback={handleFeedbackClick}
+                    onRetry={onRetry}
+                    disabled={!hasBackendId}
+                  />
+                  <FeedbackDialog
+                    open={feedbackDialogOpen}
+                    onOpenChange={setFeedbackDialogOpen}
+                    feedbackType={feedbackDialogType}
+                    onSubmit={handleFeedbackDialogSubmit}
+                  />
+                </>
+              )}
+              {timestamp && (
+                <div className="text-[10px] ml-auto pl-2" style={{ color: "#ADB5BD", fontFamily: "'JetBrains Mono', monospace" }}>
+                  {format(parseUTCTimestamp(timestamp), "h:mm a")}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -117,7 +117,9 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   onClick,
 }) => {
   const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
+    // Backend returns UTC timestamps without timezone suffix — ensure they parse as UTC
+    const normalized = dateString.endsWith("Z") || dateString.includes("+") ? dateString : dateString + "Z";
+    const date = new Date(normalized);
     const now = new Date();
     const diffInMs = now.getTime() - date.getTime();
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
