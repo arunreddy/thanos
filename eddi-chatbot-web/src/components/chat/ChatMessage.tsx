@@ -324,13 +324,13 @@ export default function ChatMessage({
       </a>
     ),
     h1: ({ children }: React.ComponentProps<'h1'>) => (
-      <h1 className="text-base font-bold mt-4 mb-2 pb-1.5 border-b" style={{ color: "#111827", borderColor: "#E5E7EB" }}>{children}</h1>
+      <h1 className="text-base font-bold mt-4 first:mt-0 mb-2 pb-1.5 border-b" style={{ color: "#111827", borderColor: "#E5E7EB" }}>{children}</h1>
     ),
     h2: ({ children }: React.ComponentProps<'h2'>) => (
-      <h2 className="text-sm font-semibold mt-4 mb-1.5" style={{ color: "#1F2937" }}>{children}</h2>
+      <h2 className="text-sm font-semibold mt-4 first:mt-0 mb-1.5" style={{ color: "#1F2937" }}>{children}</h2>
     ),
     h3: ({ children }: React.ComponentProps<'h3'>) => (
-      <h3 className="text-sm font-semibold mt-0.5 mb-0" style={{ color: "#374151" }}>{children}</h3>
+      <h3 className="text-sm font-semibold mt-0.5 first:mt-0 mb-0" style={{ color: "#374151" }}>{children}</h3>
     ),
     p: ({ children }: React.ComponentProps<'p'>) => (
       <p className="mb-0.5 last:mb-0 leading-snug text-sm" style={{ color: "#374151" }}>{children}</p>
