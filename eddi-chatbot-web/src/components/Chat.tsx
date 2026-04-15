@@ -12,6 +12,7 @@ export default function Chat() {
   const { currentChatId, setCurrentChatId } = useChat();
   const [contextPanel, setContextPanel] = useState<ContextPanelData | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Clear context panel when conversation changes
   const activeChatId = chatId || currentChatId;
@@ -35,6 +36,7 @@ export default function Chat() {
         activeChatId={chatId || currentChatId || 'unknown'}
         onSelectChat={setCurrentChatId}
         refreshTrigger={refreshTrigger}
+        onCollapsedChange={setSidebarCollapsed}
       />
 
       {/* Chat panel — smoothly shares space with results panel */}
@@ -54,6 +56,7 @@ export default function Chat() {
           chatId={chatId || currentChatId || 'unknown'}
           setActiveChatId={handleSetActiveChatId}
           onShowContext={setContextPanel}
+          sidebarCollapsed={sidebarCollapsed}
         />
       </motion.div>
 

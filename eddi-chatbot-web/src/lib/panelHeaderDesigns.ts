@@ -15,19 +15,19 @@ export interface PanelHeaderDesign {
 }
 
 const panelHeaderDesign: PanelHeaderDesign = {
-  bg: "linear-gradient(135deg, #008555, #00A86B)",
-  titleColor: "#FFFFFF",
-  subtitleColor: "rgba(255,255,255,0.7)",
-  iconBg: "rgba(255,255,255,0.2)",
-  iconColor: "#FFFFFF",
-  badgeBg: "rgba(255,255,255,0.15)",
-  badgeColor: "#FFFFFF",
-  badgeBorder: "rgba(255,255,255,0.25)",
-  actionBg: "rgba(255,255,255,0.15)",
-  actionBorder: "rgba(255,255,255,0.2)",
-  actionColor: "rgba(255,255,255,0.8)",
+  bg: "#1A1E2E",
+  titleColor: "#E2E5E9",
+  subtitleColor: "#9CA3AF",
+  iconBg: "#2D3348",
+  iconColor: "#E2E5E9",
+  badgeBg: "#2D3348",
+  badgeColor: "#E2E5E9",
+  badgeBorder: "#3B4560",
+  actionBg: "#2D3348",
+  actionBorder: "#3B4560",
+  actionColor: "#9CA3AF",
   actionHoverColor: "#FFFFFF",
-  closeColor: "rgba(255,255,255,0.6)",
+  closeColor: "#9CA3AF",
 };
 
 export default panelHeaderDesign;

@@ -163,7 +163,7 @@ describe('SyntaxHighlighter', () => {
       
       // Should attempt to create highlighter
       expect(mockCreateHighlighter).toHaveBeenCalledWith({
-        themes: ['github-light', 'github-dark'],
+        themes: ['github-dark'],
         langs: [
           'sql',
           'json',

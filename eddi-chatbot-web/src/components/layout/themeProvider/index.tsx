@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 
-type Theme = "light" | "dark" | "system";
+type Theme = "dark";
 
 interface ThemeContextType {
   theme: Theme;
@@ -14,19 +14,12 @@ const ThemeContext = React.createContext<ThemeContextType | undefined>(
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem("theme") as Theme;
-    if (savedTheme) return savedTheme;
-    return "system";
-  });
-
   useEffect(() => {
-    localStorage.setItem("theme", theme);
-    document.documentElement.className = theme;
-  }, [theme]);
+    document.documentElement.className = "dark";
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme: "dark", setTheme: () => {} }}>
       {children}
     </ThemeContext.Provider>
   );

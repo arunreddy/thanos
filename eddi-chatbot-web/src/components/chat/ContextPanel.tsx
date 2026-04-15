@@ -68,7 +68,7 @@ export default function ContextPanel({ context, onClose }: ContextPanelProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, delay: 0.1 }}
           className="shrink-0 px-5 h-13 flex flex-col justify-center"
-          style={{ backgroundImage: hd.bg }}
+          style={{ background: hd.bg }}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5 min-w-0">
