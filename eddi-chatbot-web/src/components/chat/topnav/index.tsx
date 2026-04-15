@@ -45,53 +45,40 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
   return (
     <div
       className="flex items-center justify-between px-5 h-13 shrink-0"
-      style={{ backgroundImage: hd.bg }}
+      style={{ background: hd.bg }}
     >
       <div className="flex items-center gap-3 min-w-0">
+        <span className="text-sm font-semibold whitespace-nowrap" style={{ color: hd.titleColor }}>DB Agentic Ops</span>
+        <div className="w-px h-5 shrink-0" style={{ background: hd.actionBorder }} />
         {catStyle ? (
           <span
-            className="inline-flex items-center gap-2 h-7 px-3 rounded-lg text-xs font-semibold shrink-0"
+            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold shrink-0"
             style={{ background: catStyle.bg, color: catStyle.color, border: `1px solid ${catStyle.border}` }}
           >
-            <CatIcon className="w-3.5 h-3.5" />
+            <CatIcon className="w-3 h-3" />
             {title}
           </span>
         ) : (
-          <span className="inline-flex items-center gap-2 h-7 px-3 rounded-lg text-xs font-semibold shrink-0"
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold shrink-0"
             style={{ background: hd.actionBg, color: hd.titleColor, border: `1px solid ${hd.actionBorder}` }}>
-            <MessageSquare className="w-3.5 h-3.5" />
+            <MessageSquare className="w-3 h-3" />
             {title}
           </span>
         )}
 
+      </div>
+
+      <div className="flex items-center gap-2">
         {sessionLabel && (
           <button
             onClick={handleCopySession}
             title={sessionCopied ? "Copied!" : "Click to copy session ID"}
-            className="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg shrink-0 cursor-pointer transition-all hover-surface"
-            style={{
-              background: "rgba(255,255,255,0.15)",
-              border: "1px solid rgba(255,255,255,0.25)",
-              fontFamily: "'JetBrains Mono', monospace",
-            }}
+            className="text-[11px] font-mono px-2 py-0.5 rounded-md shrink-0 cursor-pointer transition-all hover-surface"
+            style={{ background: hd.badgeBg, color: hd.badgeColor, border: `1px solid ${hd.badgeBorder}` }}
           >
-            <div
-              className="w-1.75 h-1.75 rounded-full shrink-0"
-              style={{
-                background: "#FFFFFF",
-                boxShadow: "0 0 0 2px rgba(255,255,255,0.3)",
-                animation: "livePulse 2s infinite",
-              }}
-            />
-            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.7)" }}>Session</span>
-            <span className="text-[10px] font-medium" style={{ color: "#FFFFFF" }}>
-              {sessionCopied ? "Copied!" : sessionLabel}
-            </span>
+            {sessionCopied ? "Copied!" : sessionLabel}
           </button>
         )}
-      </div>
-
-      <div className="flex items-center gap-1">
         <NavAction icon={copied ? Check : Copy} label={copied ? "Copied!" : "Copy link"} onClick={handleCopyLink} dimColor={hd.subtitleColor} hoverColor={hd.titleColor} />
         <NavAction icon={Share2} label="Share" dimColor={hd.subtitleColor} hoverColor={hd.titleColor} />
         <NavAction icon={RotateCw} label="Refresh" onClick={handleRefresh} dimColor={hd.subtitleColor} hoverColor={hd.titleColor} />

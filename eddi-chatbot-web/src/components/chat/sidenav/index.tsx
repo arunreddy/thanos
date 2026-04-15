@@ -6,7 +6,6 @@ import {
   Trash2,
   Search,
   PanelLeftClose,
-  PanelLeftOpen,
   LogOut,
   X,
   MoreVertical,
@@ -15,7 +14,7 @@ import { Link } from "react-router";
 
 import { CATEGORY_STYLES, SHADOWS } from "@/lib/constants";
 import theme from "@/lib/chatThemes";
-import { SIDENAV_DESIGNS, type SidenavDesign } from "@/lib/sidenavThemes";
+import { SIDENAV_DESIGN, type SidenavDesign } from "@/lib/sidenavThemes";
 
 import { Button } from "../../ui/button";
 import { deleteConversation, getConversations } from "../../../lib/api";
@@ -97,11 +96,7 @@ const SideNav: React.FC<ChatsListProps> = ({
   const [collapsed, setCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [sidenavDesignId, setSidenavDesignId] = useState(
-    () => localStorage.getItem("sidenav-design") || "clean"
-  );
-  const d: SidenavDesign = SIDENAV_DESIGNS.find((x) => x.id === sidenavDesignId) || SIDENAV_DESIGNS[0];
-  void 0; // design toggle is inline in the footer
+  const d: SidenavDesign = SIDENAV_DESIGN;
 
   const { user, signOut } = useAppContext();
 
@@ -229,11 +224,11 @@ const SideNav: React.FC<ChatsListProps> = ({
           className="flex flex-col items-center border-r h-full pb-3 gap-1 shrink-0"
           style={{ background: d.bg, borderColor: d.border }}
         >
-          {/* Logo + divider to match expanded header */}
-          <div className="w-full flex justify-center py-3 shrink-0" style={{ borderBottom: `1px solid ${d.headerBorder}` }}>
+          {/* Logo + expand */}
+          <div className="w-full flex flex-col items-center gap-1.5 py-3 shrink-0" style={{ borderBottom: `1px solid ${d.headerBorder}` }}>
             <img
               src="/citizens-logo.png"
-              alt="DB Agentic Ops"
+              alt="Citizens"
               className="w-7 h-7 cursor-pointer"
               onClick={expandSidebar}
               title="Expand sidebar"
@@ -332,8 +327,8 @@ const SideNav: React.FC<ChatsListProps> = ({
         <div className="flex items-center justify-between px-4 py-3 shrink-0"
           style={{ borderBottom: `1px solid ${d.headerBorder}` }}>
           <div className="flex items-center gap-2.5">
-            <img src="/citizens-logo.png" alt="DB Agentic Ops" className="w-7 h-7" />
-            <span className="text-sm font-semibold" style={{ color: d.text }}>DB Agentic Ops</span>
+            <img src="/citizens-logo.png" alt="Citizens" className="w-7 h-7" />
+            <span className="text-sm font-semibold" style={{ color: d.text }}>Citizens</span>
           </div>
           <button
             onClick={() => setCollapsed(true)}
@@ -503,29 +498,9 @@ const SideNav: React.FC<ChatsListProps> = ({
           )}
         </div>
 
-        {/* Footer: theme toggle + status + user */}
+        {/* Footer: status + user */}
         <div className="shrink-0" style={{ borderTop: `1px solid ${d.border}` }}>
-          {/* Design toggle */}
-          <div className="px-3 pt-2.5 pb-1">
-            <div className="flex items-center gap-1 justify-center">
-              {SIDENAV_DESIGNS.map((design) => (
-                <button
-                  key={design.id}
-                  onClick={() => { setSidenavDesignId(design.id); localStorage.setItem("sidenav-design", design.id); }}
-                  title={design.name}
-                  className="w-5 h-5 rounded-full transition-all cursor-pointer"
-                  style={{
-                    background: design.newChatBg,
-                    border: sidenavDesignId === design.id ? `2px solid ${d.text}` : '2px solid transparent',
-                    opacity: sidenavDesignId === design.id ? 1 : 0.4,
-                    transform: sidenavDesignId === design.id ? 'scale(1.15)' : 'scale(1)',
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between px-4 py-2">
+          <div className="flex items-center justify-between px-4 py-2 pt-2.5">
             <span className="text-[11px]" style={{ color: d.textDim }}>System</span>
             <SystemStatusDot />
           </div>

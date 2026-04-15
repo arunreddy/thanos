@@ -20,7 +20,7 @@ const initializeHighlighter = async (): Promise<Highlighter> => {
   }
 
   highlighterInstance = await createHighlighter({
-    themes: ['github-light', 'github-dark'],
+    themes: ['github-dark'],
     langs: [
       'sql',
       'json',
@@ -90,14 +90,9 @@ export const SyntaxHighlighter: React.FC<SyntaxHighlighterProps> = ({
         // Normalize language name
         const normalizedLang = normalizeLanguage(language);
         
-        // Force dark theme for SQL; otherwise use system preference
-        const isSql = normalizedLang === 'sql';
-        const isDark = isSql || window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = isDark ? 'github-dark' : 'github-light';
-        
         const html = highlighter.codeToHtml(code, {
           lang: normalizedLang,
-          theme: theme,
+          theme: 'github-dark',
         });
         
         setHighlightedCode(html);
