@@ -57,7 +57,6 @@ interface ChatsListProps {
   onSelectChat: (id: string) => void;
   refreshTrigger?: number;
   newlyCreatedChatId?: string | null;
-  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
 export const _testHandleDeleteConfirm = (id: string | null) => {
@@ -85,7 +84,6 @@ const SideNav: React.FC<ChatsListProps> = ({
   onSelectChat,
   refreshTrigger,
   newlyCreatedChatId,
-  onCollapsedChange,
 }) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -95,8 +93,7 @@ const SideNav: React.FC<ChatsListProps> = ({
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
-  const [collapsed, setCollapsedRaw] = useState(false);
-  const setCollapsed = (v: boolean) => { setCollapsedRaw(v); onCollapsedChange?.(v); };
+  const [collapsed, setCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const d: SidenavDesign = SIDENAV_DESIGN;
@@ -227,18 +224,15 @@ const SideNav: React.FC<ChatsListProps> = ({
           className="flex flex-col items-center border-r h-full pb-3 gap-1 shrink-0"
           style={{ background: d.bg, borderColor: d.border }}
         >
-          {/* Expand button only — logo moves to TopNav when collapsed */}
-          <div className="w-full flex justify-center py-3 shrink-0" style={{ borderBottom: `1px solid ${d.headerBorder}` }}>
-            <button
+          {/* Logo + expand */}
+          <div className="w-full flex flex-col items-center gap-1.5 py-3 shrink-0" style={{ borderBottom: `1px solid ${d.headerBorder}` }}>
+            <img
+              src="/citizens-logo.png"
+              alt="Citizens"
+              className="w-7 h-7 cursor-pointer"
               onClick={expandSidebar}
-              className="p-1.5 rounded-lg transition-colors cursor-pointer"
-              style={{ color: d.textDim }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = d.hoverBg; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
               title="Expand sidebar"
-            >
-              <PanelLeftClose className="w-4 h-4" style={{ transform: 'scaleX(-1)' }} />
-            </button>
+            />
           </div>
 
           {/* New Chat */}
@@ -333,8 +327,8 @@ const SideNav: React.FC<ChatsListProps> = ({
         <div className="flex items-center justify-between px-4 py-3 shrink-0"
           style={{ borderBottom: `1px solid ${d.headerBorder}` }}>
           <div className="flex items-center gap-2.5">
-            <img src="/citizens-logo.png" alt="DB Agentic Ops" className="w-7 h-7" />
-            <span className="text-sm font-semibold" style={{ color: d.text }}>DB Agentic Ops</span>
+            <img src="/citizens-logo.png" alt="Citizens" className="w-7 h-7" />
+            <span className="text-sm font-semibold" style={{ color: d.text }}>Citizens</span>
           </div>
           <button
             onClick={() => setCollapsed(true)}

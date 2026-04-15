@@ -6,10 +6,9 @@ import panelHeaderDesign from "@/lib/panelHeaderDesigns";
 interface TopNavProps {
   title: string | null;
   chatId?: string | null;
-  sidebarCollapsed?: boolean;
 }
 
-const TopNav: React.FC<TopNavProps> = ({ title, chatId, sidebarCollapsed }) => {
+const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
   const [copied, setCopied] = useState(false);
   const [sessionCopied, setSessionCopied] = useState(false);
   if (!title) return null;
@@ -49,13 +48,8 @@ const TopNav: React.FC<TopNavProps> = ({ title, chatId, sidebarCollapsed }) => {
       style={{ background: hd.bg }}
     >
       <div className="flex items-center gap-3 min-w-0">
-        {sidebarCollapsed && (
-          <>
-            <img src="/citizens-logo.png" alt="DB Agentic Ops" className="w-7 h-7 shrink-0" />
-            <span className="text-sm font-semibold whitespace-nowrap" style={{ color: hd.titleColor }}>DB Agentic Ops</span>
-            <div className="w-px h-5 shrink-0" style={{ background: hd.actionBorder }} />
-          </>
-        )}
+        <span className="text-sm font-semibold whitespace-nowrap" style={{ color: hd.titleColor }}>DB Agentic Ops</span>
+        <div className="w-px h-5 shrink-0" style={{ background: hd.actionBorder }} />
         {catStyle ? (
           <span
             className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold shrink-0"

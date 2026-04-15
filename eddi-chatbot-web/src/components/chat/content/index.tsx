@@ -13,7 +13,6 @@ interface ChatContentProps {
   chatId: string | null;
   setActiveChatId: (id: string | null, isFirstMessage?: boolean) => void;
   onShowContext?: (context: ContextPanelData) => void;
-  sidebarCollapsed?: boolean;
 }
 
 interface Message {
@@ -36,7 +35,6 @@ const ChatContent: React.FC<ChatContentProps> = ({
   chatId,
   setActiveChatId,
   onShowContext,
-  sidebarCollapsed,
 }) => {
   const { theme } = useChatTheme();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -364,7 +362,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
 
   return (
     <div className="flex flex-col h-full w-full" style={{ background: theme.input.bg }}>
-      <TopNav title={conversationTitle} chatId={chatId} sidebarCollapsed={sidebarCollapsed} />
+      <TopNav title={conversationTitle} chatId={chatId} />
 
       {/* Scrollable messages area with fade overlays */}
       <div className="flex-1 relative overflow-hidden" style={{ background: theme.chatArea.bg, boxShadow: theme.chatArea.shadow }}>
