@@ -123,15 +123,15 @@ function ActionCard({
       className="inline-flex items-center gap-1.5 mt-2 mb-3 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all"
       style={{
         fontFamily: "'JetBrains Mono', monospace",
-        color: "#008555",
-        background: "#E6F4EF",
-        border: "1px solid #B3D9CC",
+        color: "#92400E",
+        background: "#FEF3C7",
+        border: "1px solid #FDE68A",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = "#B3D9CC";
+        e.currentTarget.style.background = "#FDE68A";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = "#E6F4EF";
+        e.currentTarget.style.background = "#FEF3C7";
       }}
       onClick={onClick}
     >
