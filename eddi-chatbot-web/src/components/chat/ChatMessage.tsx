@@ -1,5 +1,11 @@
 // src/components/ChatMessage.tsx (updated)
 import { format } from "date-fns";
+
+/** Ensure timezone-naive backend timestamps are parsed as UTC */
+function parseUTCTimestamp(dateStr: string): Date {
+  const normalized = dateStr.endsWith("Z") || dateStr.includes("+") ? dateStr : dateStr + "Z";
+  return new Date(normalized);
+}
 import { motion } from "framer-motion";
 import { CustomForm, FeedbackType, FeedbackRequest } from "@/types";
 import { useState } from "react";
@@ -7,7 +13,8 @@ import { API_URL } from "@/lib/config";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { maskSensitiveInfo, containsSensitiveInfo } from "@/utils/maskSensitiveInfo";
-import { BarChart3, Database, Activity, Bot, Radio, Server, Zap } from "lucide-react";
+import { BarChart3, Activity, Bot } from "lucide-react";
+import { CATEGORY_STYLES, Database, SHADOWS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import SyntaxHighlighter from "@/components/ui/SyntaxHighlighter";
@@ -15,14 +22,7 @@ import type { ContextPanelData } from "./ContextPanel";
 import MessageActions from "./MessageActions";
 import FeedbackDialog from "./FeedbackDialog";
 import { useAppContext } from "@/AppContext";
-
-// Category badge config — must match ChatNew.tsx CATEGORIES
-const CATEGORY_STYLES: Record<string, { color: string; bg: string; border: string; icon: React.ElementType }> = {
-  "Recommend DB": { color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE", icon: Database },
-  "Provision DB":  { color: "#008555", bg: "#E6F4EF", border: "#B3D9CC", icon: Server },
-  "Health":        { color: "#D97706", bg: "#FEF3C7", border: "#FDE68A", icon: Zap },
-  "Kafka Assist":  { color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", icon: Radio },
-};
+import { useChatTheme } from "@/contexts/ChatThemeContext";
 
 // Parse [Category] prefix from user message — returns { category, text }
 function parseCategoryPrefix(content: string): { category: string | null; text: string } {
@@ -107,7 +107,6 @@ interface ChatMessageProps {
 }
 
 function ActionCard({
-  icon: Icon,
   label,
   subtitle,
   onClick,
@@ -120,42 +119,24 @@ function ActionCard({
   href?: string;
 }) {
   const content = (
-    <div
-      className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl cursor-pointer transition-colors"
+    <span
+      className="inline-flex items-center gap-1.5 mt-2 mb-3 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all"
       style={{
-        background: "#F8F9FA",
-        border: "1px solid #E9ECEF",
+        fontFamily: "'JetBrains Mono', monospace",
+        color: "#008555",
+        background: "#E6F4EF",
+        border: "1px solid #B3D9CC",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = "#F1F3F5";
-        e.currentTarget.style.borderColor = "#DEE2E6";
+        e.currentTarget.style.background = "#B3D9CC";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = "#F8F9FA";
-        e.currentTarget.style.borderColor = "#E9ECEF";
+        e.currentTarget.style.background = "#E6F4EF";
       }}
       onClick={onClick}
     >
-      <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-        style={{ background: "#E9ECEF", color: "#495057" }}
-      >
-        <Icon className="w-4 h-4" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-[13px] font-medium truncate" style={{ color: "#1A1E2E" }}>
-          {label}
-        </div>
-        {subtitle && (
-          <div className="text-[11px] truncate" style={{ color: "#868E96" }}>
-            {subtitle}
-          </div>
-        )}
-      </div>
-      <div className="text-[12px] font-medium flex-shrink-0" style={{ color: "#868E96" }}>
-        Open
-      </div>
-    </div>
+      ↗ {label}{subtitle ? ` · ${subtitle}` : ""}
+    </span>
   );
 
   if (href) {
@@ -184,6 +165,7 @@ export default function ChatMessage({
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [feedbackDialogType, setFeedbackDialogType] = useState<FeedbackType>("positive");
   const { user } = useAppContext();
+  const { theme } = useChatTheme();
 
   // Parse category prefix from user messages e.g. "[Kafka Assist] How do I..."
   const { text: cleanContent } = isUser ? parseCategoryPrefix(content) : { text: content };
@@ -193,8 +175,8 @@ export default function ChatMessage({
     ? `${user.given_name?.[0] ?? ""}${user.family_name?.[0] ?? ""}`.toUpperCase() || "U"
     : "U";
 
-  // Parse category accent color
-  const accentColor = activeCategory ? (CATEGORY_STYLES[activeCategory]?.color ?? "#1A1E2E") : "#1A1E2E";
+  // Parse category accent color — default purple matches sidenav avatar
+  const accentColor = activeCategory ? (CATEGORY_STYLES[activeCategory]?.color ?? "#7C3AED") : "#7C3AED";
 
   // Parse sources out of assistant content
   const { mainContent, sources } = !isUser ? parseSourcesSection(cleanContent) : { mainContent: cleanContent, sources: [] };
@@ -241,7 +223,7 @@ export default function ChatMessage({
     setShowSensitive(newValue);
     try {
       sessionStorage.setItem('showSensitiveInfo', newValue.toString());
-    } catch {}
+    } catch { /* storage access may fail in private browsing */ }
   };
 
   const containerVariants = {
@@ -314,7 +296,7 @@ export default function ChatMessage({
         return isMultiLine ? (
           // Multi-line: full width block with monospace
           <pre
-            className="my-2 px-3 py-2.5 rounded-lg text-[12.5px] leading-5 overflow-x-auto font-mono"
+            className="my-2 px-3 py-2.5 rounded-lg text-xs leading-5 overflow-x-auto font-mono"
             style={{ background: "#F1F5F9", color: "#334155", border: "1px solid #E2E8F0" }}
           >
             {codeContent}
@@ -322,7 +304,7 @@ export default function ChatMessage({
         ) : (
           // Single-line: inline-block, fits content width
           <code
-            className="inline-block my-1 px-2.5 py-1 rounded-md text-[12.5px] font-mono"
+            className="inline-block my-0.5 px-1.5 py-0.5 rounded text-xs font-mono"
             style={{ background: "#F1F5F9", color: "#334155", border: "1px solid #E2E8F0" }}
           >
             {codeContent}
@@ -331,7 +313,7 @@ export default function ChatMessage({
       }
       // Inline code
       return (
-        <code className="px-1.5 py-0.5 rounded text-[13px] font-mono" style={{ background: "#EEF2FF", color: "#4F46E5" }} {...props}>
+        <code className="px-1 py-px rounded text-xs font-mono" style={{ background: "#EEF2FF", color: "#4F46E5" }} {...props}>
           {children}
         </code>
       );
@@ -342,44 +324,54 @@ export default function ChatMessage({
       </a>
     ),
     h1: ({ children }: React.ComponentProps<'h1'>) => (
-      <h1 className="text-[17px] font-semibold mt-4 mb-2 pb-1.5 border-b" style={{ color: "#111827", borderColor: "#E5E7EB" }}>{children}</h1>
+      <h1 className="text-base font-bold mt-4 first:mt-0 mb-2 pb-1.5 border-b" style={{ color: "#111827", borderColor: "#E5E7EB" }}>{children}</h1>
     ),
     h2: ({ children }: React.ComponentProps<'h2'>) => (
-      <h2 className="text-[15px] font-semibold mt-4 mb-1.5" style={{ color: "#1F2937" }}>{children}</h2>
+      <h2 className="text-sm font-semibold mt-4 first:mt-0 mb-1.5" style={{ color: "#1F2937" }}>{children}</h2>
     ),
     h3: ({ children }: React.ComponentProps<'h3'>) => (
-      <h3 className="text-[14px] font-semibold mt-3 mb-1" style={{ color: "#374151" }}>{children}</h3>
+      <h3 className="text-sm font-semibold mt-0.5 first:mt-0 mb-0" style={{ color: "#374151" }}>{children}</h3>
     ),
     p: ({ children }: React.ComponentProps<'p'>) => (
-      <p className="mb-3 last:mb-0 leading-relaxed text-[15px]" style={{ color: "#374151" }}>{children}</p>
+      <p className="mb-0.5 last:mb-0 leading-snug text-sm" style={{ color: "#374151" }}>{children}</p>
     ),
     ul: ({ children }: React.ComponentProps<'ul'>) => (
-      <ul className="list-disc list-outside ml-5 mb-3 space-y-1">{children}</ul>
+      <ul className="list-disc list-outside ml-5 mb-0.5 space-y-0">{children}</ul>
     ),
     ol: ({ children }: React.ComponentProps<'ol'>) => (
-      <ol className="list-decimal list-outside ml-5 mb-3 space-y-1">{children}</ol>
+      <ol className="list-decimal list-outside ml-5 mb-0.5 space-y-0">{children}</ol>
     ),
     li: ({ children }: React.ComponentProps<'li'>) => (
-      <li className="leading-relaxed text-[15px]" style={{ color: "#374151" }}>{children}</li>
+      <li className="leading-relaxed text-sm" style={{ color: "#374151" }}>{children}</li>
     ),
     blockquote: ({ children }: React.ComponentProps<'blockquote'>) => (
-      <blockquote className="pl-4 py-2 my-3 rounded-r-lg italic text-[14px]" style={{ borderLeft: `3px solid ${accentColor}`, background: "#F8FAFC", color: "#64748B" }}>
+      <blockquote className="pl-4 py-2 my-3 rounded-r-lg italic text-sm" style={{ borderLeft: `3px solid ${accentColor}`, background: "#F8FAFC", color: "#64748B" }}>
         {children}
       </blockquote>
     ),
     table: ({ children }: React.ComponentProps<'table'>) => (
       <div className="overflow-x-auto my-4 rounded-xl border" style={{ borderColor: "#E2E8F0" }}>
-        <table className="min-w-full divide-y text-[13px]" style={{ borderColor: "#E2E8F0" }}>{children}</table>
+        <table className="min-w-full text-xs" style={{ fontFamily: "'JetBrains Mono', monospace", borderCollapse: "collapse" }}>{children}</table>
       </div>
     ),
     thead: ({ children }: React.ComponentProps<'thead'>) => (
       <thead style={{ background: "#F8FAFC" }}>{children}</thead>
     ),
+    tr: ({ children, ...props }: React.ComponentProps<'tr'>) => (
+      <tr
+        style={{ transition: "background 0.1s" }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#F8FAFB"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
+        {...props}
+      >
+        {children}
+      </tr>
+    ),
     th: ({ children }: React.ComponentProps<'th'>) => (
-      <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "#64748B" }}>{children}</th>
+      <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap" style={{ color: "#64748B", borderBottom: "1px solid #E2E8F0", letterSpacing: "0.06em" }}>{children}</th>
     ),
     td: ({ children }: React.ComponentProps<'td'>) => (
-      <td className="px-4 py-2.5 text-[13px]" style={{ color: "#374151", borderTop: "1px solid #F1F5F9" }}>{children}</td>
+      <td className="px-4 py-2.5 text-xs" style={{ color: "#374151", borderBottom: "1px solid #F1F5F9", maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{children}</td>
     ),
     hr: () => <hr className="my-4" style={{ borderColor: "#E2E8F0" }} />,
     strong: ({ children }: React.ComponentProps<'strong'>) => (
@@ -389,7 +381,7 @@ export default function ChatMessage({
 
   const messageContent = (
     <>
-      <div className="prose prose-sm max-w-none">
+      <div className="max-w-none [&>*:last-child]:mb-0! [&>*:last-child>*:last-child]:mb-0!">
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
           {formatContent(role, mainContent)}
         </ReactMarkdown>
@@ -402,7 +394,7 @@ export default function ChatMessage({
 
       {hasSensitiveInfo && (
         <motion.div
-          className="mt-3 flex items-center gap-3"
+          className="mt-2 flex items-center gap-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -420,7 +412,7 @@ export default function ChatMessage({
 
       {buttons && buttons.length > 0 && (
         <motion.div
-          className="mt-3 pl-2 border-l-2 border-muted"
+          className="mt-2 pl-2 border-l-2 border-muted"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -451,13 +443,13 @@ export default function ChatMessage({
       {customForm && customForm.form_type === "multiselect" ? (
         <MultiSelectForm customForm={customForm} onButtonClick={onButtonClick} />
       ) : customForm && (customForm.form_type === "download" || customForm.form_type === "execution_plan" || customForm.form_type === "health") ? (
-        <div className="mt-3 space-y-2">
-          {(isSchemaDefinitions || (customForm.form_type === "download" && isSchemaDefinitions)) && (
+        <div className="mt-2 space-y-2">
+          {!!(isSchemaDefinitions || (customForm.form_type === "download" && isSchemaDefinitions)) && (
             <ActionCard
               icon={Database}
               label="Schema Definitions"
-              subtitle={customForm.objects?.database_name || "Database"}
-              onClick={() => onShowContext?.({ type: "schema", title: "Schema Definitions", data: customForm.objects })}
+              subtitle={(customForm.objects?.database_name as string) || "Database"}
+              onClick={() => onShowContext?.({ type: "schema", title: "Schema Definitions", data: customForm.objects as Record<string, unknown> })}
             />
           )}
           {(isExecutionPlan || customForm.form_type === "execution_plan") && (
@@ -465,15 +457,15 @@ export default function ChatMessage({
               icon={BarChart3}
               label="Execution Plan"
               subtitle={`${customForm.objects?.rows || 0} rows · ${customForm.objects?.execution_time || 0}ms`}
-              onClick={() => onShowContext?.({ type: "execution_plan", title: "Execution Plan", data: customForm.objects })}
+              onClick={() => onShowContext?.({ type: "execution_plan", title: "Execution Plan", data: customForm.objects as Record<string, unknown> })}
             />
           )}
           {customForm.form_type === "health" && (
             <ActionCard
               icon={Activity}
               label="Performance Snapshot"
-              subtitle={customForm.objects?.database_name || "Database"}
-              onClick={() => onShowContext?.({ type: "health", title: "Performance Snapshot", data: customForm.objects })}
+              subtitle={(customForm.objects?.database_name as string) || "Database"}
+              onClick={() => onShowContext?.({ type: "health", title: "Performance Snapshot", data: customForm.objects as Record<string, unknown> })}
             />
           )}
           {customForm.form_type === "download" && !isSchemaDefinitions && !isExecutionPlan && (
@@ -493,7 +485,7 @@ export default function ChatMessage({
 
   return (
     <motion.div
-      className="mb-3"
+      className="mb-1"
       initial="hidden"
       animate="visible"
       exit="exit"
@@ -501,83 +493,79 @@ export default function ChatMessage({
       layout
     >
       {isUser ? (
-        /* ── User message: right-aligned, accent border on RIGHT ── */
-        <div className="flex items-start justify-end gap-2.5">
-          <div
-            className="max-w-[65%] min-w-[80px] px-4 py-2.5 rounded-2xl rounded-tr-sm"
-            style={{
-              background: "#FFFFFF",
-              border: "1px solid #E9ECEF",
-              borderRightWidth: "3px",
-              borderRightColor: "#7C3AED",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
-            }}
-          >
-            <p className="text-[14px] leading-relaxed" style={{ color: "#1A1E2E" }}>
-              {cleanContent}
-            </p>
-            {timestamp && (
-              <div className="text-[10px] mt-1 text-right" style={{ color: "#ADB5BD" }}>
-                {format(new Date(timestamp), "h:mm a")}
-              </div>
-            )}
+        /* ── User message: right-aligned, avatar outside ── */
+        <div className="group flex flex-col items-end w-full">
+          <div className="relative flex items-start justify-end w-full">
+            <div
+              className="max-w-[65%] min-w-40 px-4 py-2.5 rounded-xl rounded-tr-sm"
+              style={{
+                background: theme.userCard.bg,
+                border: `1px solid ${theme.userCard.border}`,
+                boxShadow: SHADOWS.sm,
+              }}
+            >
+              <p className="text-sm leading-relaxed" style={{ color: theme.userCard.text }}>
+                {cleanContent}
+              </p>
+            </div>
+            {/* User avatar — positioned outside the card */}
+            <div
+              className="absolute -right-10 top-0.5 w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold"
+              style={{ background: theme.userAvatar.bg, color: theme.userAvatar.text, border: `2px solid ${theme.input.bg}`, boxShadow: SHADOWS.sm }}
+            >
+              {userInitials}
+            </div>
           </div>
-          {/* User avatar */}
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold mt-0.5"
-            style={{ background: "#7C3AED", color: "#fff" }}
-          >
-            {userInitials}
-          </div>
+          {timestamp && (
+            <div className="text-xs mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ color: theme.actions.color, fontFamily: "'JetBrains Mono', monospace" }}>
+              {format(parseUTCTimestamp(timestamp), "h:mm a")}
+            </div>
+          )}
         </div>
       ) : (
-        /* ── Assistant message: card left-aligned with bot avatar ── */
-        <div className="flex items-start gap-2.5">
-          {/* Bot avatar */}
+        /* ── Assistant message, avatar outside ── */
+        <div className="group relative">
+          {/* Bot avatar — positioned outside the card */}
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5"
-            style={{ background: "#1A1E2E" }}
+            className="absolute -left-10 top-0.5 w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: theme.botAvatar.bg, color: theme.botAvatar.text, border: `2px solid ${theme.input.bg}`, boxShadow: SHADOWS.sm }}
           >
-            <Bot className="w-4 h-4" style={{ color: "#fff" }} />
+            <Bot className="w-4 h-4" />
           </div>
 
-          <div className="flex-1 min-w-0">
+          <div className="min-w-40 max-w-[80%]">
             <div
-              className="rounded-2xl rounded-tl-sm px-4 py-3 border-l-[3px]"
+              className="rounded-xl rounded-tl-sm px-4 pt-3 pb-1"
               style={{
-                background: "#FFFFFF",
-                border: "1px solid #E9ECEF",
-                borderLeftWidth: "3px",
-                borderLeftColor: accentColor,
-                boxShadow: "0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
+                background: theme.botCard.bg,
+                border: `1px solid ${theme.botCard.border}`,
+                boxShadow: SHADOWS.sm,
               }}
             >
               {messageContent}
             </div>
 
-            {timestamp && (
-              <div className="text-[11px] mt-1 pl-1" style={{ color: "#ADB5BD" }}>
-                {format(new Date(timestamp), "h:mm a")}
-              </div>
-            )}
-
-            {!isUser && (
-              <>
-                <MessageActions
-                  content={content}
-                  feedbackState={hasBackendId ? feedbackState : "none"}
-                  onFeedback={handleFeedbackClick}
-                  onRetry={onRetry}
-                  disabled={!hasBackendId}
-                />
-                <FeedbackDialog
-                  open={feedbackDialogOpen}
-                  onOpenChange={setFeedbackDialogOpen}
-                  feedbackType={feedbackDialogType}
-                  onSubmit={handleFeedbackDialogSubmit}
-                />
-              </>
-            )}
+            {/* Actions + timestamp — hidden until hover */}
+            <div className="flex items-center mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <MessageActions
+                content={content}
+                feedbackState={hasBackendId ? feedbackState : "none"}
+                onFeedback={handleFeedbackClick}
+                onRetry={onRetry}
+                disabled={!hasBackendId}
+              />
+              <FeedbackDialog
+                open={feedbackDialogOpen}
+                onOpenChange={setFeedbackDialogOpen}
+                feedbackType={feedbackDialogType}
+                onSubmit={handleFeedbackDialogSubmit}
+              />
+              {timestamp && (
+                <div className="text-xs ml-auto pl-2" style={{ color: theme.actions.color, fontFamily: "'JetBrains Mono', monospace" }}>
+                  {format(parseUTCTimestamp(timestamp), "h:mm a")}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -588,7 +576,7 @@ export default function ChatMessage({
 function SourcesCard({ sources, accentColor }: { sources: { label: string; url: string }[]; accentColor: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="mt-3 rounded-xl overflow-hidden border" style={{ borderColor: "#E9ECEF" }}>
+    <div className="mt-2 rounded-xl overflow-hidden border" style={{ borderColor: "#E9ECEF" }}>
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-3 py-2 text-left transition-colors"
@@ -596,7 +584,7 @@ function SourcesCard({ sources, accentColor }: { sources: { label: string; url: 
         onMouseEnter={e => { e.currentTarget.style.background = "#E9ECEF"; }}
         onMouseLeave={e => { e.currentTarget.style.background = "#F1F3F5"; }}
       >
-        <div className="flex items-center gap-2 text-[12px] font-semibold" style={{ color: accentColor }}>
+        <div className="flex items-center gap-2 text-xs font-semibold" style={{ color: accentColor }}>
           <span>📎</span>
           <span>Sources ({sources.length})</span>
         </div>
@@ -611,15 +599,15 @@ function SourcesCard({ sources, accentColor }: { sources: { label: string; url: 
                 href={s.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[13px] hover:underline"
+                className="flex items-center gap-2 text-xs hover:underline"
                 style={{ color: accentColor }}
               >
-                <span className="text-[10px]" style={{ color: "#ADB5BD" }}>{i + 1}.</span>
+                <span className="text-xs" style={{ color: "#ADB5BD" }}>{i + 1}.</span>
                 {s.label}
               </a>
             ) : (
-              <span key={i} className="flex items-center gap-2 text-[13px]" style={{ color: "#495057" }}>
-                <span className="text-[10px]" style={{ color: "#ADB5BD" }}>{i + 1}.</span>
+              <span key={i} className="flex items-center gap-2 text-xs" style={{ color: "#495057" }}>
+                <span className="text-xs" style={{ color: "#ADB5BD" }}>{i + 1}.</span>
                 {s.label}
               </span>
             )
@@ -673,7 +661,7 @@ function MultiSelectForm({ customForm, onButtonClick }: { customForm: CustomForm
         <div key={type} className="mb-2">
           <div className="font-semibold mb-1">{type.charAt(0).toUpperCase() + type.slice(1)}</div>
           <div className="flex flex-wrap gap-2">
-            {customForm.objects[type].map((item: string) => (
+            {(customForm.objects[type] as string[]).map((item: string) => (
               <label key={item} className="flex items-center gap-1 cursor-pointer">
                 <input
                   type="checkbox"

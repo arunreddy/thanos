@@ -4,9 +4,10 @@ import ChatMessage from "../ChatMessage";
 import ChatInput, { ChatInputRef } from "../ChatInput";
 import TopNav from "../topnav";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot } from "lucide-react";
+import { Bot, ArrowDown } from "lucide-react";
 import { CustomForm, FeedbackType, FeedbackRequest } from "@/types";
 import type { ContextPanelData } from "../ContextPanel";
+import { useChatTheme } from "@/contexts/ChatThemeContext";
 
 interface ChatContentProps {
   chatId: string | null;
@@ -20,8 +21,8 @@ interface Message {
   content: string;
   created_at?: string;
   timestamp?: string;
-  buttons?: any;
-  custom?: any;
+  buttons?: Array<{ title: string; payload: string }>;
+  custom?: Record<string, unknown>;
 }
 
 enum ChatState {
@@ -35,13 +36,28 @@ const ChatContent: React.FC<ChatContentProps> = ({
   setActiveChatId,
   onShowContext,
 }) => {
+  const { theme } = useChatTheme();
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatState, setChatState] = useState<ChatState>(ChatState.IDLE);
   const [error, setError] = useState<string | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<ChatInputRef>(null);
   const [feedbackStates, setFeedbackStates] = useState<Record<string, FeedbackType | "none">>({});
+  const [canScrollUp, setCanScrollUp] = useState(false);
+  const [canScrollDown, setCanScrollDown] = useState(false);
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setCanScrollUp(el.scrollTop > 10);
+    setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 10);
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const handleFeedbackSubmit = async (messageId: string, data: FeedbackRequest) => {
     // Optimistic update
@@ -89,7 +105,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
       const fetchConversation = async () => {
         try {
           const response = await getConversation(chatId);
-          const conversationMessages = (response.messages || []).map((m: any) => ({
+          const conversationMessages = (response.messages || []).map((m: Record<string, unknown>) => ({
             ...m,
             custom: m.custom || m.custom_data,
           }));
@@ -129,10 +145,9 @@ const ChatContent: React.FC<ChatContentProps> = ({
   }, [chatId]);
 
   useEffect(() => {
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Re-check fades after scroll settles
+    setTimeout(handleScroll, 350);
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
@@ -147,7 +162,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
     let processedContent = content;
     
     // If the last message had buttons and user entered a number
-    if (lastMessage?.buttons?.length > 0 && isNumberOption) {
+    if (lastMessage?.buttons && lastMessage.buttons.length > 0 && isNumberOption) {
       const optionIndex = parseInt(content.trim()) - 1;
       if (optionIndex >= 0 && optionIndex < lastMessage.buttons.length) {
         // Use the payload from the corresponding button
@@ -213,8 +228,8 @@ const ChatContent: React.FC<ChatContentProps> = ({
     let displayText = title;
     if (!displayText) {
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage?.buttons?.length > 0) {
-        const button = lastMessage.buttons.find((btn: any) => btn.payload === payload);
+      if (lastMessage?.buttons && lastMessage.buttons.length > 0) {
+        const button = lastMessage.buttons.find((btn: { title: string; payload: string }) => btn.payload === payload);
         displayText = button?.title || payload;
       } else {
         displayText = payload;
@@ -276,39 +291,61 @@ const ChatContent: React.FC<ChatContentProps> = ({
     }
   };
 
-  const TypingIndicator = () => (
-    <motion.div
-      className="flex mb-6 items-start gap-2.5"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      transition={{ duration: 0.2 }}
-    >
-      {/* Matching bot avatar */}
-      <div
-        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5"
-        style={{ background: "#1A1E2E" }}
+  // Contextual typing label based on conversation category
+  const TYPING_LABELS: Record<string, string> = {
+    "Recommend DB": "Analyzing requirements...",
+    "Provision DB": "Processing request...",
+    "Health": "Checking database health...",
+    "Kafka Assist": "Looking up Kafka docs...",
+  };
+
+  const TypingIndicator = () => {
+    const typingLabel = activeCategory
+      ? TYPING_LABELS[activeCategory] || "Thinking..."
+      : "Thinking...";
+
+    return (
+      <motion.div
+        className="flex mb-6 items-start gap-2.5"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
       >
-        <Bot className="w-4 h-4 text-white" />
-      </div>
-      <div
-        className="rounded-2xl rounded-tl-sm px-4 py-3 border shadow-sm"
-        style={{ background: "#F8F9FA", borderColor: "#E9ECEF" }}
-      >
-        <div className="flex space-x-1.5 items-center h-5">
-          {[0, 0.15, 0.3].map((delay, i) => (
-            <motion.div
-              key={i}
-              className="w-2 h-2 rounded-full"
-              style={{ background: "#ADB5BD" }}
-              animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
-              transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut", delay }}
-            />
-          ))}
+        {/* Matching bot avatar */}
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+          style={{ background: theme.botAvatar.bg, color: theme.botAvatar.text, border: "2px solid " + theme.input.bg, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}
+        >
+          <Bot className="w-4 h-4" />
         </div>
-      </div>
-    </motion.div>
-  );
+        <div
+          className="rounded-2xl rounded-tl-sm px-4 py-3"
+          style={{ background: theme.botCard.bg, border: `1px solid ${theme.botCard.border}` }}
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="flex space-x-1.5 items-center h-5">
+              {[0, 0.15, 0.3].map((delay, i) => (
+                <motion.div
+                  key={i}
+                  className="w-2 h-2 rounded-full"
+                  style={{ background: "#ADB5BD" }}
+                  animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut", delay }}
+                />
+              ))}
+            </div>
+            <span
+              className="text-xs"
+              style={{ color: "#868E96", fontFamily: "'JetBrains Mono', monospace" }}
+            >
+              {typingLabel}
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
 
   const showLoadingScreen =
     chatState === ChatState.LOADING_CONVERSATION &&
@@ -324,81 +361,126 @@ const ChatContent: React.FC<ChatContentProps> = ({
   const conversationTitle = activeCategory ?? (chatId ? "Conversation" : null);
 
   return (
-    <div className="flex flex-col h-full w-full">
-      <TopNav title={conversationTitle} />
+    <div className="flex flex-col h-full w-full" style={{ background: theme.input.bg }}>
+      <TopNav title={conversationTitle} chatId={chatId} />
 
-      {/* Messages area + floating input */}
-      <div className="flex-1 relative overflow-hidden" style={{ background: "linear-gradient(180deg, #F8FAFB 0%, #FFFFFF 60%)" }}>
-        <div className="absolute inset-0 overflow-y-auto px-8 pt-6 pb-28">
-          {/* Loading screen */}
-          {showLoadingScreen && (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground pt-24">
-              <div className="flex items-center space-x-2">
-                {[0, 300, 600].map((delay, i) => (
-                  <div
-                    key={i}
-                    className="w-2.5 h-2.5 rounded-full animate-pulse"
-                    style={{ background: "#1A1E2E", animationDelay: `${delay}ms` }}
-                  />
-                ))}
-              </div>
-              <div className="mt-3 text-sm" style={{ color: "#ADB5BD" }}>Loading conversation...</div>
-            </div>
+      {/* Scrollable messages area with fade overlays */}
+      <div className="flex-1 relative overflow-hidden" style={{ background: theme.chatArea.bg, boxShadow: theme.chatArea.shadow }}>
+        {/* Top fade */}
+        <div
+          className="absolute top-0 left-0 right-0 h-8 z-10 pointer-events-none transition-opacity duration-300"
+          style={{
+            background: `linear-gradient(${theme.chatArea.bg}, transparent)`,
+            opacity: canScrollUp ? 1 : 0,
+          }}
+        />
+        {/* Bottom fade */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-8 z-10 pointer-events-none transition-opacity duration-300"
+          style={{
+            background: `linear-gradient(transparent, ${theme.chatArea.bg})`,
+            opacity: canScrollDown ? 1 : 0,
+          }}
+        />
+        {/* Scroll to bottom arrow */}
+        <AnimatePresence>
+          {canScrollDown && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.15 }}
+              onClick={scrollToBottom}
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer"
+              style={{
+                background: theme.input.bg,
+                color: theme.actions.hoverColor,
+                border: `1px solid ${theme.input.border}`,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+              }}
+            >
+              <ArrowDown className="w-4 h-4" />
+            </motion.button>
           )}
-
-          {/* Message list */}
-          <div className="min-h-[50px]">
-            <AnimatePresence initial={false} mode="popLayout">
-              {messages.map((message, index) => (
-                <ChatMessage
-                  key={
-                    message.id ||
-                    `msg-${index}-${message.timestamp || Date.now()}`
-                  }
-                  role={message.role}
-                  content={message.content}
-                  timestamp={message.timestamp || message.created_at}
-                  buttons={message.buttons}
-                  customForm={message.custom as CustomForm}
-                  messageId={message.id}
-                  activeCategory={activeCategory}
-                  feedbackState={
-                    typeof message.id === "string"
-                      ? feedbackStates[message.id] || "none"
-                      : "none"
-                  }
-                  onButtonClick={handleButtonClick}
-                  onShowContext={onShowContext}
-                  onFeedbackSubmit={handleFeedbackSubmit}
-                  onFeedbackRemove={handleFeedbackRemove}
-                  onRetry={() => handleRetry(index)}
+        </AnimatePresence>
+      <div
+        ref={scrollContainerRef}
+        className="absolute inset-0 overflow-y-auto pl-18 pr-18 pt-7 pb-4"
+        onScroll={handleScroll}
+      >
+      <div className="max-w-4xl mx-auto">
+        {/* Loading screen */}
+        {showLoadingScreen && (
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground pt-24">
+            <div className="flex items-center space-x-2">
+              {[0, 300, 600].map((delay, i) => (
+                <div
+                  key={i}
+                  className="w-2.5 h-2.5 rounded-full animate-pulse"
+                  style={{ background: "#1A1E2E", animationDelay: `${delay}ms` }}
                 />
               ))}
-            </AnimatePresence>
-          </div>
-
-          {/* Typing indicator */}
-          <AnimatePresence>
-            {showTypingIndicator && <TypingIndicator />}
-          </AnimatePresence>
-
-          {/* Error message */}
-          {error && (
-            <div className="flex justify-center my-3">
-              <span className="text-sm px-4 py-2 rounded-full" style={{ background: "#FFF5F5", color: "#E53E3E", border: "1px solid #FED7D7" }}>
-                {error}
-              </span>
             </div>
-          )}
+            <div className="mt-3 text-sm" style={{ color: "#ADB5BD" }}>Loading conversation...</div>
+          </div>
+        )}
 
-          <div ref={messagesEndRef} />
+        {/* Message list */}
+        <div className="min-h-12.5">
+          <AnimatePresence initial={false} mode="popLayout">
+            {messages.map((message, index) => (
+              <ChatMessage
+                key={
+                  message.id ||
+                  `msg-${index}-${message.timestamp || Date.now()}`
+                }
+                role={message.role}
+                content={message.content}
+                timestamp={message.timestamp || message.created_at}
+                buttons={message.buttons}
+                customForm={message.custom as unknown as CustomForm}
+                messageId={message.id}
+                activeCategory={activeCategory}
+                feedbackState={
+                  typeof message.id === "string"
+                    ? feedbackStates[message.id] || "none"
+                    : "none"
+                }
+                onButtonClick={handleButtonClick}
+                onShowContext={onShowContext}
+                onFeedbackSubmit={handleFeedbackSubmit}
+                onFeedbackRemove={handleFeedbackRemove}
+                onRetry={() => handleRetry(index)}
+              />
+            ))}
+          </AnimatePresence>
         </div>
 
-        {/* Floating input */}
-        <div
-          className="absolute bottom-0 left-0 right-0 px-8 pb-4 pt-6"
-          style={{ background: "linear-gradient(transparent, #ffffff 35%)" }}
-        >
+        {/* Typing indicator */}
+        <AnimatePresence>
+          {showTypingIndicator && <TypingIndicator />}
+        </AnimatePresence>
+
+        {/* Error message */}
+        {error && (
+          <div className="flex justify-center my-3">
+            <span className="text-sm px-4 py-2 rounded-full" style={{ background: "#FFF5F5", color: "#E53E3E", border: "1px solid #FED7D7" }}>
+              {error}
+            </span>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+      </div>
+      </div>
+
+      {/* Fixed input at bottom */}
+      <div
+        className="shrink-0 px-8 pb-6 pt-3"
+        style={{ background: theme.chatArea.bg }}
+      >
+        <div className="max-w-4xl mx-auto">
           <ChatInput
             ref={chatInputRef}
             onSendMessage={handleSendMessage}

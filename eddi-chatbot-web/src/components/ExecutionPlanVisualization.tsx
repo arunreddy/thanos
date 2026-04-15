@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { BarChart3, Clock, Database, Zap, Layers, Table2, FileCode } from 'lucide-react';
 import SyntaxHighlighter from '@/components/ui/SyntaxHighlighter';
 
@@ -128,7 +129,12 @@ export default function ExecutionPlanVisualization({ data }: ExecutionPlanVisual
   const dbType = detectDatabaseType(data);
 
   return (
-    <div className="p-5 space-y-6">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="p-5 space-y-6"
+    >
       {/* Query */}
       <div>
         <div className="flex items-center justify-between mb-3">
@@ -179,13 +185,22 @@ export default function ExecutionPlanVisualization({ data }: ExecutionPlanVisual
 
       {/* Content */}
       {tab === 'visual' ? (
-        <>
+        <motion.div
+          key="visual"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
           {dbType === 'postgresql' && <PostgreSQLVisual data={data as PostgresPlan} />}
           {dbType === 'mysql' && <MySQLVisual data={data as MySQLPlan} />}
           {dbType === 'mongodb' && <MongoDBVisual data={data as MongoDBPlan} />}
-        </>
+        </motion.div>
       ) : (
-        <div
+        <motion.div
+          key="raw"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
           className="rounded-lg overflow-hidden"
           style={{ border: "1px solid #E9ECEF" }}
         >
@@ -194,22 +209,26 @@ export default function ExecutionPlanVisualization({ data }: ExecutionPlanVisual
             language={'text' in data.execution_plan ? 'sql' : 'json'}
             showCopyButton={true}
           />
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
 // --- Metric Card (reusable, matches HealthDashboard style) ---
-function MetricCard({ label, value, unit, icon: Icon, color }: {
+function MetricCard({ label, value, unit, icon: Icon, color, index = 0 }: {
   label: string;
   value: string | number;
   unit?: string;
   icon: React.ElementType;
   color?: string;
+  index?: number;
 }) {
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, delay: index * 0.05 }}
       className="rounded-lg p-3"
       style={{ background: "#fff", border: "1px solid #E9ECEF" }}
     >
@@ -222,7 +241,7 @@ function MetricCard({ label, value, unit, icon: Icon, color }: {
       <div className="text-xl font-bold" style={{ color: color || "#1A1E2E" }}>
         {value}{unit && <span className="text-sm font-medium ml-0.5">{unit}</span>}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -236,10 +255,10 @@ function PostgreSQLVisual({ data }: { data: PostgresPlan }) {
     <div className="space-y-6">
       {/* Metrics grid */}
       <div className="grid grid-cols-4 gap-3">
-        <MetricCard label="Total Cost" value={data.cost} icon={Zap} color={costColor.text} />
-        <MetricCard label="Execution" value={data.execution_time} unit="ms" icon={Clock} color={timeColor.text} />
-        <MetricCard label="Rows" value={data.rows.toLocaleString()} icon={Layers} />
-        <MetricCard label="Planning" value={data.planning_time} unit="ms" icon={Clock} />
+        <MetricCard label="Total Cost" value={data.cost} icon={Zap} color={costColor.text} index={0} />
+        <MetricCard label="Execution" value={data.execution_time} unit="ms" icon={Clock} color={timeColor.text} index={1} />
+        <MetricCard label="Rows" value={data.rows.toLocaleString()} icon={Layers} index={2} />
+        <MetricCard label="Planning" value={data.planning_time} unit="ms" icon={Clock} index={3} />
       </div>
 
       {/* Plan tree */}
@@ -286,7 +305,7 @@ function PlanRows({ node, depth }: { node: PlanNodeType; depth: number }) {
           {depth > 0 && <span style={{ color: "#CED4DA" }}>└ </span>}
           {node['Node Type']}
         </td>
-        <td className="px-3 py-2.5 font-mono truncate max-w-[200px]" style={{ color: "#868E96" }}>
+        <td className="px-3 py-2.5 font-mono truncate max-w-50" style={{ color: "#868E96" }}>
           {detail}
         </td>
         <td className="px-3 py-2.5 text-right font-mono" style={{ color: "#495057" }}>
@@ -323,9 +342,9 @@ function MySQLVisual({ data }: { data: MySQLPlan }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-3">
-        <MetricCard label="Query Cost" value={queryBlock.cost_info.query_cost} icon={Zap} color={costColor.text} />
-        <MetricCard label="Tables" value={tables.length} icon={Table2} />
-        <MetricCard label="Status" value={data.analyzed ? 'Analyzed' : 'Plan Only'} icon={Database} />
+        <MetricCard label="Query Cost" value={queryBlock.cost_info.query_cost} icon={Zap} color={costColor.text} index={0} />
+        <MetricCard label="Tables" value={tables.length} icon={Table2} index={1} />
+        <MetricCard label="Status" value={data.analyzed ? 'Analyzed' : 'Plan Only'} icon={Database} index={2} />
       </div>
 
       {tables.length > 0 && (
@@ -396,10 +415,10 @@ function MongoDBVisual({ data }: { data: MongoDBPlan }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-4 gap-3">
-        <MetricCard label="Documents" value={stats.document_count.toLocaleString()} icon={Layers} />
-        <MetricCard label="Collection" value={`${(stats.collection_size / 1024).toFixed(1)}KB`} icon={Database} />
-        <MetricCard label="Avg Doc" value={`${stats.avg_doc_size}B`} icon={BarChart3} />
-        <MetricCard label="Indexes" value={stats.index_count} icon={Zap} />
+        <MetricCard label="Documents" value={stats.document_count.toLocaleString()} icon={Layers} index={0} />
+        <MetricCard label="Collection" value={`${(stats.collection_size / 1024).toFixed(1)}KB`} icon={Database} index={1} />
+        <MetricCard label="Avg Doc" value={`${stats.avg_doc_size}B`} icon={BarChart3} index={2} />
+        <MetricCard label="Indexes" value={stats.index_count} icon={Zap} index={3} />
       </div>
 
       {/* Query details table */}

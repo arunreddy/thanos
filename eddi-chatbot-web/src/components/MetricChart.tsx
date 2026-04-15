@@ -69,7 +69,7 @@ function formatValue(value: number, unit: string): string {
 }
 
 // Determine chart type based on metric characteristics
-function getChartType(metricKey: string, _unit: string): "line" | "area" {
+function getChartType(metricKey: string): "line" | "area" {
   // Area charts for cumulative/usage metrics
   const areaMetrics = [
     "memory",
@@ -155,7 +155,6 @@ export default function MetricChart({
   color = "#228BE6",
   warningThreshold,
   criticalThreshold,
-  invertThresholds: _invertThresholds = false,
   mode = "full",
   height = 200,
   showThresholds = true,
@@ -187,7 +186,7 @@ export default function MetricChart({
     };
   }, [chartData]);
 
-  const chartType = getChartType(metricKey, unit);
+  const chartType = getChartType(metricKey);
 
   if (chartData.length === 0) {
     return (

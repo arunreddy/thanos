@@ -155,7 +155,7 @@ describe('SyntaxHighlighter', () => {
       const mockHighlighter = {
         codeToHtml: mockCodeToHtml,
       };
-      mockCreateHighlighter.mockResolvedValue(mockHighlighter as any);
+      mockCreateHighlighter.mockResolvedValue(mockHighlighter as unknown as Awaited<ReturnType<typeof createHighlighter>>);
     });
 
     it('attempts to initialize Shiki highlighter', () => {

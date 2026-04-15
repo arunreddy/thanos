@@ -1,16 +1,17 @@
 // Legacy hook - now uses TanStack Query under the hood
 // This ensures backward compatibility while providing better caching and state management
 
-import { 
+import {
   useConversations as useConversationsQuery,
   useCreateConversation,
   useUpdateConversation,
   useDeleteConversation
 } from './useConversationsQuery';
+import { Conversation } from '@/types';
 
 export function useConversations() {
   const { data: conversations = [], isLoading: loading, error, refetch } = useConversationsQuery() as {
-    data: any[];
+    data: Conversation[];
     isLoading: boolean;
     error: Error | null;
     refetch: () => void;

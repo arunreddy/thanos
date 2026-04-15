@@ -109,7 +109,7 @@ export const EnhancedChat: React.FC = () => {
       
       // Clear input on success
       if (chatInputRef.current && 'clearInput' in chatInputRef.current) {
-        (chatInputRef.current as any).clearInput();
+        (chatInputRef.current as unknown as { clearInput: () => void }).clearInput();
       }
       
     } catch (err) {
@@ -206,8 +206,8 @@ export const EnhancedChat: React.FC = () => {
                     role={message.role}
                     content={message.content}
                     timestamp={message.timestamp || message.created_at}
-                    buttons={message.buttons as any}
-                    customForm={message.custom_data as any}
+                    buttons={message.buttons as Array<{ title: string; payload: string }> | undefined}
+                    customForm={message.custom_data as import('@/types').CustomForm | undefined}
                   />
                 </motion.div>
               ))}

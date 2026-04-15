@@ -5,6 +5,7 @@ import ChatContent from './chat/content';
 import SideNav from './chat/sidenav';
 import ContextPanel, { ContextPanelData } from './chat/ContextPanel';
 import { useChat } from '../hooks/useChat';
+import { ChatThemeProvider } from '../contexts/ChatThemeContext';
 
 export default function Chat() {
   const { chatId } = useParams();
@@ -27,7 +28,8 @@ export default function Chat() {
   };
 
   return (
-    <div className="bg-background text-foreground w-full h-[100vh] flex overflow-hidden">
+    <ChatThemeProvider>
+    <div className="bg-background text-foreground w-full h-screen flex overflow-hidden">
       <SideNav
         data-testid="sidenav"
         activeChatId={chatId || currentChatId || 'unknown'}
@@ -35,16 +37,16 @@ export default function Chat() {
         refreshTrigger={refreshTrigger}
       />
 
-      {/* Chat panel — animates width */}
+      {/* Chat panel — smoothly shares space with results panel */}
       <motion.div
         className="h-full overflow-hidden"
         animate={{
-          flex: contextPanel ? '0 0 420px' : '1 1 0%',
+          flex: contextPanel ? '1 1 50%' : '1 1 100%',
         }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
         style={{
-          borderRight: contextPanel ? '1px solid #E9ECEF' : undefined,
-          minWidth: 0,
+          borderRight: contextPanel ? '2px solid #DEE2E6' : undefined,
+          minWidth: contextPanel ? 480 : 0,
         }}
       >
         <ChatContent
@@ -55,16 +57,17 @@ export default function Chat() {
         />
       </motion.div>
 
-      {/* Context panel — slides in */}
+      {/* Results panel — slides in/out smoothly */}
       <AnimatePresence mode="wait">
         {contextPanel && (
           <motion.div
             key="context-panel"
-            className="h-full flex-1 min-w-0"
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: '100%' }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            className="h-full min-w-0 overflow-hidden"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: '50%', opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            style={{ flex: 'none' }}
           >
             <ContextPanel
               context={contextPanel}
@@ -74,5 +77,6 @@ export default function Chat() {
         )}
       </AnimatePresence>
     </div>
+    </ChatThemeProvider>
   );
 }

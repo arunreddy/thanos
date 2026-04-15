@@ -15,7 +15,7 @@ describe('ThemeSwitcher Component', () => {
 
   beforeEach(() => {
     mockSetTheme.mockClear();
-    (useTheme as any).mockReset();
+    vi.mocked(useTheme).mockReset();
   });
 
   test.each([
@@ -23,8 +23,8 @@ describe('ThemeSwitcher Component', () => {
     ['dark'],
     ['system']
   ])('shows correct theme icon for %s theme', (currentTheme) => {
-    (useTheme as any).mockReturnValue({
-      theme: currentTheme,
+    vi.mocked(useTheme).mockReturnValue({
+      theme: currentTheme as "light" | "dark" | "system",
       setTheme: mockSetTheme
     });
 
@@ -48,16 +48,16 @@ describe('ThemeSwitcher Component', () => {
     ['dark'],
     ['system']
   ])('calls setTheme with %s when option is clicked', (expectedTheme) => {
-    (useTheme as any).mockReturnValue({
+    vi.mocked(useTheme).mockReturnValue({
       theme: 'light',
       setTheme: mockSetTheme
     });
 
     render(<ThemeSwitcher />);
-    
+
     // First click the dropdown button to open it
     fireEvent.click(screen.getByLabelText('Theme switcher'));
-    
+
     // Then find the option by its icon and text
     let optionButton;
     if (expectedTheme === 'light') {
@@ -73,16 +73,16 @@ describe('ThemeSwitcher Component', () => {
   });
 
   test('renders all theme options when dropdown is opened', () => {
-    (useTheme as any).mockReturnValue({
+    vi.mocked(useTheme).mockReturnValue({
       theme: 'light',
       setTheme: mockSetTheme
     });
 
     render(<ThemeSwitcher />);
-    
+
     // First click the dropdown button to open it
     fireEvent.click(screen.getByLabelText('Theme switcher'));
-    
+
     // Now check for the theme options
     expect(screen.getByText('Light')).toBeInTheDocument();
     expect(screen.getByText('Dark')).toBeInTheDocument();
@@ -90,25 +90,25 @@ describe('ThemeSwitcher Component', () => {
   });
 
   test('applies correct container classes', () => {
-    (useTheme as any).mockReturnValue({
+    vi.mocked(useTheme).mockReturnValue({
       theme: 'light',
       setTheme: mockSetTheme
     });
 
     render(<ThemeSwitcher />);
-    
+
     const container = screen.getByLabelText('Theme switcher').parentElement;
     expect(container).toHaveClass('relative');
   });
 
   test('applies correct button styling', () => {
-    (useTheme as any).mockReturnValue({
+    vi.mocked(useTheme).mockReturnValue({
       theme: 'light',
       setTheme: mockSetTheme
     });
 
     render(<ThemeSwitcher />);
-    
+
     const button = screen.getByLabelText('Theme switcher');
     expect(button).toHaveClass('flex', 'items-center', 'gap-1', 'px-3', 'py-2', 'rounded-md');
   });

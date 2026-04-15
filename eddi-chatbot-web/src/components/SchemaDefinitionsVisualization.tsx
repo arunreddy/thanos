@@ -33,7 +33,13 @@ interface Index {
 interface Collection {
   name: string;
   document_count: number;
-  sample_schema: Record<string, any>;
+  sample_schema: Record<string, unknown>;
+}
+
+interface SchemaObject {
+  name: string;
+  definition?: string;
+  [key: string]: unknown;
 }
 
 interface SchemaDefinitions {
@@ -43,9 +49,9 @@ interface SchemaDefinitions {
     tables?: Table[];
     indexes?: Index[];
     collections?: Collection[];
-    views?: any[];
-    functions?: any[];
-    procedures?: any[];
+    views?: SchemaObject[];
+    functions?: SchemaObject[];
+    procedures?: SchemaObject[];
   };
 }
 
@@ -80,7 +86,7 @@ export default function SchemaDefinitionsVisualization({ data }: SchemaDefinitio
   // Get available object types
   const objectTypes = Object.keys(definitions).filter(key => 
     definitions[key as keyof typeof definitions] && 
-    (definitions[key as keyof typeof definitions] as any[]).length > 0
+    (definitions[key as keyof typeof definitions] as unknown[]).length > 0
   );
 
   return (
@@ -108,7 +114,7 @@ export default function SchemaDefinitionsVisualization({ data }: SchemaDefinitio
                 {type === 'views' && <FileText className="w-5 h-5" />}
                 <span>{type}</span>
                 <Badge variant="secondary" className="text-xs">
-                  {(definitions[type as keyof typeof definitions] as any[])?.length || 0}
+                  {(definitions[type as keyof typeof definitions] as unknown[])?.length || 0}
                 </Badge>
               </div>
             </TabsTrigger>
@@ -162,7 +168,7 @@ export default function SchemaDefinitionsVisualization({ data }: SchemaDefinitio
                   </CardHeader>
                   <CardContent className="pt-0">
                     <SyntaxHighlighter
-                      code={view.definition}
+                      code={view.definition || ""}
                       language="sql"
                       showCopyButton={true}
                     />

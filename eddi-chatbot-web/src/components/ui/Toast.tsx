@@ -79,7 +79,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
               <p className="text-sm font-medium pr-2">{toast.message}</p>
               <button
                 onClick={() => removeToast(toast.id)}
-                className="flex-shrink-0 p-1 rounded-md hover:bg-black hover:bg-opacity-10 transition-colors"
+                className="shrink-0 p-1 rounded-md hover:bg-black hover:bg-opacity-10 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

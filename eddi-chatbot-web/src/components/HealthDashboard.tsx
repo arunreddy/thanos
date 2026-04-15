@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Check, X, TrendingUp, TrendingDown, Minus, AlertCircle, AlertTriangle, Lightbulb, Lock, Activity } from "lucide-react";
+import { ChevronDown, Check, X, TrendingUp, TrendingDown, Minus, AlertCircle, AlertTriangle, Lightbulb, Lock } from "lucide-react";
 import MetricChart, { MetricDataPoint } from "./MetricChart";
 
 interface VitalMetric {
@@ -54,7 +54,11 @@ interface HealthDashboardProps {
     available_metrics?: AvailableMetric[];
     default_metrics?: string[];
   };
+  selectedMetrics?: Set<string>;
+  onSelectedMetricsChange?: (selected: Set<string>) => void;
 }
+
+export type { AvailableMetric };
 
 // Neutral color for metrics where thresholds aren't meaningful
 const NEUTRAL_COLOR = { text: "#495057", bar: "#ADB5BD" };
@@ -124,10 +128,10 @@ const STATE_COLORS: Record<string, { bg: string; text: string }> = {
   IDLE: { bg: "#E2E8F0", text: "#4A5568" },
 };
 
-const SEVERITY_STYLES: Record<string, { border: string; bg: string; badge: string; badgeText: string }> = {
-  CRITICAL: { border: "#DC3545", bg: "#FFF5F5", badge: "#DC3545", badgeText: "#fff" },
-  HIGH: { border: "#FFC107", bg: "#FFFBEB", badge: "#F59E0B", badgeText: "#fff" },
-  MEDIUM: { border: "#3B82F6", bg: "#EFF6FF", badge: "#3B82F6", badgeText: "#fff" },
+const SEVERITY_STYLES: Record<string, { border: string; bg: string; badge: string; badgeText: string; badgeBg: string }> = {
+  CRITICAL: { border: "#DC3545", bg: "#FEE8EA", badge: "#DC3545", badgeText: "#DC3545", badgeBg: "#FEE8EA" },
+  HIGH:     { border: "#D97706", bg: "#FEF3C7", badge: "#D97706", badgeText: "#D97706", badgeBg: "#FEF3C7" },
+  MEDIUM:   { border: "#2563EB", bg: "#EFF6FF", badge: "#2563EB", badgeText: "#2563EB", badgeBg: "#EFF6FF" },
 };
 
 function formatMetricLabel(metric: string): string {
@@ -195,30 +199,35 @@ function VitalCard({ metric, onClick, index }: VitalCardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut", delay: index * 0.06 }}
-      whileHover={{ boxShadow: "0 4px 14px rgba(0,0,0,0.08)", borderColor: "#93C5FD", transition: { duration: 0.15 } }}
+      whileHover={{ y: -3, boxShadow: "0 8px 20px rgba(0,0,0,0.12)", transition: { duration: 0.2 } }}
       whileTap={{ scale: 0.97 }}
-      className="rounded-lg p-3 cursor-pointer"
-      style={{ background: "#fff", border: "1px solid #E9ECEF" }}
+      className="rounded-xl p-3.5 cursor-pointer flex flex-col"
+      style={{
+        background: "#FFFFFF",
+        borderTop: `3px solid ${color.bar}`,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+        minHeight: "180px",
+      }}
       onClick={onClick}
     >
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: "#868E96" }}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-xs font-medium uppercase tracking-wide truncate" style={{ color: "#868E96" }}>
           {metric.label}
         </span>
-        <div className="flex items-center gap-1">
-          {trend === "up" && <TrendingUp className="w-3 h-3" style={{ color: thresholdDef?.invert ? "#DC3545" : "#10B981" }} />}
-          {trend === "down" && <TrendingDown className="w-3 h-3" style={{ color: thresholdDef?.invert ? "#10B981" : "#DC3545" }} />}
-          {trend === "stable" && <Minus className="w-3 h-3" style={{ color: "#868E96" }} />}
+        <div className="flex items-center gap-1 shrink-0">
+          {trend === "up" && <TrendingUp className="w-3.5 h-3.5" style={{ color: thresholdDef?.invert ? "#DC3545" : "#10B981" }} />}
+          {trend === "down" && <TrendingDown className="w-3.5 h-3.5" style={{ color: thresholdDef?.invert ? "#10B981" : "#DC3545" }} />}
+          {trend === "stable" && <Minus className="w-3.5 h-3.5" style={{ color: "#868E96" }} />}
         </div>
       </div>
 
       <div className="flex items-end justify-between">
-        <div className="text-xl font-bold" style={{ color: color.text }}>
+        <div className="text-2xl font-bold font-mono" style={{ color: color.text }}>
           {displayValue}
         </div>
         {avgStats && (
           <div
-            className="text-[11px] font-semibold px-1.5 py-0.5 rounded"
+            className="text-xs font-semibold px-1.5 py-0.5 rounded shrink-0"
             style={{
               background: avgStats.deviation >= 0 ? "#ECFDF5" : "#FEF2F2",
               color: avgStats.deviation >= 0 ? "#059669" : "#DC2626",
@@ -231,9 +240,9 @@ function VitalCard({ metric, onClick, index }: VitalCardProps) {
 
       {/* Status label */}
       {thresholdDef && (
-        <div className="mt-1">
+        <div className="mt-1.5">
           <span
-            className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+            className="text-xs font-semibold px-2 py-0.5 rounded-full"
             style={{
               background:
                 color.text === "#DC3545" ? "#FEE8EA" :
@@ -246,26 +255,28 @@ function VitalCard({ metric, onClick, index }: VitalCardProps) {
         </div>
       )}
 
-      {/* Sparkline chart */}
-      {hasHistory ? (
-        <div className="mt-2 h-10">
-          <MetricChart
-            data={metric.history!}
-            metricKey={metric.metricKey}
-            unit={metric.unit}
-            color={chartColor}
-            mode="sparkline"
-            height={40}
-          />
-        </div>
-      ) : isPercentage ? (
-        <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: "#E9ECEF" }}>
-          <div
-            className="h-full rounded-full transition-all"
-            style={{ width: `${Math.min(numValue, 100)}%`, background: color.bar }}
-          />
-        </div>
-      ) : null}
+      {/* Sparkline chart — pinned to bottom */}
+      <div className="mt-auto pt-2">
+        {hasHistory ? (
+          <div className="h-12">
+            <MetricChart
+              data={metric.history!}
+              metricKey={metric.metricKey}
+              unit={metric.unit}
+              color={chartColor}
+              mode="sparkline"
+              height={48}
+            />
+          </div>
+        ) : isPercentage ? (
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: "#E9ECEF" }}>
+            <div
+              className="h-full rounded-full transition-all"
+              style={{ width: `${Math.min(numValue, 100)}%`, background: color.bar }}
+            />
+          </div>
+        ) : <div className="h-12" />}
+      </div>
 
       {hasHistory && (
         <div className="mt-1 flex items-center justify-between text-[9px]" style={{ color: "#ADB5BD" }}>
@@ -403,7 +414,7 @@ function ExpandedChart({ metric, onClose }: ExpandedChartProps) {
               showThresholds={true}
             />
           ) : (
-            <div className="h-[300px] flex items-center justify-center" style={{ color: "#868E96" }}>
+            <div className="h-75 flex items-center justify-center" style={{ color: "#868E96" }}>
               No historical data available
             </div>
           )}
@@ -482,7 +493,7 @@ interface MetricsSelectorProps {
   onChange: (selected: Set<string>) => void;
 }
 
-function MetricsSelector({ available, selected, onChange }: MetricsSelectorProps) {
+export function MetricsSelector({ available, selected, onChange }: MetricsSelectorProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -497,7 +508,11 @@ function MetricsSelector({ available, selected, onChange }: MetricsSelectorProps
 
   function toggle(metric: string) {
     const next = new Set(selected);
-    next.has(metric) ? next.delete(metric) : next.add(metric);
+    if (next.has(metric)) {
+      next.delete(metric);
+    } else {
+      next.add(metric);
+    }
     onChange(next);
   }
 
@@ -533,7 +548,7 @@ function MetricsSelector({ available, selected, onChange }: MetricsSelectorProps
                 className="w-full flex items-start gap-2.5 px-3 py-2 text-left hover:bg-gray-50 transition-colors"
               >
                 <div
-                  className="mt-0.5 w-4 h-4 rounded flex-shrink-0 flex items-center justify-center"
+                  className="mt-0.5 w-4 h-4 rounded shrink-0 flex items-center justify-center"
                   style={{
                     border: checked ? "none" : "1.5px solid #ADB5BD",
                     background: checked ? "#228BE6" : "transparent",
@@ -564,7 +579,7 @@ function MetricsSelector({ available, selected, onChange }: MetricsSelectorProps
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function HealthDashboard({ data }: HealthDashboardProps) {
+export default function HealthDashboard({ data, selectedMetrics: externalSelected }: HealthDashboardProps) {
   const vitals = data.vitals || {};
   const locks = data.locks || [];
   const suggestions = data.suggestions || [];
@@ -579,14 +594,11 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
     "number_of_transactions_per_second",
   ];
 
-  const [selectedMetrics, setSelectedMetrics] = useState<Set<string>>(
+  const [internalSelected] = useState<Set<string>>(
     () => new Set(defaultMetrics)
   );
+  const selectedMetrics = externalSelected ?? internalSelected;
   const [expandedMetric, setExpandedMetric] = useState<VitalMetric | null>(null);
-
-  const timestamp = data.timestamp
-    ? new Date(data.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : null;
 
   // Use real metrics history only (no mock data in production)
   const effectiveMetricsHistory = metricsHistory;
@@ -652,42 +664,11 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
     });
 
   return (
-    <div className="p-5 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4" style={{ color: "#228BE6" }} />
-          <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "#495057" }}>
-            Database Vitals
-          </h3>
-          {(data.database_name || data.resource_id) && (
-            <span
-              className="text-[11px] font-mono px-2 py-0.5 rounded-md"
-              style={{ background: "#E7F5FF", color: "#1971C2", border: "1px solid #D0EBFF" }}
-            >
-              {data.database_name || data.resource_id}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-3">
-          {timestamp && (
-            <span className="text-[11px]" style={{ color: "#ADB5BD" }}>
-              as of {timestamp}
-            </span>
-          )}
-          {availableMetrics.length > 0 && (
-            <MetricsSelector
-              available={availableMetrics}
-              selected={selectedMetrics}
-              onChange={setSelectedMetrics}
-            />
-          )}
-        </div>
-      </div>
+    <div className="px-5 pb-5 pt-4 space-y-4">
 
       {/* Vitals Grid */}
       {metrics.length > 0 ? (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {metrics.map((metric, i) => (
             <VitalCard
               key={metric.metricKey}
@@ -720,11 +701,13 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
           return acc;
         }, {} as Record<string, number>);
         return (
-        <div>
-          <div className="flex items-center justify-between mb-3">
+        <div className="rounded-xl overflow-hidden" style={{ background: "#FFFFFF", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+          <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4" style={{ color: "#495057" }} />
-              <span className="text-sm font-semibold" style={{ color: "#495057" }}>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#FEF3C7" }}>
+                <Lock className="w-4 h-4" style={{ color: "#D97706" }} />
+              </div>
+              <span className="text-sm font-semibold" style={{ color: "#1A1E2E" }}>
                 Lock & Wait Events
               </span>
               {Object.entries(lockStateCounts).map(([state, count]) => {
@@ -744,7 +727,7 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
               {locks.length} active process{locks.length !== 1 ? "es" : ""}
             </span>
           </div>
-          <div className="rounded-lg overflow-hidden" style={{ border: "1px solid #E9ECEF" }}>
+          <div className="overflow-hidden" style={{ borderTop: "1px solid #E9ECEF" }}>
             <table className="w-full text-[12px]">
               <thead>
                 <tr style={{ background: "#F8F9FA", borderBottom: "1px solid #E9ECEF" }}>
@@ -764,7 +747,7 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
                       style={{ borderBottom: i < locks.length - 1 ? "1px solid #F1F3F5" : undefined }}
                     >
                       <td className="px-3 py-2 font-mono" style={{ color: "#495057" }}>{lock.pid}</td>
-                      <td className="px-3 py-2 font-mono truncate max-w-[200px]" style={{ color: "#495057" }}>{lock.query}</td>
+                      <td className="px-3 py-2 font-mono truncate max-w-50" style={{ color: "#495057" }}>{lock.query}</td>
                       <td className="px-3 py-2" style={{ color: "#868E96" }}>{lock.wait_type || "—"}</td>
                       <td className="px-3 py-2 font-mono" style={{ color: "#495057" }}>{lock.duration}</td>
                       <td className="px-3 py-2">
@@ -787,11 +770,13 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
 
       {/* Suggestions */}
       {suggestions.length > 0 && (
-        <div>
+        <div className="rounded-xl p-4" style={{ background: "#FFFFFF", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Lightbulb className="w-4 h-4" style={{ color: "#F59E0B" }} />
-              <span className="text-sm font-semibold" style={{ color: "#495057" }}>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#FEF3C7" }}>
+                <Lightbulb className="w-4 h-4" style={{ color: "#D97706" }} />
+              </div>
+              <span className="text-sm font-semibold" style={{ color: "#1A1E2E" }}>
                 Suggestions
               </span>
               <span
@@ -828,11 +813,16 @@ export default function HealthDashboard({ data }: HealthDashboardProps) {
                   style={{ background: style.bg, borderLeft: `4px solid ${style.border}` }}
                 >
                   <div className="flex items-start gap-3">
-                    <SevIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: style.border }} />
+                    <SevIcon className="w-4 h-4 shrink-0 mt-0.5" style={{ color: style.border }} />
                     <div className="flex-1 min-w-0">
                       <span
-                        className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded mr-2"
-                        style={{ background: style.badge, color: style.badgeText, letterSpacing: "0.05em" }}
+                        className="text-[9px] font-bold uppercase px-2 py-0.5 rounded mr-2 inline-block mb-1"
+                        style={{
+                          background: style.badgeBg,
+                          color: style.badgeText,
+                          border: `1px solid ${style.border}`,
+                          letterSpacing: "0.05em",
+                        }}
                       >
                         {suggestion.severity}
                       </span>

@@ -117,7 +117,9 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   onClick,
 }) => {
   const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
+    // Backend returns UTC timestamps without timezone suffix — ensure they parse as UTC
+    const normalized = dateString.endsWith("Z") || dateString.includes("+") ? dateString : dateString + "Z";
+    const date = new Date(normalized);
     const now = new Date();
     const diffInMs = now.getTime() - date.getTime();
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
@@ -153,7 +155,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
         <h3 className="font-medium text-sm text-gray-900 line-clamp-1">
           {conversation.title}
         </h3>
-        <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+        <span className="text-xs text-gray-500 shrink-0 ml-2">
           {formatTimeAgo(conversation.last_message_at)}
         </span>
       </div>

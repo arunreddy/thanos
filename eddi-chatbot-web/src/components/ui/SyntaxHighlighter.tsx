@@ -90,8 +90,9 @@ export const SyntaxHighlighter: React.FC<SyntaxHighlighterProps> = ({
         // Normalize language name
         const normalizedLang = normalizeLanguage(language);
         
-        // Use system theme preference for now - you can enhance this with theme context
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        // Force dark theme for SQL; otherwise use system preference
+        const isSql = normalizedLang === 'sql';
+        const isDark = isSql || window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = isDark ? 'github-dark' : 'github-light';
         
         const html = highlighter.codeToHtml(code, {
@@ -134,10 +135,28 @@ export const SyntaxHighlighter: React.FC<SyntaxHighlighterProps> = ({
     );
   }
 
+  const normalizedLang = normalizeLanguage(language);
+  const isSqlBlock = normalizedLang === 'sql';
+
   return (
     <div className={`relative group ${className}`}>
+      {/* Language badge */}
+      {language && language !== 'plaintext' && (
+        <span
+          className="absolute top-2 left-3 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded z-10"
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            background: isSqlBlock ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+            color: isSqlBlock ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)',
+            letterSpacing: '0.08em',
+          }}
+        >
+          {language.toUpperCase()}
+        </span>
+      )}
       <div
-        className="shiki-container overflow-x-auto rounded-lg border"
+        className={`shiki-container overflow-x-auto rounded-lg border ${isSqlBlock ? 'sql-dark-block' : ''}`}
+        style={isSqlBlock ? { background: '#1E2130', borderColor: '#313447' } : undefined}
         dangerouslySetInnerHTML={{ __html: highlightedCode }}
       />
       {showCopyButton && <CopyButton text={code} />}

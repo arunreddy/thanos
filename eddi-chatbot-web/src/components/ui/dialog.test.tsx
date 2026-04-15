@@ -18,7 +18,7 @@ configure({
 
 // Mock the cn utility function
 vi.mock('@/lib/utils', () => ({
-  cn: (...args: any[]) => args.filter(Boolean).join(' ')
+  cn: (...args: unknown[]) => args.filter(Boolean).join(' ')
 }));
 
 describe('Dialog Components', () => {

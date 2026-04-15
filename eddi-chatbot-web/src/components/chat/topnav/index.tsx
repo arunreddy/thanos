@@ -1,26 +1,32 @@
-import { Share2, RotateCw, Copy, Check, Database, Server, Zap, Radio, MessageSquare } from "lucide-react";
+import { Share2, RotateCw, Copy, Check, MessageSquare } from "lucide-react";
 import { useState } from "react";
-
-const CATEGORY_STYLES: Record<string, { color: string; bg: string; border: string; icon: React.ElementType }> = {
-  "Recommend DB": { color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE", icon: Database },
-  "Provision DB":  { color: "#008555", bg: "#E6F4EF", border: "#B3D9CC", icon: Server },
-  "Health":        { color: "#D97706", bg: "#FEF3C7", border: "#FDE68A", icon: Zap },
-  "Kafka Assist":  { color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", icon: Radio },
-};
+import { CATEGORY_STYLES } from "@/lib/constants";
+import panelHeaderDesign from "@/lib/panelHeaderDesigns";
 
 interface TopNavProps {
   title: string | null;
+  chatId?: string | null;
 }
 
-const TopNav: React.FC<TopNavProps> = ({ title }) => {
+const TopNav: React.FC<TopNavProps> = ({ title, chatId }) => {
   const [copied, setCopied] = useState(false);
-
+  const [sessionCopied, setSessionCopied] = useState(false);
   if (!title) return null;
+
+  const hd = panelHeaderDesign;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopySession = () => {
+    if (chatId) {
+      navigator.clipboard.writeText(chatId);
+      setSessionCopied(true);
+      setTimeout(() => setSessionCopied(false), 2000);
+    }
   };
 
   const handleRefresh = () => {
@@ -30,49 +36,85 @@ const TopNav: React.FC<TopNavProps> = ({ title }) => {
   const catStyle = CATEGORY_STYLES[title];
   const CatIcon = catStyle?.icon ?? MessageSquare;
 
+  const sessionLabel = chatId && chatId !== "unknown"
+    ? chatId.length > 12
+      ? `${chatId.slice(0, 6)}...${chatId.slice(-4)}`
+      : chatId
+    : null;
+
   return (
     <div
-      className="flex items-center justify-between px-6 h-14 flex-shrink-0"
-      style={{
-        borderBottom: "1px solid #E9ECEF",
-        background: "rgba(255,255,255,0.85)",
-        backdropFilter: "blur(8px)",
-      }}
+      className="flex items-center justify-between px-5 h-13 shrink-0"
+      style={{ backgroundImage: hd.bg }}
     >
-      {/* Category badge or generic label */}
-      {catStyle ? (
-        <span
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold"
-          style={{ background: catStyle.bg, color: catStyle.color, border: `1px solid ${catStyle.border}` }}
-        >
-          <CatIcon className="w-3.5 h-3.5" />
-          {title}
-        </span>
-      ) : (
-        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold"
-          style={{ background: "#F1F3F5", color: "#495057", border: "1px solid #DEE2E6" }}>
-          <MessageSquare className="w-3.5 h-3.5" />
-          {title}
-        </span>
-      )}
+      <div className="flex items-center gap-3 min-w-0">
+        {catStyle ? (
+          <span
+            className="inline-flex items-center gap-2 h-7 px-3 rounded-lg text-xs font-semibold shrink-0"
+            style={{ background: catStyle.bg, color: catStyle.color, border: `1px solid ${catStyle.border}` }}
+          >
+            <CatIcon className="w-3.5 h-3.5" />
+            {title}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-2 h-7 px-3 rounded-lg text-xs font-semibold shrink-0"
+            style={{ background: hd.actionBg, color: hd.titleColor, border: `1px solid ${hd.actionBorder}` }}>
+            <MessageSquare className="w-3.5 h-3.5" />
+            {title}
+          </span>
+        )}
 
-      <div className="flex items-center gap-0.5">
-        <NavAction icon={copied ? Check : Copy} label={copied ? "Copied!" : "Copy link"} onClick={handleCopyLink} />
-        <NavAction icon={Share2} label="Share" />
-        <NavAction icon={RotateCw} label="Refresh" onClick={handleRefresh} />
+        {sessionLabel && (
+          <button
+            onClick={handleCopySession}
+            title={sessionCopied ? "Copied!" : "Click to copy session ID"}
+            className="inline-flex items-center gap-1.5 h-7 px-3 rounded-lg shrink-0 cursor-pointer transition-all hover-surface"
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.25)",
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
+            <div
+              className="w-1.75 h-1.75 rounded-full shrink-0"
+              style={{
+                background: "#FFFFFF",
+                boxShadow: "0 0 0 2px rgba(255,255,255,0.3)",
+                animation: "livePulse 2s infinite",
+              }}
+            />
+            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.7)" }}>Session</span>
+            <span className="text-[10px] font-medium" style={{ color: "#FFFFFF" }}>
+              {sessionCopied ? "Copied!" : sessionLabel}
+            </span>
+          </button>
+        )}
       </div>
+
+      <div className="flex items-center gap-1">
+        <NavAction icon={copied ? Check : Copy} label={copied ? "Copied!" : "Copy link"} onClick={handleCopyLink} dimColor={hd.subtitleColor} hoverColor={hd.titleColor} />
+        <NavAction icon={Share2} label="Share" dimColor={hd.subtitleColor} hoverColor={hd.titleColor} />
+        <NavAction icon={RotateCw} label="Refresh" onClick={handleRefresh} dimColor={hd.subtitleColor} hoverColor={hd.titleColor} />
+      </div>
+
+      <style>{`
+        @keyframes livePulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+          50% { box-shadow: 0 0 0 4px rgba(34,197,94,0); }
+        }
+      `}</style>
     </div>
   );
 };
 
-function NavAction({ icon: Icon, label, onClick }: { icon: React.ElementType; label: string; onClick?: () => void }) {
+function NavAction({ icon: Icon, label, onClick, dimColor, hoverColor }: { icon: React.ElementType; label: string; onClick?: () => void; dimColor: string; hoverColor: string }) {
   return (
     <button
       onClick={onClick}
       className="p-1.5 rounded-md transition-colors cursor-pointer"
-      style={{ color: "#ADB5BD" }}
-      onMouseEnter={(e) => { e.currentTarget.style.color = "#495057"; e.currentTarget.style.background = "#F1F3F5"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.color = "#ADB5BD"; e.currentTarget.style.background = "transparent"; }}
+      style={{ color: dimColor }}
+      onMouseEnter={(e) => { e.currentTarget.style.color = hoverColor; }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = dimColor; }}
       title={label}
     >
       <Icon className="w-3.5 h-3.5" />

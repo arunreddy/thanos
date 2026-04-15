@@ -17,7 +17,11 @@
       "Bash(uv run pytest:*)",
       "Bash(uv add:*)",
       "Bash(grep:*)",
-      "Bash(docker ps:*)"
+      "Bash(docker ps:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }
